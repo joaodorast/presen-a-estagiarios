@@ -1,4 +1,4 @@
-/* Base Styles */
+
 :root {
     --primary-color: #3498db;
     --primary-dark: #2980b9;
@@ -52,7 +52,7 @@ body {
     display: flex;
 }
 
-/* Layout */
+
 .sidebar {
     width: 260px;
     height: 100vh;
@@ -83,7 +83,7 @@ body {
     max-width: calc(100% - 80px);
 }
 
-/* Sidebar Styles */
+
 .logo {
     padding: 20px;
     display: flex;
@@ -169,7 +169,7 @@ nav ul li i {
     display: none;
 }
 
-/* Header Styles */
+
 header {
     background-color: var(--white);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -204,7 +204,7 @@ header {
     color: var(--gray-600);
 }
 
-/* Content Area */
+
 .content-area {
     padding: 30px;
     min-height: calc(100vh - 66px);
@@ -224,7 +224,7 @@ header {
     to { opacity: 1; }
 }
 
-/* Dashboard */
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -300,7 +300,7 @@ header {
     margin-top: 30px;
 }
 
-/* Page Headers */
+
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -314,7 +314,7 @@ header {
     color: var(--dark-color);
 }
 
-/* Tables */
+
 .table-container {
     background-color: var(--white);
     border-radius: 8px;
@@ -361,7 +361,7 @@ table tbody tr:hover {
     background-color: var(--gray-100);
 }
 
-/* Status Badges */
+
 .badge {
     padding: 5px 10px;
     border-radius: 4px;
@@ -391,7 +391,7 @@ table tbody tr:hover {
     color: var(--danger-dark);
 }
 
-/* Buttons */
+
 .btn {
     padding: 10px 15px;
     border-radius: 4px;
@@ -493,13 +493,12 @@ table tbody tr:hover {
     color: var(--white);
 }
 
-/* Actions Column */
 .actions-column {
     display: flex;
     gap: 5px;
 }
 
-/* Search & Filters */
+
 .search-container {
     display: flex;
     gap: 10px;
@@ -558,7 +557,7 @@ table tbody tr:hover {
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-/* Relatórios */
+
 .report-filters {
     display: flex;
     flex-wrap: wrap;
@@ -597,7 +596,7 @@ table tbody tr:hover {
     color: var(--dark-color);
 }
 
-/* Modals */
+
 .modal {
     display: none;
     position: fixed;
@@ -665,7 +664,7 @@ table tbody tr:hover {
     gap: 10px;
 }
 
-/* Forms */
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -696,7 +695,7 @@ table tbody tr:hover {
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-/* Toast Notifications */
+
 #toast-container {
     position: fixed;
     top: 20px;
@@ -750,7 +749,7 @@ table tbody tr:hover {
     font-size: 20px;
 }
 
-/* Responsive */
+
 @media (max-width: 992px) {
     .sidebar {
         width: 80px;
