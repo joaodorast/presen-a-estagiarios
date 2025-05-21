@@ -3,11 +3,11 @@
 
 // Mock data para simulação do sistema
 let estagiarios = [
-    { id: 1, nome: "João Silva", email: "joao.silva@email.com", telefone: "(11) 98765-4321", dataInicio: "2024-02-15", ativo: true },
-    { id: 2, nome: "Maria Oliveira", email: "maria.oliveira@email.com", telefone: "(11) 91234-5678", dataInicio: "2024-03-01", ativo: true },
-    { id: 3, nome: "Lucas Santos", email: "lucas.santos@email.com", telefone: "(11) 99876-5432", dataInicio: "2023-11-10", ativo: true },
-    { id: 4, nome: "Amanda Costa", email: "amanda.costa@email.com", telefone: "(11) 95555-4444", dataInicio: "2024-01-20", ativo: false },
-    { id: 5, nome: "Pedro Almeida", email: "pedro.almeida@email.com", telefone: "(11) 93333-2222", dataInicio: "2023-10-05", ativo: true }
+    { id: 1, nome: "João Pedro ", email: "joaopedro@gmail.com", telefone: "(21) 98765-4321", dataInicio: "2024-02-15", ativo: true },
+    { id: 2, nome: "Maria Clara", email: "mariaclara@gmail.com", telefone: "(21) 91234-5678", dataInicio: "2024-03-01", ativo: true },
+    { id: 3, nome: "Miguel Combas", email: "miguelcombas@gmail.com", telefone: "(21) 99876-5432", dataInicio: "2023-11-10", ativo: true },
+    { id: 4, nome: "Eloá Christine", email: "eloacristine@gmail.com", telefone: "(21) 95555-4444", dataInicio: "2024-01-20", ativo: false },
+    { id: 5, nome: "Pedro Henricky", email: "pedrohenricky@gmail.com", telefone: "(21) 93333-2222", dataInicio: "2023-10-05", ativo: true }
 ];
 
 let presencas = [
@@ -22,23 +22,23 @@ let presencas = [
     { id: 9, estagiarioId: 5, data: "2024-05-17", entrada: "08:45:00", saida: "17:50:00", horas: "9:05", observacao: "" }
 ];
 
-// Array para presenças de hoje (será preenchido durante a inicialização)
+
 let presencasHoje = [];
 
-// Data atual
+
 const hoje = new Date();
 const dataAtual = hoje.toISOString().split('T')[0];
 const dataHojeFormatada = formatarData(dataAtual);
 
-// Elemento DOM para a data atual
+
 const dataHojeEl = document.getElementById('today-date');
 dataHojeEl.textContent = dataHojeFormatada;
 
-// Navegação entre páginas
+
 const navItems = document.querySelectorAll('.sidebar nav ul li');
 const pages = document.querySelectorAll('.page');
 
-// Initialize the application
+
 document.addEventListener('DOMContentLoaded', function() {
     initNavigation();
     initMenuToggle();
@@ -51,29 +51,29 @@ document.addEventListener('DOMContentLoaded', function() {
     setReportDefaultDate();
 });
 
-// Inicializa a navegação
+
 function initNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', function() {
-            // Remove active class from all nav items
+          
             navItems.forEach(navItem => navItem.classList.remove('active'));
             
-            // Add active class to clicked item
+          
             this.classList.add('active');
             
-            // Get page id from data attribute
+           
             const pageId = this.getAttribute('data-page');
             
-            // Hide all pages
+            
             pages.forEach(page => page.classList.remove('active'));
             
-            // Show selected page
+           
             document.getElementById(pageId).classList.add('active');
         });
     });
 }
 
-// Inicializa o toggle do menu lateral
+
 function initMenuToggle() {
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.querySelector('.sidebar');
@@ -85,15 +85,15 @@ function initMenuToggle() {
     });
 }
 
-// Inicializa os modais
+
 function initModals() {
-    // Get all modals
+   
     const modals = document.querySelectorAll('.modal');
     
-    // Get all elements that close modals
+   
     const closeBtns = document.querySelectorAll('.close, .modal-cancel');
     
-    // When the user clicks the button, open the modal
+   
     document.getElementById('btn-registrar-entrada').addEventListener('click', function() {
         openModal('modal-registrar-entrada');
         loadEstagiarioSelect('entrada-estagiario', true);
@@ -115,7 +115,7 @@ function initModals() {
         openModal('modal-estagiario');
     });
     
-    // When the user clicks on <span> (x) or cancel button, close the modal
+    
     closeBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             modals.forEach(modal => {
@@ -124,7 +124,7 @@ function initModals() {
         });
     });
     
-    // When the user clicks anywhere outside of the modal, close it
+   
     window.addEventListener('click', function(event) {
         modals.forEach(modal => {
             if (event.target == modal) {
@@ -134,29 +134,28 @@ function initModals() {
     });
 }
 
-// Função para abrir um modal específico
+
 function openModal(modalId) {
     document.getElementById(modalId).classList.add('active');
 }
 
-// Inicializa as presenças de hoje
+
 function initTodayPresences() {
-    // Filter presences for today
+
     presencasHoje = presencas.filter(p => p.data === dataAtual);
     
-    // Load today's presences table
+  
     loadTodayPresencesTable();
 }
 
-// Carrega estatísticas do dashboard
 function loadDashboardStats() {
-    // Total de estagiários
+    
     document.getElementById('total-estagiarios').textContent = estagiarios.filter(e => e.ativo).length;
     
-    // Presentes hoje
+
     document.getElementById('presentes-hoje').textContent = presencasHoje.length;
     
-    // Presenças do mês
+    
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
     const presencasMes = presencas.filter(p => {
@@ -165,7 +164,7 @@ function loadDashboardStats() {
     });
     document.getElementById('presencas-mes').textContent = presencasMes.length;
     
-    // Horas totais do mês
+    
     let horasTotais = 0;
     presencasMes.forEach(p => {
         const [horas, minutos] = p.horas.split(':').map(Number);
@@ -174,7 +173,7 @@ function loadDashboardStats() {
     document.getElementById('horas-mes').textContent = horasTotais.toFixed(1) + 'h';
 }
 
-// Carrega a tabela de presenças de hoje
+
 function loadTodayPresencesTable() {
     const tableBody = document.querySelector('#presencas-hoje-tabela tbody');
     tableBody.innerHTML = '';
@@ -205,7 +204,7 @@ function loadTodayPresencesTable() {
     });
 }
 
-// Carrega a tabela de estagiários
+
 function loadEstagiarios() {
     const tableBody = document.querySelector('#estagiarios-tabela tbody');
     tableBody.innerHTML = '';
@@ -237,7 +236,7 @@ function loadEstagiarios() {
         tableBody.appendChild(row);
     });
     
-    // Adiciona eventos aos botões de edição
+    
     document.querySelectorAll('.btn-icon.edit').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = parseInt(this.getAttribute('data-id'));
@@ -245,7 +244,7 @@ function loadEstagiarios() {
         });
     });
     
-    // Adiciona eventos aos botões de exclusão
+    
     document.querySelectorAll('.btn-icon.delete').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = parseInt(this.getAttribute('data-id'));
@@ -256,7 +255,7 @@ function loadEstagiarios() {
     });
 }
 
-// Carrega a tabela de presenças
+
 function loadPresencasTable(filteredPresencas = null) {
     const tableBody = document.querySelector('#presencas-tabela tbody');
     tableBody.innerHTML = '';
@@ -301,7 +300,7 @@ function loadPresencasTable(filteredPresencas = null) {
     // (Implementação semelhante à loadEstagiarios)
 }
 
-// Carrega o select de estagiários
+
 function loadEstagiarioSelect(selectId, onlyActive = false) {
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">Selecione o estagiário</option>';
@@ -316,12 +315,12 @@ function loadEstagiarioSelect(selectId, onlyActive = false) {
     });
 }
 
-// Carrega select de estagiários que entraram hoje mas não saíram
+
 function loadEstagiarioSelectWithPresence(selectId) {
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">Selecione o estagiário</option>';
     
-    // Filtra estagiários que entraram hoje mas não saíram
+    
     const estagiariosPresentesHoje = presencasHoje
         .filter(p => !p.saida)
         .map(p => p.estagiarioId);
@@ -336,7 +335,7 @@ function loadEstagiarioSelectWithPresence(selectId) {
         });
 }
 
-// Carrega o filtro de estagiários na página de presenças
+
 function loadEstagiarioFilter() {
     const select = document.getElementById('filtro-estagiario');
     select.innerHTML = '<option value="">Todos</option>';
@@ -349,27 +348,27 @@ function loadEstagiarioFilter() {
     });
 }
 
-// Inicializa todos os listeners de eventos
+
 function initEventListeners() {
-    // Botão para confirmar entrada
+    
     document.getElementById('btn-confirmar-entrada').addEventListener('click', registrarEntrada);
     
-    // Botão para confirmar saída
+    
     document.getElementById('btn-confirmar-saida').addEventListener('click', registrarSaida);
     
-    // Botão para salvar estagiário
+    
     document.getElementById('btn-salvar-estagiario').addEventListener('click', salvarEstagiario);
     
-    // Botão para filtrar presenças
+    
     document.getElementById('btn-filtrar-presencas').addEventListener('click', filtrarPresencas);
     
-    // Botão para gerar relatório
+    
     document.getElementById('btn-gerar-relatorio').addEventListener('click', gerarRelatorio);
     
-    // Botão para exportar relatório
+   
     document.getElementById('btn-exportar-relatorio').addEventListener('click', exportarRelatorio);
     
-    // Campo de busca de estagiários
+    
     document.getElementById('search-estagiario').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         
@@ -397,10 +396,10 @@ function initEventListeners() {
         // Implementação omitida para brevidade
     });
     
-    // Carregar filtro de estagiários quando a página de presenças for aberta
+    
     document.querySelector('[data-page="presencas"]').addEventListener('click', function() {
         loadEstagiarioFilter();
-        // Definir datas padrão para filtro (último mês)
+       
         const today = new Date();
         const lastMonth = new Date();
         lastMonth.setMonth(today.getMonth() - 1);
@@ -410,7 +409,7 @@ function initEventListeners() {
     });
 }
 
-// Função para registrar entrada
+
 function registrarEntrada() {
     const estagiarioId = parseInt(document.getElementById('entrada-estagiario').value);
     const observacao = document.getElementById('entrada-observacao').value;
@@ -420,14 +419,14 @@ function registrarEntrada() {
         return;
     }
     
-    // Verifica se o estagiário já tem entrada hoje
+   
     const jaTemEntrada = presencasHoje.some(p => p.estagiarioId === estagiarioId);
     if (jaTemEntrada) {
         showToast('Este estagiário já registrou entrada hoje', 'error');
         return;
     }
     
-    // Registra nova entrada
+    
     const horaAtual = new Date().toTimeString().split(' ')[0];
     const novaPresenca = {
         id: presencas.length + 1,
@@ -442,11 +441,11 @@ function registrarEntrada() {
     presencas.push(novaPresenca);
     presencasHoje.push(novaPresenca);
     
-    // Atualiza UI
+   
     loadTodayPresencesTable();
     loadDashboardStats();
     
-    // Fecha modal e mostra confirmação
+    
     document.getElementById('modal-registrar-entrada').classList.remove('active');
     document.getElementById('entrada-estagiario').value = '';
     document.getElementById('entrada-observacao').value = '';
@@ -454,7 +453,7 @@ function registrarEntrada() {
     showToast('Entrada registrada com sucesso!', 'success');
 }
 
-// Função para registrar saída
+
 function registrarSaida() {
     const estagiarioId = parseInt(document.getElementById('saida-estagiario').value);
     const observacao = document.getElementById('saida-observacao').value;
@@ -464,7 +463,7 @@ function registrarSaida() {
         return;
     }
     
-    // Encontra a presença para atualizar
+    
     const presencaIndex = presencasHoje.findIndex(p => p.estagiarioId === estagiarioId && !p.saida);
     
     if (presencaIndex === -1) {
@@ -472,7 +471,7 @@ function registrarSaida() {
         return;
     }
     
-    // Registra saída
+    
     const horaAtual = new Date().toTimeString().split(' ')[0];
     const horaEntrada = presencasHoje[presencaIndex].entrada;
     const horas = calcularHoras(horaEntrada, horaAtual);
@@ -490,11 +489,11 @@ function registrarSaida() {
         presencas[presencaGlobalIndex] = { ...presencasHoje[presencaIndex] };
     }
     
-    // Atualiza UI
+    
     loadTodayPresencesTable();
     loadDashboardStats();
     
-    // Fecha modal e mostra confirmação
+    
     document.getElementById('modal-registrar-saida').classList.remove('active');
     document.getElementById('saida-estagiario').value = '';
     document.getElementById('saida-observacao').value = '';
@@ -502,7 +501,6 @@ function registrarSaida() {
     showToast('Saída registrada com sucesso!', 'success');
 }
 
-// Editar estagiário
 function editEstagiario(id) {
     const estagiario = estagiarios.find(e => e.id === id);
     if (!estagiario) return;
@@ -533,7 +531,7 @@ function salvarEstagiario() {
     }
     
     if (id) {
-        // Editar estagiário existente
+        
         const index = estagiarios.findIndex(e => e.id === parseInt(id));
         if (index !== -1) {
             estagiarios[index] = {
@@ -560,15 +558,15 @@ function salvarEstagiario() {
         showToast('Estagiário cadastrado com sucesso!', 'success');
     }
     
-    // Fecha modal e atualiza tabela
+    
     document.getElementById('modal-estagiario').classList.remove('active');
     loadEstagiarios();
     loadDashboardStats();
 }
 
-// Excluir estagiário
+
 function deleteEstagiario(id) {
-    // Verifica se há presenças associadas
+  
     const temPresencas = presencas.some(p => p.estagiarioId === id);
     
     if (temPresencas) {
@@ -585,7 +583,7 @@ function deleteEstagiario(id) {
     }
 }
 
-// Filtrar presenças
+
 function filtrarPresencas() {
     const estagiarioId = document.getElementById('filtro-estagiario').value;
     const dataInicio = document.getElementById('filtro-data-inicio').value;
@@ -608,7 +606,7 @@ function filtrarPresencas() {
     loadPresencasTable(filtered);
 }
 
-// Gerar relatório
+
 function gerarRelatorio() {
     const mes = parseInt(document.getElementById('relatorio-mes').value);
     const ano = parseInt(document.getElementById('relatorio-ano').value);
@@ -618,7 +616,7 @@ function gerarRelatorio() {
         return;
     }
     
-    // Filtra presenças do mês e ano selecionados
+
     const presencasFiltradas = presencas.filter(p => {
         const presencaData = new Date(p.data);
         return presencaData.getMonth() + 1 === mes && presencaData.getFullYear() === ano;
@@ -629,7 +627,7 @@ function gerarRelatorio() {
         return;
     }
     
-    // Calcula estatísticas
+    
     const totalPresencas = presencasFiltradas.length;
     
     let totalHoras = 0;
@@ -642,12 +640,12 @@ function gerarRelatorio() {
     
     const mediaHoras = totalHoras / totalPresencas;
     
-    // Atualiza cards de resumo
+   
     document.getElementById('relatorio-total-presencas').textContent = totalPresencas;
     document.getElementById('relatorio-media-horas').textContent = mediaHoras.toFixed(2) + 'h';
     document.getElementById('relatorio-total-horas').textContent = totalHoras.toFixed(2) + 'h';
     
-    // Gera relatório por estagiário
+    
     const relatorioEstagiarios = [];
     
     estagiarios.forEach(estagiario => {
@@ -671,7 +669,7 @@ function gerarRelatorio() {
         }
     });
     
-    // Preenche tabela do relatório
+    
     const tableBody = document.querySelector('#relatorio-tabela tbody');
     tableBody.innerHTML = '';
     
@@ -689,7 +687,7 @@ function gerarRelatorio() {
     showToast('Relatório gerado com sucesso!', 'success');
 }
 
-// Exportar relatório
+
 function exportarRelatorio() {
     const tableData = document.querySelector('#relatorio-tabela').outerHTML;
     const mesNome = document.querySelector('#relatorio-mes option:checked').textContent;
@@ -733,7 +731,7 @@ function exportarRelatorio() {
     showToast('Relatório exportado com sucesso!', 'success');
 }
 
-// Define a data padrão para o relatório (mês atual)
+
 function setReportDefaultDate() {
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
@@ -742,7 +740,6 @@ function setReportDefaultDate() {
     document.getElementById('relatorio-ano').value = anoAtual;
 }
 
-// Função utilitária para mostrar toasts de notificação
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -770,12 +767,10 @@ function showToast(message, type = 'info') {
     
     toastContainer.appendChild(toast);
     
-    // Exibe a notificação
     setTimeout(() => {
         toast.classList.add('active');
     }, 100);
     
-    // Remove a notificação após 3 segundos
     setTimeout(() => {
         toast.classList.remove('active');
         setTimeout(() => {
@@ -784,7 +779,6 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Calcular horas entre entrada e saída
 function calcularHoras(entrada, saida) {
     const [horaEntrada, minutoEntrada] = entrada.split(':').map(Number);
     const [horaSaida, minutoSaida] = saida.split(':').map(Number);
@@ -792,7 +786,6 @@ function calcularHoras(entrada, saida) {
     let totalMinutos = (horaSaida * 60 + minutoSaida) - (horaEntrada * 60 + minutoEntrada);
     
     if (totalMinutos < 0) {
-        // Caso a saída seja no dia seguinte (exemplo: entrou às 22:00 e saiu às 06:00)
         totalMinutos += 24 * 60;
     }
     
@@ -802,7 +795,6 @@ function calcularHoras(entrada, saida) {
     return `${horas}:${minutos.toString().padStart(2, '0')}`;
 }
 
-// Função para formatar data
 function formatarData(dataString) {
     const data = new Date(dataString);
     const dia = data.getDate().toString().padStart(2, '0');
