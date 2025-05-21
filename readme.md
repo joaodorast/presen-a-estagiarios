@@ -58,7 +58,7 @@ Faça o download e instale MySQL a partir do [site oficial](https://dev.mysql.co
 ### 2. Clonando o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/seice.git
+(https://github.com/joaodorast/presen-a-estagiarios.git)
 cd seice
 ```
 
