@@ -58,8 +58,7 @@ Faça o download e instale MySQL a partir do [site oficial](https://dev.mysql.co
 ### 2. Clonando o Repositório
 
 ```bash
-(https://github.com/joaodorast/presen-a-estagiarios.git)
-cd seice
+https://github.com/joaodorast/presen-a-estagiarios.git
 ```
 
 ### 3. Configurando o Banco de Dados
