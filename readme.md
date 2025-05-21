@@ -6,7 +6,7 @@ Este sistema gerencia o registro de presença dos estagiários do Colégio SEICE
 
 - Go 1.16+
 - MySQL 5.7+ ou MariaDB 10.2+
-- Git (opcional, para clonar o repositório)
+- Git ( para clonar o repositório)
 
 ## Bibliotecas utilizadas
 
