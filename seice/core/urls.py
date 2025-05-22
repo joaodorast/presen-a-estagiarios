@@ -8,5 +8,10 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('api/estagiarios/', views.get_estagiarios),
     path('api/estagiarios/create/', views.create_estagiario),
+
+    path('api/estagiarios/<int:estagiario_id>/delete/', views.delete_estagiario),
+
     path('api/presencas/entrada/', views.registrar_entrada),
+    path('api/presencas/', views.get_presencas),
+    path('api/presencas/saida/', views.registrar_saida),
 ]
