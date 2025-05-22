@@ -2,13 +2,22 @@
 // Versão 1.0.0
 
 // Mock data para simulação do sistema
-let estagiarios = [
-    { id: 1, nome: "João Pedro ", email: "joaopedro@gmail.com", telefone: "(21) 98765-4321", dataInicio: "2024-02-15", ativo: true },
-    { id: 2, nome: "Maria Clara", email: "mariaclara@gmail.com", telefone: "(21) 91234-5678", dataInicio: "2024-03-01", ativo: true },
-    { id: 3, nome: "Miguel Combas", email: "miguelcombas@gmail.com", telefone: "(21) 99876-5432", dataInicio: "2023-11-10", ativo: true },
-    { id: 4, nome: "Eloá Christine", email: "eloacristine@gmail.com", telefone: "(21) 95555-4444", dataInicio: "2024-01-20", ativo: false },
-    { id: 5, nome: "Pedro Henricky", email: "pedrohenricky@gmail.com", telefone: "(21) 93333-2222", dataInicio: "2023-10-05", ativo: true }
-];
+let estagiarios = []
+
+async function fetchEstagiarios() {
+    try {
+        const response = await fetch('/api/estagiarios/');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar os estagiários');
+        }
+        const data = await response.json();
+        estagiarios = data.estagiarios; // Atualiza a lista global de estagiários
+        return estagiarios;
+    } catch (error) {
+        console.error(error);
+        showToast('Erro ao carregar os estagiários', 'error');
+    }
+}
 
 let presencas = [
     { id: 1, estagiarioId: 1, data: "2024-05-19", entrada: "08:05:00", saida: "17:15:00", horas: "9:10", observacao: "" },
@@ -40,6 +49,7 @@ const pages = document.querySelectorAll('.page');
 
 
 document.addEventListener('DOMContentLoaded', function() {
+
     initNavigation();
     initMenuToggle();
     initModals();
@@ -206,51 +216,51 @@ function loadTodayPresencesTable() {
 
 
 function loadEstagiarios() {
-    const tableBody = document.querySelector('#estagiarios-tabela tbody');
-    tableBody.innerHTML = '';
-    
-    estagiarios.forEach(estagiario => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${estagiario.id}</td>
-            <td>${estagiario.nome}</td>
-            <td>${estagiario.email}</td>
-            <td>${estagiario.telefone}</td>
-            <td>${formatarData(estagiario.dataInicio)}</td>
-            <td>
-                <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
-                    ${estagiario.ativo ? 'Ativo' : 'Inativo'}
-                </span>
-            </td>
-            <td>
-                <div class="actions-column">
-                    <button class="btn-icon edit" data-id="${estagiario.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete" data-id="${estagiario.id}">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-    
-    
-    document.querySelectorAll('.btn-icon.edit').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = parseInt(this.getAttribute('data-id'));
-            editEstagiario(id);
+    fetchEstagiarios().then(() => {
+        const tableBody = document.querySelector('#estagiarios-tabela tbody');
+        tableBody.innerHTML = '';
+
+        estagiarios.forEach(estagiario => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                        <td>${estagiario.id}</td>
+                        <td>${estagiario.nome}</td>
+                        <td>${estagiario.email}</td>
+                        <td>${estagiario.telefone}</td>
+                        <td>${formatarData(estagiario.data_inicio)}</td>
+                        <td>
+                            <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
+                                ${estagiario.ativo ? 'Ativo' : 'Inativo'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions-column">
+                                <button class="btn-icon edit" data-id="${estagiario.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon delete" data-id="${estagiario.id}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;    tableBody.appendChild(row);
         });
-    });
-    
-    
-    document.querySelectorAll('.btn-icon.delete').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = parseInt(this.getAttribute('data-id'));
-            if (confirm('Tem certeza que deseja excluir este estagiário?')) {
-                deleteEstagiario(id);
-            }
+
+        // Adicionar eventos para edição e exclusão
+        document.querySelectorAll('.btn-icon.edit').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                editEstagiario(id);
+            });
+        });
+
+        document.querySelectorAll('.btn-icon.delete').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                if (confirm('Tem certeza que deseja excluir este estagiário?')) {
+                    deleteEstagiario(id);
+                }
+            });
         });
     });
 }
@@ -302,16 +312,18 @@ function loadPresencasTable(filteredPresencas = null) {
 
 
 function loadEstagiarioSelect(selectId, onlyActive = false) {
-    const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="">Selecione o estagiário</option>';
-    
-    const filteredEstagiarios = onlyActive ? estagiarios.filter(e => e.ativo) : estagiarios;
-    
-    filteredEstagiarios.forEach(estagiario => {
-        const option = document.createElement('option');
-        option.value = estagiario.id;
-        option.textContent = estagiario.nome;
-        select.appendChild(option);
+    fetchEstagiarios().then(() => {
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">Selecione o estagiário</option>';
+
+        const filteredEstagiarios = onlyActive ? estagiarios.filter(e => e.ativo) : estagiarios;
+
+        filteredEstagiarios.forEach(estagiario => {
+            const option = document.createElement('option');
+            option.value = estagiario.id;
+            option.textContent = estagiario.nome;
+            select.appendChild(option);
+        });
     });
 }
 
@@ -524,6 +536,14 @@ function salvarEstagiario() {
     const telefone = document.getElementById('estagiario-telefone').value;
     const dataInicio = document.getElementById('estagiario-data-inicio').value;
     const ativo = document.getElementById('estagiario-ativo').value === 'true';
+    const estagiario = {
+        id: id ? parseInt(id) : null,
+        nome,   
+        email,
+        telefone,
+        dataInicio,
+        ativo
+    };
     
     if (!nome || !email || !telefone || !dataInicio) {
         showToast('Por favor, preencha todos os campos obrigatórios', 'error');
@@ -556,13 +576,36 @@ function salvarEstagiario() {
             ativo
         });
         showToast('Estagiário cadastrado com sucesso!', 'success');
+            
     }
     
+    fetch('/api/estagiarios/create/', {
+        method: id ? 'PUT' : 'POST', // PUT para edição, POST para criação
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(estagiario),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao salvar o estagiário');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showToast(id ? 'Estagiário atualizado com sucesso!' : 'Estagiário cadastrado com sucesso!', 'success');
+            document.getElementById('modal-estagiario').classList.remove('active');
+            loadEstagiarios(); // Atualizar a lista de estagiários
+        })
+        .catch(error => {
+            console.error(error);
+            showToast('Erro ao salvar o estagiário', 'error');
+        });
+}
     
     document.getElementById('modal-estagiario').classList.remove('active');
     loadEstagiarios();
     loadDashboardStats();
-}
 
 
 function deleteEstagiario(id) {
@@ -802,3 +845,6 @@ function formatarData(dataString) {
     const ano = data.getFullYear();
     return `${dia}/${mes}/${ano}`;
 }
+
+
+
