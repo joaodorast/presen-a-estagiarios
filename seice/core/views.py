@@ -25,12 +25,10 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
 def index(request):
     if not request.user.is_authenticated:
         return redirect('login')  # Redireciona para a página de login se não estiver autenticado
     return render(request, 'index.html')
-
 
 @csrf_exempt
 def get_estagiarios(request):
@@ -66,10 +64,9 @@ def create_estagiario(request):
             return JsonResponse({'message': 'Estagiário atualizado com sucesso!'}, status=200)
         except Estagiario.DoesNotExist:
             return JsonResponse({'error': 'Estagiário não encontrado'}, status=404)
-
     else:
         return JsonResponse({'error': 'Método não permitido'}, status=405)
-    
+
 @csrf_exempt
 def delete_estagiario(request, estagiario_id):
     if request.method == 'DELETE':
@@ -82,7 +79,6 @@ def delete_estagiario(request, estagiario_id):
     else:
         return JsonResponse({'error': 'Método não permitido'}, status=405)
 
-
 @csrf_exempt
 def get_presencas(request):
     if request.method == 'GET':
@@ -94,7 +90,7 @@ def get_presencas(request):
         return JsonResponse({'presencas': presencas}, safe=False)
     else:
         return JsonResponse({'error': 'Método não permitido'}, status=405)
-    
+
 @csrf_exempt
 def registrar_saida(request):
     if request.method == 'POST':
@@ -119,3 +115,9 @@ def registrar_entrada(request):
         entrada = parse_time(data['entrada'])
         presenca = Presenca.objects.create(estagiario=estagiario, data=data['data'], entrada=entrada)
         return JsonResponse({'message': 'Entrada registrada com sucesso!', 'id': presenca.id}, status=201)
+
+#  adiconei uma nova view: 
+def calculadora_horas(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    return render(request, 'calculadora-hour.html')

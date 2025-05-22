@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Horas - SEICE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ffd700;
+            --primary-dark: #ffcc00;
+            --secondary-color: #ffa500;
+            --secondary-dark: #ff8c00;
+            --success-color: #ffd700;
+            --success-dark: #ffcc00;
+            --danger-color: #ff6b6b;
+            --danger-dark: #ff5252;
+            --warning-color: #ffd700;
+            --warning-dark: #ffcc00;
+            --info-color: #ffd700;
+            --info-dark: #ffcc00;
+            --light-color: #f8f9fa;
+            --light-dark: #e9ecef;
+            --dark-color: #2c2c2c;
+            --dark-dark: #1a1a1a;
+            --text-color: #2c2c2c;
+            --text-light: #666;
+            --text-dark: #1a1a1a;
+            --white: #ffffff;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-400: #ced4da;
+            --gray-500: #adb5bd;
+            --gray-600: #6c757d;
+            --gray-700: #495057;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+            --blue: #ffd700;
+            --green: #ffd700;
+            --orange: #ffa500;
+            --purple: #ffd700;
+            --red: #ff6b6b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, var(--dark-color), var(--dark-dark));
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+            border-radius: 50px;
+            padding: 12px 20px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .back-button:hover {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--dark-color);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
+        }
+
+        .back-button i {
+            font-size: 16px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--white);
+            margin-top: 80px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, var(--white), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header h1 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+            -webkit-text-fill-color: var(--primary-color);
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .calculator-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, var(--primary-color), transparent);
+            z-index: -1;
+            border-radius: 17px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .calculator-card:hover::before {
+            opacity: 0.3;
+        }
+
+        .calculator-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .card-header h2 {
+            font-size: 24px;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .card-header h2 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .card-header .subtitle {
+            color: var(--gray-600);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .form-group label::before {
+            content: "▸";
+            color: var(--primary-color);
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--dark-color), var(--dark-dark));
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--dark-color);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--dark-color), var(--dark-dark));
+            color: var(--white);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--dark-color);
+        }
+
+        .results-container {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .results-container h2 {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+        }
+
+        .results-container h2 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, var(--dark-color), var(--dark-dark));
+            color: var(--white);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--primary-color);
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .result-card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .result-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .result-card .unit {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .history-container {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border: 2px solid var(--primary-color);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-header h2 {
+            color: var(--dark-color);
+        }
+
+        .history-header h2 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .history-table th {
+            background: var(--dark-color);
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .history-table tbody tr:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .history-table td:last-child strong {
+            color: var(--primary-color);
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-primary {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--dark-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .badge-success {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--dark-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-500);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .calculator-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .calculator-card,
+            .results-container,
+            .history-container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-button {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 20px;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 20px;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group .form-group {
+            flex: 1;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: var(--primary-color);
+            margin-left: 5px;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark-color);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            border: 1px solid var(--primary-color);
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    
+   <a href="{% url 'index' %}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Voltar ao Sistema
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-calculator"></i> Calculadora de Horas de Estágio</h1>
+            <p>Calcule horas trabalhadas e remuneração para meio período e tempo integral</p>
+        </div>
+
+        <div class="calculator-container">
+           
+            <div class="calculator-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clock"></i> Meio Período</h2>
+                    <p class="subtitle">Até 6 horas diárias</p>
+                </div>
+                
+                <form id="meio-periodo-form">
+                    <div class="form-group">
+                        <label for="mp-horas-dia">
+                            Horas por dia
+                            <span class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltiptext">Máximo 6 horas por dia para meio período</span>
+                            </span>
+                        </label>
+                        <input type="number" id="mp-horas-dia" min="1" max="6" step="0.5" value="4" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="mp-dias-semana">Dias por semana</label>
+                            <select id="mp-dias-semana" required>
+                                <option value="5">5 dias</option>
+                                <option value="4">4 dias</option>
+                                <option value="3">3 dias</option>
+                                <option value="2">2 dias</option>
+                                <option value="1">1 dia</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mp-semanas-mes">Semanas por mês</label>
+                            <input type="number" id="mp-semanas-mes" min="1" max="5" value="4" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mp-valor-hora">Valor por hora (R$)</label>
+                        <input type="number" id="mp-valor-hora" min="0" step="0.01" value="8.00" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-calculator"></i>
+                        Calcular Meio Período
+                    </button>
+                </form>
+            </div>
+
+           
+            <div class="calculator-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-business-time"></i> Tempo Integral</h2>
+                    <p class="subtitle">Até 8 horas diárias</p>
+                </div>
+                
+                <form id="tempo-integral-form">
+                    <div class="form-group">
+                        <label for="ti-horas-dia">
+                            Horas por dia
+                            <span class="tooltip">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="tooltiptext">Máximo 8 horas por dia para tempo integral</span>
+                            </span>
+                        </label>
+                        <input type="number" id="ti-horas-dia" min="6" max="8" step="0.5" value="8" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="ti-dias-semana">Dias por semana</label>
+                            <select id="ti-dias-semana" required>
+                                <option value="5">5 dias</option>
+                                <option value="4">4 dias</option>
+                                <option value="3">3 dias</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ti-semanas-mes">Semanas por mês</label>
+                            <input type="number" id="ti-semanas-mes" min="1" max="5" value="4" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ti-valor-hora">Valor por hora (R$)</label>
+                        <input type="number" id="ti-valor-hora" min="0" step="0.01" value="10.00" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-calculator"></i>
+                        Calcular Tempo Integral
+                    </button>
+                </form>
+            </div>
+        </div>
+
+      
+        <div class="results-container" id="results-container" style="display: none;">
+            <h2><i class="fas fa-chart-line"></i> Resultados do Cálculo</h2>
+            <div class="results-grid" id="results-grid">
+                <!-- Resultados  via javascript -->
+            </div>
+        </div>
+
+     
+        <div class="history-container">
+            <div class="history-header">
+                <h2><i class="fas fa-history"></i> Histórico de Cálculos</h2>
+                <button id="clear-history" class="btn btn-primary" style="width: auto; padding: 10px 20px;">
+                    <i class="fas fa-trash"></i>
+                    Limpar Histórico
+                </button>
+            </div>
+            
+            <div id="history-content">
+                <div class="empty-state">
+                    <i class="fas fa-calculator"></i>
+                    <h3>Nenhum cálculo realizado</h3>
+                    <p>Os resultados dos seus cálculos aparecerão aqui</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        let calculationHistory = [];
+
+       
+        const meioPeridoForm = document.getElementById('meio-periodo-form');
+        const tempoIntegralForm = document.getElementById('tempo-integral-form');
+        const resultsContainer = document.getElementById('results-container');
+        const resultsGrid = document.getElementById('results-grid');
+        const historyContent = document.getElementById('history-content');
+        const clearHistoryBtn = document.getElementById('clear-history');
+
+        
+        meioPeridoForm.addEventListener('submit', handleMeioPeriodoSubmit);
+        tempoIntegralForm.addEventListener('submit', handleTempoIntegralSubmit);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+
+        function handleMeioPeriodoSubmit(e) {
+            e.preventDefault();
+            
+            const horasDia = parseFloat(document.getElementById('mp-horas-dia').value);
+            const diasSemana = parseInt(document.getElementById('mp-dias-semana').value);
+            const semanasMes = parseInt(document.getElementById('mp-semanas-mes').value);
+            const valorHora = parseFloat(document.getElementById('mp-valor-hora').value);
+
+            const resultado = calcularHoras({
+                horasDia,
+                diasSemana,
+                semanasMes,
+                valorHora,
+                tipo: 'Meio Período'
+            });
+
+            exibirResultados(resultado);
+            adicionarAoHistorico(resultado);
+        }
+
+        function handleTempoIntegralSubmit(e) {
+            e.preventDefault();
+            
+            const horasDia = parseFloat(document.getElementById('ti-horas-dia').value);
+            const diasSemana = parseInt(document.getElementById('ti-dias-semana').value);
+            const semanasMes = parseInt(document.getElementById('ti-semanas-mes').value);
+            const valorHora = parseFloat(document.getElementById('ti-valor-hora').value);
+
+            const resultado = calcularHoras({
+                horasDia,
+                diasSemana,
+                semanasMes,
+                valorHora,
+                tipo: 'Tempo Integral'
+            });
+
+            exibirResultados(resultado);
+            adicionarAoHistorico(resultado);
+        }
+
+        function calcularHoras({ horasDia, diasSemana, semanasMes, valorHora, tipo }) {
+            const horasSemana = horasDia * diasSemana;
+            const horasMes = horasSemana * semanasMes;
+            const remuneracaoMes = horasMes * valorHora;
+            const remuneracaoAnual = remuneracaoMes * 12;
+            const horasAnuais = horasMes * 12;
+
+            return {
+                tipo,
+                horasDia,
+                diasSemana,
+                semanasMes,
+                valorHora,
+                horasSemana,
+                horasMes,
+                horasAnuais,
+                remuneracaoMes,
+                remuneracaoAnual,
+                timestamp: new Date()
+            };
+        }
+
+        function exibirResultados(resultado) {
+            resultsGrid.innerHTML = `
+                <div class="result-card">
+                    <h3>Horas por Semana</h3>
+                    <div class="value">${resultado.horasSemana}</div>
+                    <div class="unit">horas</div>
+                </div>
+                <div class="result-card">
+                    <h3>Horas por Mês</h3>
+                    <div class="value">${resultado.horasMes}</div>
+                    <div class="unit">horas</div>
+                </div>
+                <div class="result-card">
+                    <h3>Horas por Ano</h3>
+                    <div class="value">${resultado.horasAnuais}</div>
+                    <div class="unit">horas</div>
+                </div>
+                <div class="result-card">
+                    <h3>Remuneração Mensal</h3>
+                    <div class="value">R$ ${resultado.remuneracaoMes.toFixed(2)}</div>
+                    <div class="unit">por mês</div>
+                </div>
+                <div class="result-card">
+                    <h3>Remuneração Anual</h3>
+                    <div class="value">R$ ${resultado.remuneracaoAnual.toFixed(2)}</div>
+                    <div class="unit">por ano</div>
+                </div>
+                <div class="result-card">
+                    <h3>Valor por Hora</h3>
+                    <div class="value">R$ ${resultado.valorHora.toFixed(2)}</div>
+                    <div class="unit">por hora</div>
+                </div>
+            `;
+
+            resultsContainer.style.display = 'block';
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function adicionarAoHistorico(resultado) {
+            calculationHistory.unshift(resultado);
+            if (calculationHistory.length > 10) {
+                calculationHistory = calculationHistory.slice(0, 10);
+            }
+            atualizarHistorico();
+        }
+
+        function atualizarHistorico() {
+            if (calculationHistory.length === 0) {
+                historyContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calculator"></i>
+                        <h3>Nenhum cálculo realizado</h3>
+                        <p>Os resultados dos seus cálculos aparecerão aqui</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Tipo</th>
+                            <th>Horas/Dia</th>
+                            <th>Dias/Semana</th>
+                            <th>Horas/Mês</th>
+                            <th>Valor/Hora</th>
+                            <th>Remuneração/Mês</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${calculationHistory.map(calc => `
+                            <tr>
+                                <td>${formatarDataHora(calc.timestamp)}</td>
+                                <td>
+                                    <span class="badge ${calc.tipo === 'Meio Período' ? 'badge-primary' : 'badge-success'}">
+                                        ${calc.tipo}
+                                    </span>
+                                </td>
+                                <td>${calc.horasDia}h</td>
+                                <td>${calc.diasSemana} dias</td>
+                                <td>${calc.horasMes}h</td>
+                                <td>R$ ${calc.valorHora.toFixed(2)}</td>
+                                <td><strong>R$ ${calc.remuneracaoMes.toFixed(2)}</strong></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            historyContent.innerHTML = tableHTML;
+        }
+
+        function clearHistory() {
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                calculationHistory = [];
+                atualizarHistorico();
+            }
+        }
+
+        function formatarDataHora(date) {
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        document.getElementById('mp-horas-dia').addEventListener('input', function() {
+            if (this.value > 6) {
+                this.value = 6;
+            }
+        });
+
+        document.getElementById('ti-horas-dia').addEventListener('input', function() {
+            if (this.value > 8) {
+                this.value = 8;
+            }
+            if (this.value < 6) {
+                this.value = 6;
+            }
+        });
+
+      
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const currentYear = new Date().getFullYear();
+            // aqui tu pode adicionar mais inicializações se necessário
+        });
+    </script>
+</body>
+</html>
