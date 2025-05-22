@@ -18,7 +18,7 @@ def login_view(request):
             login(request, user)
             return redirect('index')  # Redireciona para a página inicial
         else:
-            return HttpResponse('Usuário ou senha inválidos', status=401)
+            return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
     return render(request, 'login.html')
 
 def logout_view(request):
