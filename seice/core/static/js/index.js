@@ -422,44 +422,45 @@ function initEventListeners() {
 function registrarEntrada() {
     const estagiarioId = parseInt(document.getElementById('entrada-estagiario').value);
     const observacao = document.getElementById('entrada-observacao').value;
-    
+
     if (!estagiarioId) {
         showToast('Por favor, selecione um estagiário', 'error');
         return;
     }
-    
-   
-    const jaTemEntrada = presencasHoje.some(p => p.estagiarioId === estagiarioId);
-    if (jaTemEntrada) {
-        showToast('Este estagiário já registrou entrada hoje', 'error');
-        return;
-    }
-    
-    
+
     const horaAtual = new Date().toTimeString().split(' ')[0];
     const novaPresenca = {
-        id: presencas.length + 1,
         estagiarioId: estagiarioId,
         data: dataAtual,
         entrada: horaAtual,
-        saida: null,
-        horas: null,
         observacao: observacao
     };
-    
-    presencas.push(novaPresenca);
-    presencasHoje.push(novaPresenca);
-    
-   
-    loadTodayPresencesTable();
-    loadDashboardStats();
-    
-    
+
+    fetch('/api/presencas/entrada/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(novaPresenca),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao registrar entrada');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showToast('Entrada registrada com sucesso!', 'success');
+            fetchPresencas().then(loadTodayPresencesTable); // Atualiza a tabela
+        })
+        .catch(error => {
+            console.error(error);
+            showToast('Erro ao registrar entrada', 'error');
+        });
+
     document.getElementById('modal-registrar-entrada').classList.remove('active');
     document.getElementById('entrada-estagiario').value = '';
     document.getElementById('entrada-observacao').value = '';
-    
-    showToast('Entrada registrada com sucesso!', 'success');
 }
 
 
@@ -524,7 +525,11 @@ function editEstagiario(id) {
     document.getElementById('estagiario-nome').value = estagiario.nome;
     document.getElementById('estagiario-email').value = estagiario.email;
     document.getElementById('estagiario-telefone').value = estagiario.telefone;
-    document.getElementById('estagiario-data-inicio').value = estagiario.dataInicio;
+    
+    // Formatar a data para o formato YYYY-MM-DD
+    const dataInicioFormatada = new Date(estagiario.data_inicio).toISOString().split('T')[0];
+    document.getElementById('estagiario-data-inicio').value = dataInicioFormatada;
+    
     document.getElementById('estagiario-ativo').value = estagiario.ativo.toString();
     
     openModal('modal-estagiario');
@@ -655,7 +660,7 @@ function filtrarPresencas() {
     let filtered = [...presencas];
     
     if (estagiarioId) {
-        filtered = filtered.filter(p => p.estagiarioId === parseInt(estagiarioId));
+        filtered = filtered.filter(p => p.estagiario_id === parseInt(estagiarioId));
     }
     
     if (dataInicio) {
@@ -712,7 +717,7 @@ function gerarRelatorio() {
     const relatorioEstagiarios = [];
     
     estagiarios.forEach(estagiario => {
-        const presencasEstagiario = presencasFiltradas.filter(p => p.estagiarioId === estagiario.id);
+        const presencasEstagiario = presencasFiltradas.filter(p => p.estagiario_id === estagiario.id);
         
         if (presencasEstagiario.length > 0) {
             let horasEstagiario = 0;
