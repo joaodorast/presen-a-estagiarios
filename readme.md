@@ -156,7 +156,6 @@ A API do sistema está disponível nos seguintes endpoints:
 
 ## Recursos Adicionais
 
-- O sistema lida automaticamente com feriados cadastrados
 - Validações para evitar registros duplicados ou inconsistentes
 - Tratamento de erros e feedback claro para usuários
 - Suporte para filtros em relatórios e listagens
