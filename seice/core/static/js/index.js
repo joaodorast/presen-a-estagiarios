@@ -19,17 +19,22 @@ async function fetchEstagiarios() {
     }
 }
 
-let presencas = [
-    { id: 1, estagiarioId: 1, data: "2024-05-19", entrada: "08:05:00", saida: "17:15:00", horas: "9:10", observacao: "" },
-    { id: 2, estagiarioId: 2, data: "2024-05-19", entrada: "08:30:00", saida: "17:30:00", horas: "9:00", observacao: "" },
-    { id: 3, estagiarioId: 3, data: "2024-05-19", entrada: "08:15:00", saida: "17:00:00", horas: "8:45", observacao: "" },
-    { id: 4, estagiarioId: 1, data: "2024-05-18", entrada: "08:00:00", saida: "17:00:00", horas: "9:00", observacao: "" },
-    { id: 5, estagiarioId: 2, data: "2024-05-18", entrada: "08:30:00", saida: "17:30:00", horas: "9:00", observacao: "" },
-    { id: 6, estagiarioId: 5, data: "2024-05-18", entrada: "09:00:00", saida: "18:00:00", horas: "9:00", observacao: "" },
-    { id: 7, estagiarioId: 1, data: "2024-05-17", entrada: "08:10:00", saida: "17:05:00", horas: "8:55", observacao: "" },
-    { id: 8, estagiarioId: 3, data: "2024-05-17", entrada: "08:20:00", saida: "17:15:00", horas: "8:55", observacao: "" },
-    { id: 9, estagiarioId: 5, data: "2024-05-17", entrada: "08:45:00", saida: "17:50:00", horas: "9:05", observacao: "" }
-];
+let presencas = []
+async function fetchPresencas() {
+    try {
+        const response = await fetch('/api/presencas/');
+        if (!response.ok) {
+            throw new Error('Erro ao carregar as presenças');
+        }
+        const data = await response.json();
+        presencas = data.presencas; // Atualiza a lista global de presenças
+        console.log('Presenças carregadas:', presencas); // Depuração
+        return presencas;
+    } catch (error) {
+        console.error(error);
+        showToast('Erro ao carregar as presenças', 'error');
+    }
+}
 
 
 let presencasHoje = [];
@@ -61,6 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
     setReportDefaultDate();
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    fetchPresencas().then(() => {
+        initTodayPresences();
+        loadDashboardStats();
+        loadPresencasTable();
+    });
+});
 
 function initNavigation() {
     navItems.forEach(item => {
@@ -151,21 +163,20 @@ function openModal(modalId) {
 
 
 function initTodayPresences() {
+    presencasHoje = presencas.filter(p => {
+        const dataPresenca = new Date(p.data).toISOString().split('T')[0]; // Converte para o formato YYYY-MM-DD
+        return dataPresenca === dataAtual; // Compara com a data atual
+    });
 
-    presencasHoje = presencas.filter(p => p.data === dataAtual);
-    
-  
+    console.log('Presenças de hoje:', presencasHoje); // Depuração
     loadTodayPresencesTable();
 }
 
 function loadDashboardStats() {
-    
     document.getElementById('total-estagiarios').textContent = estagiarios.filter(e => e.ativo).length;
-    
 
     document.getElementById('presentes-hoje').textContent = presencasHoje.length;
-    
-    
+
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
     const presencasMes = presencas.filter(p => {
@@ -173,16 +184,16 @@ function loadDashboardStats() {
         return presencaData.getMonth() + 1 === mesAtual && presencaData.getFullYear() === anoAtual;
     });
     document.getElementById('presencas-mes').textContent = presencasMes.length;
-    
-    
+
     let horasTotais = 0;
     presencasMes.forEach(p => {
-        const [horas, minutos] = p.horas.split(':').map(Number);
-        horasTotais += horas + (minutos / 60);
+        if (p.horas) { // Verifica se o campo 'horas' não é null ou undefined
+            const [horas, minutos] = p.horas.split(':').map(Number);
+            horasTotais += horas + (minutos / 60);
+        }
     });
     document.getElementById('horas-mes').textContent = horasTotais.toFixed(1) + 'h';
 }
-
 
 function loadTodayPresencesTable() {
     const tableBody = document.querySelector('#presencas-hoje-tabela tbody');
@@ -196,7 +207,8 @@ function loadTodayPresencesTable() {
     }
     
     presencasHoje.forEach(presenca => {
-        const estagiario = estagiarios.find(e => e.id === presenca.estagiarioId);
+        const estagiario = estagiarios.find(e => e.id === presenca.estagiario_id);
+        print // Use 'estagiario_id' aqui
         if (!estagiario) return;
         
         const row = document.createElement('tr');
@@ -269,47 +281,32 @@ function loadEstagiarios() {
 function loadPresencasTable(filteredPresencas = null) {
     const tableBody = document.querySelector('#presencas-tabela tbody');
     tableBody.innerHTML = '';
-    
+
     const presencasToShow = filteredPresencas || presencas;
-    
+
+    console.log('Presenças a serem exibidas:', presencasToShow); // Depuração
+
     if (presencasToShow.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = `<td colspan="8" class="text-center">Nenhuma presença encontrada.</td>`;
         tableBody.appendChild(row);
         return;
     }
-    
+
     presencasToShow.forEach(presenca => {
-        const estagiario = estagiarios.find(e => e.id === presenca.estagiarioId);
-        if (!estagiario) return;
-        
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${presenca.id}</td>
-            <td>${estagiario.nome}</td>
+            <td>${presenca.estagiario__nome}</td>
             <td>${formatarData(presenca.data)}</td>
             <td>${presenca.entrada}</td>
             <td>${presenca.saida || '---'}</td>
             <td>${presenca.horas || '---'}</td>
             <td>${presenca.observacao || '---'}</td>
-            <td>
-                <div class="actions-column">
-                    <button class="btn-icon edit" data-id="${presenca.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete" data-id="${presenca.id}">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </td>
         `;
         tableBody.appendChild(row);
     });
-    
-    // Adicionar eventos para edição e exclusão
-    // (Implementação semelhante à loadEstagiarios)
 }
-
 
 function loadEstagiarioSelect(selectId, onlyActive = false) {
     fetchEstagiarios().then(() => {
@@ -335,7 +332,7 @@ function loadEstagiarioSelectWithPresence(selectId) {
     
     const estagiariosPresentesHoje = presencasHoje
         .filter(p => !p.saida)
-        .map(p => p.estagiarioId);
+        .map(p => p.estagiario_id);
     
     estagiarios
         .filter(e => e.ativo && estagiariosPresentesHoje.includes(e.id))
@@ -469,48 +466,53 @@ function registrarEntrada() {
 function registrarSaida() {
     const estagiarioId = parseInt(document.getElementById('saida-estagiario').value);
     const observacao = document.getElementById('saida-observacao').value;
-    
+
     if (!estagiarioId) {
         showToast('Por favor, selecione um estagiário', 'error');
         return;
     }
-    
-    
-    const presencaIndex = presencasHoje.findIndex(p => p.estagiarioId === estagiarioId && !p.saida);
-    
-    if (presencaIndex === -1) {
+
+    const presenca = presencas.find(p => p.estagiario_id === estagiarioId && !p.saida);
+    if (!presenca) {
         showToast('Não foi encontrada entrada aberta para este estagiário', 'error');
         return;
     }
-    
-    
+
     const horaAtual = new Date().toTimeString().split(' ')[0];
-    const horaEntrada = presencasHoje[presencaIndex].entrada;
-    const horas = calcularHoras(horaEntrada, horaAtual);
-    
-    presencasHoje[presencaIndex].saida = horaAtual;
-    presencasHoje[presencaIndex].horas = horas;
-    
-    if (observacao) {
-        presencasHoje[presencaIndex].observacao = observacao;
-    }
-    
-    // Atualiza também no array principal de presenças
-    const presencaGlobalIndex = presencas.findIndex(p => p.id === presencasHoje[presencaIndex].id);
-    if (presencaGlobalIndex !== -1) {
-        presencas[presencaGlobalIndex] = { ...presencasHoje[presencaIndex] };
-    }
-    
-    
-    loadTodayPresencesTable();
-    loadDashboardStats();
-    
-    
+    const horas = calcularHoras(presenca.entrada, horaAtual);
+
+    const dadosSaida = {
+        presencaId: presenca.id,
+        saida: horaAtual,
+        horas: horas,
+        observacao: observacao
+    };
+
+    fetch('/api/presencas/saida/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dadosSaida),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao registrar saída');
+            }
+            return response.json();
+        })
+        .then(data => {
+            showToast('Saída registrada com sucesso!', 'success');
+            fetchPresencas().then(loadPresencasTable); // Atualiza a tabela
+        })
+        .catch(error => {
+            console.error(error);
+            showToast('Erro ao registrar saída', 'error');
+        });
+
     document.getElementById('modal-registrar-saida').classList.remove('active');
     document.getElementById('saida-estagiario').value = '';
     document.getElementById('saida-observacao').value = '';
-    
-    showToast('Saída registrada com sucesso!', 'success');
 }
 
 function editEstagiario(id) {
@@ -618,11 +620,29 @@ function deleteEstagiario(id) {
     }
     
     const index = estagiarios.findIndex(e => e.id === id);
+
     if (index !== -1) {
         estagiarios.splice(index, 1);
+        fetchEstagiarios();
+        fetch(`/api/estagiarios/${id}/delete/`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao excluir o estagiário');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showToast('Estagiário excluído com sucesso!', 'success');
+            })
+            .catch(error => {
+                console.error(error);
+                showToast('Erro ao excluir o estagiário', 'error');
+            });
+            
         loadEstagiarios();
         loadDashboardStats();
-        showToast('Estagiário excluído com sucesso!', 'success');
     }
 }
 
