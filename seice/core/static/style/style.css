@@ -1,13 +1,14 @@
+
 :root {
-    /* Cores principais - Cinza escuro, Branco e Amarelo */
-    --primary-color: #ffc107; /* Amarelo principal */
+    
+    --primary-color: #ffc107; 
     --primary-dark: #ffb300;
-    --secondary-color: #343a40; /* Cinza escuro secundário */
+    --secondary-color: #343a40; 
     --secondary-dark: #212529;
-    --accent-color: #ffd54f; /* Amarelo claro para detalhes */
+    --accent-color: #ffd54f; 
     --accent-dark: #ffb300;
     
-    /* Cores de status mantidas funcionais */
+    
     --success-color: #28a745;
     --success-dark: #218838;
     --danger-color: #dc3545;
@@ -17,17 +18,17 @@
     --info-color: #17a2b8;
     --info-dark: #138496;
     
-    /* Escala de cinzas - base do tema */
+    
     --light-color: #f8f9fa;
     --light-dark: #e9ecef;
-    --dark-color: #343a40; /* Cinza escuro principal */
-    --dark-dark: #212529; /* Cinza mais escuro */
+    --dark-color: #343a40; 
+    --dark-dark: #212529; 
     --text-color: #212529;
     --text-light: #6c757d;
     --text-dark: #000;
     --white: #ffffff;
     
-    /* Tons de cinza personalizados */
+    
     --gray-50: #fafafa;
     --gray-100: #f5f5f5;
     --gray-200: #eeeeee;
@@ -40,11 +41,11 @@
     --gray-850: #373737;
     --gray-900: #212121;
     
-    /* Cores dos ícones nos cards */
-    --blue: #6c757d; /* Mudado para cinza */
-    --green: #6c757d; /* Mudado para cinza */
-    --orange: #ffc107; /* Amarelo */
-    --purple: #6c757d; /* Mudado para cinza */
+    
+    --blue: #6c757d; 
+    --green: #6c757d; 
+    --orange: #ffc107; 
+    --purple: #6c757d; 
     --red: #dc3545;
 }
 
@@ -59,16 +60,16 @@ body {
     font-size: 16px;
     line-height: 1.6;
     color: var(--text-color);
-    background-color: var(--gray-100); /* Fundo cinza claro */
+    background-color: var(--gray-100); 
     min-height: 100vh;
     display: flex;
 }
 
-/* Sidebar - Cinza escuro */
+
 .sidebar {
     width: 260px;
     height: 100vh;
-    background-color: var(--gray-800); /* Cinza escuro */
+    background-color: var(--gray-800); 
     color: var(--white);
     display: flex;
     flex-direction: column;
@@ -96,7 +97,7 @@ body {
     max-width: calc(100% - 80px);
 }
 
-/* Logo com detalhes amarelos */
+/* Sidebar Styles */
 .logo {
     padding: 20px;
     display: flex;
@@ -142,13 +143,13 @@ nav ul li {
 }
 
 nav ul li:hover {
-    background-color: rgba(255, 193, 7, 0.1); /* Hover amarelo sutil */
+    background-color: rgba(255, 193, 7, 0.1); 
     border-left-color: var(--primary-color);
 }
 
 nav ul li.active {
-    background-color: rgba(255, 193, 7, 0.2); /* Fundo amarelo sutil */
-    border-left-color: var(--primary-color); /* Borda amarela */
+    background-color: rgba(255, 193, 7, 0.2); 
+    border-left-color: var(--primary-color); 
     position: relative;
 }
 
@@ -160,7 +161,7 @@ nav ul li i {
 }
 
 nav ul li.active i {
-    color: var(--primary-color); /* Ícone amarelo quando ativo */
+    color: var(--primary-color); 
 }
 
 .sidebar.collapsed nav ul li span {
@@ -184,7 +185,7 @@ nav ul li.active i {
     display: none;
 }
 
-/* Header - Branco com detalhes */
+
 header {
     background-color: var(--white);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -192,7 +193,7 @@ header {
     position: sticky;
     top: 0;
     z-index: 50;
-    border-bottom: 2px solid var(--primary-color); /* Borda amarela */
+    border-bottom: 2px solid var(--primary-color); 
 }
 
 .header-content {
@@ -232,7 +233,7 @@ header {
     border: 1px solid var(--primary-color);
 }
 
-/* Área de conteúdo */
+
 .content-area {
     padding: 30px;
     min-height: calc(100vh - 66px);
@@ -253,7 +254,7 @@ header {
     to { opacity: 1; }
 }
 
-/* Dashboard Header */
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -271,7 +272,7 @@ header {
     gap: 15px;
 }
 
-/* Cards de estatísticas */
+
 .dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -343,7 +344,7 @@ header {
     margin-top: 30px;
 }
 
-/* Page Header */
+
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -362,7 +363,7 @@ header {
     color: var(--dark-color);
 }
 
-/* Tabelas */
+
 .table-container {
     background-color: var(--white);
     border-radius: 8px;
@@ -421,7 +422,7 @@ table tbody tr:hover {
     background-color: rgba(255, 193, 7, 0.05);
 }
 
-/* Badges */
+
 .badge {
     padding: 5px 10px;
     border-radius: 4px;
@@ -455,7 +456,7 @@ table tbody tr:hover {
     border: 1px solid var(--danger-color);
 }
 
-/* Botões */
+
 .btn {
     padding: 10px 15px;
     border-radius: 4px;
@@ -568,7 +569,7 @@ table tbody tr:hover {
     gap: 5px;
 }
 
-/* Containers de busca e filtros */
+
 .search-container {
     display: flex;
     gap: 10px;
@@ -629,7 +630,7 @@ table tbody tr:hover {
     box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
 }
 
-/* Relatórios */
+
 .report-filters {
     display: flex;
     flex-wrap: wrap;
@@ -676,7 +677,7 @@ table tbody tr:hover {
     color: var(--dark-color);
 }
 
-/* Modais */
+
 .modal {
     display: none;
     position: fixed;
@@ -749,7 +750,7 @@ table tbody tr:hover {
     background-color: var(--gray-50);
 }
 
-/* Formulários */
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -781,7 +782,7 @@ table tbody tr:hover {
     box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
 }
 
-/* Toast notifications */
+
 #toast-container {
     position: fixed;
     top: 20px;
@@ -839,7 +840,7 @@ table tbody tr:hover {
     font-size: 20px;
 }
 
-/* Responsive */
+
 @media (max-width: 992px) {
     .sidebar {
         width: 80px;
