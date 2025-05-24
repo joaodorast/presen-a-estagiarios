@@ -30,121 +30,109 @@ SEICE (Sistema de Estágio e Controle de Estagiários) é uma aplicação web co
 
 ## Tecnologias Utilizadas
 
-- **Backend**: Go (Golang)
-- **Banco de Dados**: MySQL
-- **API**: RESTful com Gorilla Mux
+- **Backend**: Django (Python)
+- **Banco de Dados**: SQLite
+- **API**: RESTful com Django REST Framework
 - **Frontend**: HTML, CSS e JavaScript (servido pelo backend)
 
 ## Requisitos
 
-- Go 1.16 ou superior
-- MySQL 5.7 ou superior
+- Python 3.8 ou superior
+- Pip (gerenciador de pacotes Python)
 - Sistema operacional compatível (Windows, macOS, Linux)
 
 ## Instalação e Configuração
 
 ### 1. Preparando o Ambiente
 
-Primeiro, certifique-se de ter Go e MySQL instalados em seu sistema.
+Primeiro, certifique-se de ter Python instalado em seu sistema.
 
-#### Instalando Go (se necessário)
+#### Instalando Python (se necessário)
 
-Faça o download e instale Go a partir do [site oficial](https://golang.org/dl/).
-
-#### Instalando MySQL (se necessário)
-
-Faça o download e instale MySQL a partir do [site oficial](https://dev.mysql.com/downloads/mysql/).
+Faça o download e instale Python a partir do [site oficial](https://www.python.org/downloads/).
 
 ### 2. Clonando o Repositório
 
 ```bash
-https://github.com/joaodorast/presen-a-estagiarios.git
+git clone https://github.com/joaodorast/presen-a-estagiarios.git
+cd presen-a-estagiarios
 ```
 
-### 3. Configurando o Banco de Dados
+### 3. Criando o Ambiente Virtual
 
-O sistema está configurado para se conectar ao MySQL usando as seguintes configurações padrão:
-
-- **Usuário**: root
-- **Senha**: (vazia)
-- **Host**: localhost
-- **Porta**: 3306
-- **Banco de Dados**: seice
-
-Se você precisar alterar essas configurações, há duas opções:
-
-#### Opção 1: Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
-
-```
-DB_USER=seu_usuario
-DB_PASS=sua_senha
-DB_HOST=seu_host
-DB_PORT=sua_porta
-DB_NAME=seice
+```bash
+python -m venv venv
 ```
 
-#### Opção 2: Editar o Código
+Ative o ambiente virtual:
 
-Altere as configurações diretamente no arquivo `main.go` na função `initDB()`.
+- **Windows**:
+  ```bash
+  venv\Scripts\activate
+  ```
+- **macOS/Linux**:
+  ```bash
+  source venv/bin/activate
+  ```
 
 ### 4. Instalando Dependências
 
-Execute o seguinte comando para instalar as dependências do projeto:
-
 ```bash
-go mod tidy
+pip install -r requirements.txt
 ```
 
-### 5. Inicializando o Banco de Dados
-
-O sistema criará automaticamente as tabelas necessárias e dados iniciais na primeira execução. Se preferir, você pode executar manualmente o script SQL fornecido:
+### 5. Migrando o Banco de Dados
 
 ```bash
-mysql -u root < database/init.sql
+python manage.py migrate
+```
+
+### 6. Criando um Superusuário (opcional)
+
+```bash
+python manage.py createsuperuser
 ```
 
 ## Executando o Sistema
 
-Para iniciar o servidor, execute:
+Para iniciar o servidor de desenvolvimento, execute:
 
 ```bash
-go run main.go
+python manage.py runserver
 ```
 
-O servidor será iniciado na porta 8080 por padrão. Você pode acessar a aplicação em:
+O servidor será iniciado na porta 8000 por padrão. Você pode acessar a aplicação em:
 
 ```
-http://localhost:8080
+http://localhost:8000
 ```
 
 ## Estrutura da API
 
-A API do sistema está disponível nos seguintes endpoints:
+A API do sistema está disponível nos seguintes endpoints (exemplo):
 
 ### Estagiários
-- `GET /api/estagiarios` - Lista todos os estagiários
-- `GET /api/estagiarios/{id}` - Obtém detalhes de um estagiário específico
-- `POST /api/estagiarios` - Cria um novo estagiário
-- `PUT /api/estagiarios/{id}` - Atualiza os dados de um estagiário
-- `DELETE /api/estagiarios/{id}` - Remove um estagiário
+- `GET /api/estagiarios/` - Lista todos os estagiários
+- `GET /api/estagiarios/{id}/` - Obtém detalhes de um estagiário específico
+- `POST /api/estagiarios/` - Cria um novo estagiário
+- `PUT /api/estagiarios/{id}/` - Atualiza os dados de um estagiário
+- `DELETE /api/estagiarios/{id}/` - Remove um estagiário
 
 ### Presenças
-- `GET /api/presencas` - Lista todos os registros de presença
-- `GET /api/presencas/{id}` - Obtém detalhes de uma presença específica
-- `POST /api/presencas` - Cria um novo registro de presença
-- `PUT /api/presencas/{id}` - Atualiza um registro de presença
-- `DELETE /api/presencas/{id}` - Remove um registro de presença
-- `GET /api/presencas-hoje` - Lista as presenças do dia atual
+- `GET /api/presencas/` - Lista todos os registros de presença
+- `GET /api/presencas/{id}/` - Obtém detalhes de uma presença específica
+- `POST /api/presencas/` - Cria um novo registro de presença
+- `PUT /api/presencas/{id}/` - Atualiza um registro de presença
+- `DELETE /api/presencas/{id}/` - Remove um registro de presença
+- `GET /api/presencas-hoje/` - Lista as presenças do dia atual
 
 ### Entrada e Saída
-- `POST /api/registrar-entrada` - Registra a entrada de um estagiário
-- `POST /api/registrar-saida` - Registra a saída de um estagiário
+- `POST /api/registrar-entrada/` - Registra a entrada de um estagiário
+- `POST /api/registrar-saida/` - Registra a saída de um estagiário
 
 ### Relatórios
-- `GET /api/relatorio` - Gera relatório com base em período especificado
-- `GET /api/estatisticas` - Obtém estatísticas gerais do sistema
+- `GET /api/relatorio/` - Gera relatório com base em período especificado
+- `GET /api/estatisticas/` - Obtém estatísticas gerais do sistema
 
 ## Fluxo de Trabalho Típico
 
@@ -166,6 +154,5 @@ Para contribuir ou estender o sistema:
 
 1. O código do backend está organizado em torno das principais entidades (estagiários e presenças)
 2. Os endpoints da API seguem princípios RESTful
-3. O banco de dados inclui views e procedures para facilitar operações comuns
-4. Triggers garantem a integridade dos cálculos de horas
-
+3. O banco de dados utiliza SQLite por padrão para facilitar o desenvolvimento
+4. O Django Admin pode ser usado para gerenciar dados facilmente
