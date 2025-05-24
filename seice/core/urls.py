@@ -9,6 +9,10 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('home/', views.index, name='index'),
 
+    path('api/areas/', views.get_areas, name='get_areas'),
+    path('api/areas/create/', views.create_area, name='create_area'),
+    path('api/areas/<int:area_id>/delete/', views.delete_area, name='delete_area'),
+
     # ✅ Rota adicionada para a Calculadora de Horas
     path('home/calculadora-horas/', views.calculadora_horas, name='calculadora_horas'),
 

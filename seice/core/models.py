@@ -4,12 +4,22 @@ from django.db import models
 class Estagiario(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    area = models.ForeignKey('Area', on_delete=models.CASCADE, related_name='estagiarios')
     telefone = models.CharField(max_length=20)
     data_inicio = models.DateField()
     ativo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nome
+
+class Area(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.nome
+
+
 
 class Presenca(models.Model):
     estagiario = models.ForeignKey(Estagiario, on_delete=models.CASCADE)
