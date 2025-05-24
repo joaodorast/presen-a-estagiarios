@@ -659,6 +659,14 @@ function registrarEntrada() {
         return;
     }
 
+    const jaPresente = presencasHoje.some(p => p.estagiario_id === estagiarioId && !p.saida);
+    console.log('Verificando presença:', jaPresente); // Depuração
+    if (jaPresente) {
+        console.log('Estagiário ja presente hoje!');
+        showToast('Este estagiário já está presente hoje!', 'warning');
+        return;
+    }
+
     const horaAtual = new Date().toTimeString().split(' ')[0];
     const novaPresenca = {
         estagiarioId: estagiarioId,
