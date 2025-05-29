@@ -457,7 +457,7 @@ function loadEstagiarios() {
             row.innerHTML = `
                         <td>${estagiario.id}</td>
                         <td>${estagiario.nome}</td>
-                        <td>${estagiario.area__nome || 'N/A'}</td>
+                        <td>${estagiario.area || 'N/A'}</td>
                         <td>${estagiario.email}</td>
                         <td>${estagiario.telefone}</td>
                         <td>${formatarData(estagiario.data_inicio)}</td>
