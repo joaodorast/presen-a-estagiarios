@@ -10,6 +10,90 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+       
+        #modal-confirmar-exclusao .modal-content {
+            max-width: 450px;
+            border-top: 4px solid var(--danger-color);
+        }
+
+        #modal-confirmar-exclusao .modal-header {
+            background-color: #fdf2f2;
+            border-bottom: 1px solid #fecaca;
+        }
+
+        #modal-confirmar-exclusao .modal-header h3 {
+            color: var(--danger-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #modal-confirmar-exclusao .modal-body {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        #modal-confirmar-exclusao .warning-icon {
+            font-size: 48px;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+
+        #modal-confirmar-exclusao .warning-text {
+            font-size: 16px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        #modal-confirmar-exclusao .area-name {
+            font-weight: 600;
+            color: var(--danger-color);
+            font-size: 18px;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fef2f2;
+            border-radius: 4px;
+            border: 1px solid #fecaca;
+        }
+
+        #modal-confirmar-exclusao .permanent-warning {
+            font-size: 14px;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        #modal-confirmar-exclusao .modal-footer {
+            background-color: #fdf2f2;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn.confirm-delete {
+            background-color: var(--danger-color);
+            color: var(--white);
+            font-weight: 600;
+            padding: 12px 24px;
+        }
+
+        .btn.confirm-delete:hover {
+            background-color: var(--danger-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn.cancel-delete {
+            background-color: var(--gray-500);
+            color: var(--white);
+            padding: 12px 24px;
+        }
+
+        .btn.cancel-delete:hover {
+            background-color: var(--gray-600);
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -166,7 +250,35 @@
                             </tr>
                         </thead>
                         <tbody>
-                   
+                            <!-- Exemplo de área para demonstrar a funcionalidade -->
+                            <tr>
+                                <td>1</td>
+                                <td>Desenvolvimento Web</td>
+                                <td>Área focada em desenvolvimento de aplicações web</td>
+                                <td>5</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(1, 'Desenvolvimento Web')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Design Gráfico</td>
+                                <td>Área de criação e design visual</td>
+                                <td>3</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(2, 'Design Gráfico')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -320,6 +432,43 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="modal-confirmar-exclusao" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirmar Exclusão
+                </h3>
+                <span class="close" onclick="fecharModalConfirmacao()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="warning-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <div class="warning-text">
+                    Tem certeza que deseja excluir a área:
+                </div>
+                <div id="area-nome-exclusao" class="area-name">
+                    <!-- Nome da área será inserido aqui -->
+                </div>
+                <div class="permanent-warning">
+                    <strong>Atenção:</strong> Esta ação é permanente e não pode ser desfeita.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-exclusao" class="btn confirm-delete">
+                    <i class="fas fa-trash"></i>
+                    Sim, Excluir Permanentemente
+                </button>
+                <button class="btn cancel-delete" onclick="fecharModalConfirmacao()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
   
     <div id="modal-registrar-entrada" class="modal">
         <div class="modal-content">
@@ -424,7 +573,138 @@
 
     
     <div id="toast-container"></div>
+<script src="{% static 'js/index.js' %}"></script>
+    <script>
+        
+        let areaIdParaExcluir = null;
+        let areaNomeParaExcluir = null;
 
-    <script src="{% static 'js/index.js' %}"></script>
+       
+        function confirmarExclusaoArea(id, nome) {
+            areaIdParaExcluir = id;
+            areaNomeParaExcluir = nome;
+            
+            
+            document.getElementById('area-nome-exclusao').textContent = nome;
+            
+            
+            document.getElementById('modal-confirmar-exclusao').classList.add('active');
+        }
+
+        
+        function fecharModalConfirmacao() {
+            document.getElementById('modal-confirmar-exclusao').classList.remove('active');
+            areaIdParaExcluir = null;
+            areaNomeParaExcluir = null;
+        }
+
+       
+        function executarExclusao() {
+            if (areaIdParaExcluir) {
+                
+                console.log(`Excluindo área ID: ${areaIdParaExcluir}, Nome: ${areaNomeParaExcluir}`);
+                
+                
+                const linha = document.querySelector(`tr:has(td:first-child:contains('${areaIdParaExcluir}'))`);
+                if (linha) {
+                    linha.remove();
+                }
+                
+                
+                mostrarToast('Área excluída com sucesso!', 'success');
+                
+                
+                fecharModalConfirmacao();
+            }
+        }
+
+       
+        function mostrarToast(mensagem, tipo = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            
+            let icone = '';
+            switch(tipo) {
+                case 'success':
+                    icone = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    icone = 'fas fa-exclamation-circle';
+                    break;
+                case 'warning':
+                    icone = 'fas fa-exclamation-triangle';
+                    break;
+                default:
+                    icone = 'fas fa-info-circle';
+            }
+            
+            toast.innerHTML = `
+                <i class="${icone}"></i>
+                <span>${mensagem}</span>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+           
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+       
+        document.addEventListener('DOMContentLoaded', function() {
+           
+            document.getElementById('btn-confirmar-exclusao').addEventListener('click', executarExclusao);
+
+          
+            document.getElementById('modal-confirmar-exclusao').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    fecharModalConfirmacao();
+                }
+            });
+
+           
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('modal-confirmar-exclusao').classList.contains('active')) {
+                    fecharModalConfirmacao();
+                }
+            });
+
+           
+            const sidebarItems = document.querySelectorAll('.sidebar nav ul li[data-page]');
+            const pages = document.querySelectorAll('.page');
+
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                   
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                  
+                    this.classList.add('active');
+                    
+                    
+                    pages.forEach(page => page.classList.remove('active'));
+                    
+                    const targetPage = document.getElementById(pageId);
+                    if (targetPage) {
+                        targetPage.classList.add('active');
+                    }
+                });
+            });
+
+            
+            const hoje = new Date();
+            const opcoes = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            document.getElementById('today-date').textContent = hoje.toLocaleDateString('pt-BR', opcoes);
+        });
+    </script>
 </body>
 </html>
