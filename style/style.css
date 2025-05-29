@@ -1,52 +1,39 @@
 
 :root {
-    
-    --primary-color: #ffc107; 
-    --primary-dark: #ffb300;
-    --secondary-color: #343a40; 
-    --secondary-dark: #212529;
-    --accent-color: #ffd54f; 
-    --accent-dark: #ffb300;
-    
-    
-    --success-color: #28a745;
-    --success-dark: #218838;
-    --danger-color: #dc3545;
-    --danger-dark: #c82333;
-    --warning-color: #ffc107;
-    --warning-dark: #e0a800;
-    --info-color: #17a2b8;
-    --info-dark: #138496;
-    
-    
-    --light-color: #f8f9fa;
-    --light-dark: #e9ecef;
-    --dark-color: #343a40; 
-    --dark-dark: #212529; 
-    --text-color: #212529;
-    --text-light: #6c757d;
-    --text-dark: #000;
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --secondary-color: #e67e22;
+    --secondary-dark: #d35400;
+    --success-color: #2ecc71;
+    --success-dark: #27ae60;
+    --danger-color: #e74c3c;
+    --danger-dark: #c0392b;
+    --warning-color: #f39c12;
+    --warning-dark: #f1c40f;
+    --info-color: #3498db;
+    --info-dark: #2980b9;
+    --light-color: #ecf0f1;
+    --light-dark: #bdc3c7;
+    --dark-color: #34495e;
+    --dark-dark: #2c3e50;
+    --text-color: #333;
+    --text-light: #666;
+    --text-dark: #222;
     --white: #ffffff;
-    
-    
-    --gray-50: #fafafa;
-    --gray-100: #f5f5f5;
-    --gray-200: #eeeeee;
-    --gray-300: #e0e0e0;
-    --gray-400: #bdbdbd;
-    --gray-500: #9e9e9e;
-    --gray-600: #757575;
-    --gray-700: #616161;
-    --gray-800: #424242;
-    --gray-850: #373737;
-    --gray-900: #212121;
-    
-    
-    --blue: #6c757d; 
-    --green: #6c757d; 
-    --orange: #ffc107; 
-    --purple: #6c757d; 
-    --red: #dc3545;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --blue: #3498db;
+    --green: #2ecc71;
+    --orange: #f39c12;
+    --purple: #9b59b6;
+    --red: #e74c3c;
 }
 
 * {
@@ -60,7 +47,7 @@ body {
     font-size: 16px;
     line-height: 1.6;
     color: var(--text-color);
-    background-color: var(--gray-100); 
+    background-color: var(--gray-100);
     min-height: 100vh;
     display: flex;
 }
@@ -69,7 +56,7 @@ body {
 .sidebar {
     width: 260px;
     height: 100vh;
-    background-color: var(--gray-800); 
+    background-color: var(--dark-color);
     color: var(--white);
     display: flex;
     flex-direction: column;
@@ -78,7 +65,6 @@ body {
     top: 0;
     z-index: 100;
     transition: all 0.3s ease;
-    border-right: 3px solid var(--primary-color); /* Borda amarela */
 }
 
 .sidebar.collapsed {
@@ -97,25 +83,23 @@ body {
     max-width: calc(100% - 80px);
 }
 
-/* Sidebar Styles */
+
 .logo {
     padding: 20px;
     display: flex;
     align-items: center;
     gap: 15px;
-    border-bottom: 1px solid rgba(255, 193, 7, 0.3); /* Borda amarela sutil */
-    background-color: var(--gray-850);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo i {
     font-size: 24px;
-    color: var(--primary-color); /* Ícone amarelo */
+    color: var(--primary-color);
 }
 
 .logo h2 {
     font-size: 22px;
     font-weight: 600;
-    color: var(--white);
 }
 
 .sidebar.collapsed .logo h2 {
@@ -139,29 +123,31 @@ nav ul li {
     cursor: pointer;
     transition: all 0.2s ease;
     margin-bottom: 5px;
-    border-left: 3px solid transparent;
 }
 
 nav ul li:hover {
-    background-color: rgba(255, 193, 7, 0.1); 
-    border-left-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 nav ul li.active {
-    background-color: rgba(255, 193, 7, 0.2); 
-    border-left-color: var(--primary-color); 
+    background-color: var(--primary-color);
     position: relative;
+}
+
+nav ul li.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--white);
 }
 
 nav ul li i {
     font-size: 18px;
     min-width: 24px;
     text-align: center;
-    color: var(--gray-300);
-}
-
-nav ul li.active i {
-    color: var(--primary-color); 
 }
 
 .sidebar.collapsed nav ul li span {
@@ -170,10 +156,8 @@ nav ul li.active i {
 
 .sidebar-footer {
     padding: 15px 20px;
-    border-top: 1px solid rgba(255, 193, 7, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 12px;
-    background-color: var(--gray-850);
-    color: var(--gray-400);
 }
 
 .sidebar.collapsed .sidebar-footer {
@@ -193,7 +177,6 @@ header {
     position: sticky;
     top: 0;
     z-index: 50;
-    border-bottom: 2px solid var(--primary-color); 
 }
 
 .header-content {
@@ -208,14 +191,6 @@ header {
     font-size: 20px;
     cursor: pointer;
     color: var(--gray-600);
-    padding: 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-#menu-toggle:hover {
-    background-color: rgba(255, 193, 7, 0.1);
-    color: var(--primary-color);
 }
 
 .header-title h1 {
@@ -227,17 +202,12 @@ header {
 .current-date {
     font-size: 14px;
     color: var(--gray-600);
-    background-color: var(--gray-100);
-    padding: 8px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--primary-color);
 }
 
 
 .content-area {
     padding: 30px;
     min-height: calc(100vh - 66px);
-    background-color: var(--gray-50);
 }
 
 .page {
@@ -260,18 +230,12 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    background-color: var(--white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid var(--primary-color);
 }
 
 .quick-actions {
     display: flex;
     gap: 15px;
 }
-
 
 .dashboard-stats {
     display: grid;
@@ -283,18 +247,11 @@ header {
 .stat-card {
     background-color: var(--white);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
     display: flex;
     align-items: center;
     gap: 20px;
-    border-left: 4px solid var(--primary-color);
-    transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .stat-icon {
@@ -312,26 +269,25 @@ header {
 }
 
 .stat-icon.blue {
-    background-color: var(--gray-700);
+    background-color: var(--blue);
 }
 
 .stat-icon.green {
-    background-color: var(--gray-600);
+    background-color: var(--green);
 }
 
 .stat-icon.orange {
-    background-color: var(--primary-color); /* Amarelo */
+    background-color: var(--orange);
 }
 
 .stat-icon.purple {
-    background-color: var(--gray-800);
+    background-color: var(--purple);
 }
 
 .stat-info h3 {
     font-size: 14px;
     color: var(--gray-600);
     margin-bottom: 5px;
-    font-weight: 500;
 }
 
 .stat-info p {
@@ -350,11 +306,6 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    background-color: var(--white);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid var(--primary-color);
 }
 
 .page-header h2, .dashboard-header h2 {
@@ -367,28 +318,16 @@ header {
 .table-container {
     background-color: var(--white);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-bottom: 30px;
     overflow-x: auto;
-    border-top: 3px solid var(--primary-color);
 }
 
 .table-container h3 {
     font-size: 18px;
     margin-bottom: 15px;
     color: var(--dark-color);
-    position: relative;
-}
-
-.table-container h3::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 50px;
-    height: 2px;
-    background-color: var(--primary-color);
 }
 
 table {
@@ -402,8 +341,8 @@ table th, table td {
 }
 
 table th {
-    background-color: var(--gray-800);
-    color: var(--white);
+    background-color: var(--gray-100);
+    color: var(--gray-700);
     font-weight: 500;
     text-transform: uppercase;
     font-size: 12px;
@@ -419,7 +358,7 @@ table tr:last-child {
 }
 
 table tbody tr:hover {
-    background-color: rgba(255, 193, 7, 0.05);
+    background-color: var(--gray-100);
 }
 
 
@@ -433,27 +372,23 @@ table tbody tr:hover {
 }
 
 .badge.active {
-    background-color: rgba(255, 193, 7, 0.2);
-    color: var(--warning-dark);
-    border: 1px solid var(--primary-color);
+    background-color: rgba(46, 204, 113, 0.2);
+    color: var(--success-dark);
 }
 
 .badge.inactive {
-    background-color: rgba(108, 117, 125, 0.2);
-    color: var(--gray-700);
-    border: 1px solid var(--gray-500);
+    background-color: rgba(231, 76, 60, 0.2);
+    color: var(--danger-dark);
 }
 
 .badge.present {
-    background-color: rgba(40, 167, 69, 0.2);
+    background-color: rgba(46, 204, 113, 0.2);
     color: var(--success-dark);
-    border: 1px solid var(--success-color);
 }
 
 .badge.absent {
-    background-color: rgba(220, 53, 69, 0.2);
+    background-color: rgba(231, 76, 60, 0.2);
     color: var(--danger-dark);
-    border: 1px solid var(--danger-color);
 }
 
 
@@ -475,23 +410,20 @@ table tbody tr:hover {
 
 .btn.primary {
     background-color: var(--primary-color);
-    color: var(--dark-color);
-    font-weight: 600;
+    color: var(--white);
 }
 
 .btn.primary:hover {
     background-color: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(255, 193, 7, 0.3);
 }
 
 .btn.secondary {
-    background-color: var(--gray-600);
-    color: var(--white);
+    background-color: var(--gray-200);
+    color: var(--gray-700);
 }
 
 .btn.secondary:hover {
-    background-color: var(--gray-700);
+    background-color: var(--gray-300);
 }
 
 .btn.danger {
@@ -514,8 +446,7 @@ table tbody tr:hover {
 
 .btn.warning {
     background-color: var(--warning-color);
-    color: var(--dark-color);
-    font-weight: 600;
+    color: var(--white);
 }
 
 .btn.warning:hover {
@@ -530,37 +461,35 @@ table tbody tr:hover {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    border: none;
-    cursor: pointer;
 }
 
 .btn-icon.edit {
-    background-color: rgba(255, 193, 7, 0.1);
-    color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--blue);
 }
 
 .btn-icon.edit:hover {
-    background-color: var(--primary-color);
-    color: var(--dark-color);
+    background-color: var(--blue);
+    color: var(--white);
 }
 
 .btn-icon.delete {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: var(--danger-color);
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--red);
 }
 
 .btn-icon.delete:hover {
-    background-color: var(--danger-color);
+    background-color: var(--red);
     color: var(--white);
 }
 
 .btn-icon.view {
-    background-color: rgba(108, 117, 125, 0.1);
-    color: var(--gray-700);
+    background-color: rgba(155, 89, 182, 0.1);
+    color: var(--purple);
 }
 
 .btn-icon.view:hover {
-    background-color: var(--gray-700);
+    background-color: var(--purple);
     color: var(--white);
 }
 
@@ -587,7 +516,7 @@ table tbody tr:hover {
 .search-container input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .filters-container {
@@ -599,7 +528,6 @@ table tbody tr:hover {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-top: 3px solid var(--primary-color);
 }
 
 .filter-group {
@@ -611,7 +539,6 @@ table tbody tr:hover {
 .filter-group label {
     font-size: 14px;
     color: var(--gray-600);
-    font-weight: 500;
 }
 
 .filter-group select,
@@ -627,7 +554,7 @@ table tbody tr:hover {
 .filter-group input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 
@@ -640,7 +567,6 @@ table tbody tr:hover {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-top: 3px solid var(--primary-color);
 }
 
 .report-summary {
@@ -653,16 +579,9 @@ table tbody tr:hover {
 .summary-card {
     background-color: var(--white);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
     text-align: center;
-    border-left: 4px solid var(--primary-color);
-    transition: all 0.2s ease;
-}
-
-.summary-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .summary-card h3 {
@@ -702,7 +621,6 @@ table tbody tr:hover {
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: slideDown 0.3s ease;
-    border-top: 4px solid var(--primary-color);
 }
 
 @keyframes slideDown {
@@ -716,7 +634,6 @@ table tbody tr:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--gray-50);
 }
 
 .modal-header h3 {
@@ -729,12 +646,10 @@ table tbody tr:hover {
     font-weight: bold;
     color: var(--gray-500);
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .close:hover {
-    color: var(--primary-color);
-    transform: scale(1.1);
+    color: var(--danger-color);
 }
 
 .modal-body {
@@ -747,7 +662,6 @@ table tbody tr:hover {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    background-color: var(--gray-50);
 }
 
 
@@ -760,7 +674,6 @@ table tbody tr:hover {
     margin-bottom: 5px;
     font-size: 14px;
     color: var(--gray-600);
-    font-weight: 500;
 }
 
 .form-group input,
@@ -779,7 +692,7 @@ table tbody tr:hover {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 
@@ -815,25 +728,21 @@ table tbody tr:hover {
 .toast.success {
     background-color: var(--success-color);
     color: var(--white);
-    border-left: 4px solid var(--white);
 }
 
 .toast.error {
     background-color: var(--danger-color);
     color: var(--white);
-    border-left: 4px solid var(--white);
 }
 
 .toast.warning {
     background-color: var(--warning-color);
-    color: var(--dark-color);
-    border-left: 4px solid var(--dark-color);
+    color: var(--white);
 }
 
 .toast.info {
     background-color: var(--info-color);
     color: var(--white);
-    border-left: 4px solid var(--white);
 }
 
 .toast i {
@@ -890,28 +799,4 @@ table tbody tr:hover {
     table th, table td {
         padding: 10px 8px;
     }
-    
-    .dashboard-header,
-    .page-header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-    }
-    
-    .quick-actions {
-        justify-content: center;
-    }
 }
-
-
-li a {
-  color: white;          
-  text-decoration: none;  
-}
-
-li a:hover {
-  color: #dddddd;       
-}
-
-
-

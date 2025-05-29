@@ -22,11 +22,16 @@
                 <li class="active" data-page="dashboard">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
+                </li>     
+                <li data-page="areas">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Areas de Estágio</span>
                 </li>
                 <li data-page="estagiarios">
                     <i class="fas fa-users"></i>
                     <span>Estagiários</span>
-                </li>
+                </li>  
+           
                 <li data-page="presencas">
                     <i class="fas fa-clipboard-check"></i>
                     <span>Presenças</span>
@@ -35,11 +40,13 @@
                     <i class="fas fa-chart-bar"></i>
                     <span>Relatórios</span>
                 </li>
-                <!-- aqui desenvolver uma calculadora de horas que o juninho pediu -->
-                <li data-page="#">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Calculadora de Horas</span>
-                </li>
+              
+       <li data-page="">
+       <a href="{% url 'calculadora_horas' %}">
+        <i class="fas fa-calculator"></i>
+         <span>Calculadora de Horas</span>
+            </a>
+            </li>
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -115,7 +122,7 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="dashboard-tables">
                     <div class="table-container">
                         <h3>Presenças de Hoje</h3>
@@ -136,7 +143,36 @@
                 </div>
             </div>
 
-            
+            <div id="areas" class="page">
+                <div class="page-header">
+                    <h2>Gerenciar Áreas</h2>
+                    <button id="btn-nova-area" class="btn primary"><i class="fas fa-plus"></i> Nova Área</button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="search-area" placeholder="Buscar área de estágio...">
+                    <button class="btn secondary"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="table-container">
+                    <table id="areas-tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Descrição</th>
+                                <th>Número de Estágiarios</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                   
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+       
             <div id="estagiarios" class="page">
                 <div class="page-header">
                     <h2>Gerenciar Estagiários</h2>
@@ -154,6 +190,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Nome</th>
+                                <th>Área</th>
                                 <th>Email</th>
                                 <th>Telefone</th>
                                 <th>Data Início</th>
@@ -350,6 +387,7 @@
                     <label for="estagiario-nome">Nome:</label>
                     <input type="text" id="estagiario-nome" required>
                 </div>
+              
                 <div class="form-group">
                     <label for="estagiario-email">Email:</label>
                     <input type="email" id="estagiario-email" required>
@@ -361,6 +399,13 @@
                 <div class="form-group">
                     <label for="estagiario-data-inicio">Data de Início:</label>
                     <input type="date" id="estagiario-data-inicio" required>
+                </div>  
+                <div class="form-group">
+                    <label for="estagiario-area">Área de Estágio:</label>
+                    <select id="estagiario-area" required>
+                        <option value="">Selecione a área</option>
+                        <!-- dados no javaScript -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="estagiario-ativo">Status:</label>

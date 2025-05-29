@@ -36,6 +36,20 @@ async function fetchPresencas() {
     }
 }
 
+let areas = [];
+async function fetchAreas() {
+    try {
+        const response = await fetch('/api/areas/');
+        if (!response.ok) throw new Error('Erro ao carregar as áreas');
+        const data = await response.json();
+        areas = data.areas || data; // Ajuste conforme resposta da API
+        return areas;
+    } catch (error) {
+        console.error(error);
+        showToast('Erro ao carregar as áreas', 'error');
+    }
+}
+
 
 let presencasHoje = [];
 
@@ -54,11 +68,15 @@ const pages = document.querySelectorAll('.page');
 
 
 document.addEventListener('DOMContentLoaded', function() {
-
     initNavigation();
     initMenuToggle();
     initModals();
     initTodayPresences();
+    fetchPresencas().then(() => {
+        initTodayPresences();
+        loadDashboardStats();
+        loadPresencasTable();
+    });
     loadDashboardStats();
     loadEstagiarios();
     loadPresencasTable();
@@ -66,31 +84,19 @@ document.addEventListener('DOMContentLoaded', function() {
     setReportDefaultDate();
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    fetchPresencas().then(() => {
-        initTodayPresences();
-        loadDashboardStats();
-        loadPresencasTable();
-    });
-});
-
 function initNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', function() {
-          
             navItems.forEach(navItem => navItem.classList.remove('active'));
-            
-          
             this.classList.add('active');
-            
-           
             const pageId = this.getAttribute('data-page');
-            
-            
             pages.forEach(page => page.classList.remove('active'));
-            
-           
             document.getElementById(pageId).classList.add('active');
+
+             if (pageId === 'areas') {
+                loadAreas();
+                initAreaSearch();
+            }
         });
     });
 }
@@ -130,10 +136,12 @@ function initModals() {
         document.getElementById('modal-estagiario-titulo').textContent = 'Novo Estagiário';
         document.getElementById('estagiario-id').value = '';
         document.getElementById('estagiario-nome').value = '';
+        document.getElementById('estagiario-area').value = '';
         document.getElementById('estagiario-email').value = '';
         document.getElementById('estagiario-telefone').value = '';
         document.getElementById('estagiario-data-inicio').value = dataAtual;
         document.getElementById('estagiario-ativo').value = 'true';
+        loadAreaSelect('estagiario-area');
         openModal('modal-estagiario');
     });
     
@@ -160,6 +168,214 @@ function initModals() {
 function openModal(modalId) {
     document.getElementById(modalId).classList.add('active');
 }
+
+
+function loadAreas() {
+    fetchAreas().then(() => {
+        const tableBody = document.querySelector('#areas-tabela tbody');
+        tableBody.innerHTML = '';
+
+        if (!areas.length) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="5" class="text-center">Nenhuma área cadastrada.</td>`;
+            tableBody.appendChild(row);
+            return;
+        }
+        console.log('Áreas carregadas:', areas); // Depuração
+
+        areas.forEach(area => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${area.id}</td>
+                <td>${area.nome}</td>
+                <td>${area.descricao || '-'}</td>
+                <td>${area.total_estagiarios || 0}</td>
+                <td>
+                    <div class="actions-column">
+                        <button class="btn-icon edit" data-id="${area.id}"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon delete" data-id="${area.id}"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        document.querySelectorAll('#areas-tabela .btn-icon.edit').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                editArea(id);
+            });
+        });
+        document.querySelectorAll('#areas-tabela .btn-icon.delete').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                if (confirm('Tem certeza que deseja excluir esta área?')) {
+                    deleteArea(id);
+                }
+            });
+        });
+    });
+}
+
+function openAreaModal(area = null) {
+    let modal = document.getElementById('modal-area');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modal-area';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-area-titulo">Nova Área</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="area-id">
+                    <div class="form-group">
+                        <label for="area-nome">Nome:</label>
+                        <input type="text" id="area-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="area-descricao">Descrição:</label>
+                        <input type="text" id="area-descricao">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-salvar-area" class="btn primary">Salvar</button>
+                    <button class="btn secondary modal-cancel">Cancelar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelector('.close').onclick = () => modal.classList.remove('active');
+        modal.querySelector('.modal-cancel').onclick = () => modal.classList.remove('active');
+    }
+
+ 
+    document.getElementById('modal-area-titulo').textContent = area ? 'Editar Área' : 'Nova Área';
+    document.getElementById('area-id').value = area ? area.id : '';
+    document.getElementById('area-nome').value = area ? area.nome : '';
+    document.getElementById('area-descricao').value = area ? area.descricao : '';
+
+    document.getElementById('btn-salvar-area').onclick = salvarArea;
+
+    modal.classList.add('active');
+}
+
+function salvarArea() {
+    const id = document.getElementById('area-id').value;
+    const nome = document.getElementById('area-nome').value.trim();
+    const descricao = document.getElementById('area-descricao').value.trim();
+
+    if (!nome) {
+        showToast('O nome da área é obrigatório', 'error');
+        return;
+    }
+
+    const area = { nome, descricao };
+
+    let url = '/api/areas/create/';
+    let method = 'POST';
+    if (id) {
+        method = 'PUT';
+        area.id = parseInt(id);
+    }
+
+    fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(area)
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao salvar a área');
+            return response.json();
+        })
+        .then(() => {
+            showToast(id ? 'Área atualizada com sucesso!' : 'Área cadastrada com sucesso!', 'success');
+            document.getElementById('modal-area').classList.remove('active');
+            loadAreas();
+        })
+        .catch(error => {
+            console.error(error);
+            showToast('Erro ao salvar a área', 'error');
+        });
+}
+
+function editArea(id) {
+    const area = areas.find(a => a.id === id);
+    if (area) openAreaModal(area);
+}
+
+function deleteArea(id) {
+    fetch(`/api/areas/${id}/delete/`, { method: 'DELETE' })
+        .then(response => {
+            if (!response.ok) throw new Error('Erro ao excluir a área');
+            showToast('Área excluída com sucesso!', 'success');
+            loadAreas();
+        })
+        .catch(error => {
+            console.error(error);
+            showToast('Erro ao excluir a área', 'error');
+        });
+}
+
+function initAreaSearch() {
+    const searchInput = document.getElementById('search-area');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase();
+        const filtered = areas.filter(area =>
+            area.nome.toLowerCase().includes(searchTerm) ||
+            (area.descricao && area.descricao.toLowerCase().includes(searchTerm))
+        );
+        renderAreasTable(filtered);
+    });
+}
+
+function renderAreasTable(areasToShow) {
+    const tableBody = document.querySelector('#areas-tabela tbody');
+    tableBody.innerHTML = '';
+    if (!areasToShow.length) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5" class="text-center">Nenhuma área encontrada.</td>`;
+        tableBody.appendChild(row);
+        return;
+    }
+    console.log('Áreas a serem exibidas:', areasToShow); // Depuração
+    areasToShow.forEach(area => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${area.id}</td>
+            <td>${area.nome}</td>
+            <td>${area.descricao || '-'}</td>
+            <td>${area.total_estagiarios || 0}</td>
+            <td>
+                <div class="actions-column">
+                    <button class="btn-icon edit" data-id="${area.id}"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon delete" data-id="${area.id}"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    document.querySelectorAll('#areas-tabela .btn-icon.edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = parseInt(this.getAttribute('data-id'));
+            editArea(id);
+        });
+    });
+    document.querySelectorAll('#areas-tabela .btn-icon.delete').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = parseInt(this.getAttribute('data-id'));
+            if (confirm('Tem certeza que deseja excluir esta área?')) {
+                deleteArea(id);
+            }
+        });
+    });
+}
+
 
 
 function initTodayPresences() {
@@ -237,6 +453,7 @@ function loadEstagiarios() {
             row.innerHTML = `
                         <td>${estagiario.id}</td>
                         <td>${estagiario.nome}</td>
+                        <td>${estagiario.area__nome || 'N/A'}</td>
                         <td>${estagiario.email}</td>
                         <td>${estagiario.telefone}</td>
                         <td>${formatarData(estagiario.data_inicio)}</td>
@@ -276,6 +493,20 @@ function loadEstagiarios() {
         });
     });
 }
+
+function loadAreaSelect(selectId) {
+    fetchAreas().then(() => {
+        const select = document.getElementById(selectId);
+        select.innerHTML = '<option value="">Selecione a área</option>';
+        areas.forEach(area => {
+            const option = document.createElement('option');
+            option.value = area.id;
+            option.textContent = area.nome;
+            select.appendChild(option);
+            console.log(`Adicionando área ao select: ${area.nome}`); // Depuração
+        });
+    });
+ }
 
 
 function loadPresencasTable(filteredPresencas = null) {
@@ -428,6 +659,14 @@ function registrarEntrada() {
         return;
     }
 
+    const jaPresente = presencasHoje.some(p => p.estagiario_id === estagiarioId && !p.saida);
+    console.log('Verificando presença:', jaPresente); // Depuração
+    if (jaPresente) {
+        console.log('Estagiário ja presente hoje!');
+        showToast('Este estagiário já está presente hoje!', 'warning');
+        return;
+    }
+
     const horaAtual = new Date().toTimeString().split(' ')[0];
     const novaPresenca = {
         estagiarioId: estagiarioId,
@@ -451,7 +690,12 @@ function registrarEntrada() {
         })
         .then(data => {
             showToast('Entrada registrada com sucesso!', 'success');
-            fetchPresencas().then(loadTodayPresencesTable); // Atualiza a tabela
+            fetchPresencas().then(() => {
+                    initTodayPresences();
+                    loadTodayPresencesTable();
+                    loadPresencasTable();
+                    loadDashboardStats();
+                }); // Atualiza a tabela
         })
         .catch(error => {
             console.error(error);
@@ -488,7 +732,6 @@ function registrarSaida() {
         horas: horas,
         observacao: observacao
     };
-
     fetch('/api/presencas/saida/', {
         method: 'POST',
         headers: {
@@ -504,7 +747,12 @@ function registrarSaida() {
         })
         .then(data => {
             showToast('Saída registrada com sucesso!', 'success');
-            fetchPresencas().then(loadPresencasTable); // Atualiza a tabela
+           fetchPresencas().then(() => {
+                    initTodayPresences();
+                    loadTodayPresencesTable();
+                    loadPresencasTable();
+                    loadDashboardStats();
+                }); // Atualiza a tabela
         })
         .catch(error => {
             console.error(error);
@@ -531,7 +779,10 @@ function editEstagiario(id) {
     document.getElementById('estagiario-data-inicio').value = dataInicioFormatada;
     
     document.getElementById('estagiario-ativo').value = estagiario.ativo.toString();
-    
+    loadAreaSelect('estagiario-area');
+    setTimeout(() => {
+        document.getElementById('estagiario-area').value = estagiario.area || estagiario.area_id || '';
+    }, 100);
     openModal('modal-estagiario');
 }
 
@@ -539,6 +790,7 @@ function editEstagiario(id) {
 function salvarEstagiario() {
     const id = document.getElementById('estagiario-id').value;
     const nome = document.getElementById('estagiario-nome').value;
+    const area = document.getElementById('estagiario-area').value;
     const email = document.getElementById('estagiario-email').value;
     const telefone = document.getElementById('estagiario-telefone').value;
     const dataInicio = document.getElementById('estagiario-data-inicio').value;
@@ -546,6 +798,7 @@ function salvarEstagiario() {
     const estagiario = {
         id: id ? parseInt(id) : null,
         nome,   
+        area,
         email,
         telefone,
         dataInicio,
@@ -564,12 +817,13 @@ function salvarEstagiario() {
             estagiarios[index] = {
                 id: parseInt(id),
                 nome,
+                area,
                 email,
                 telefone,
                 dataInicio,
                 ativo
             };
-            showToast('Estagiário atualizado com sucesso!', 'success');
+
         }
     } else {
         // Novo estagiário
@@ -577,12 +831,12 @@ function salvarEstagiario() {
         estagiarios.push({
             id: novoId,
             nome,
+            area,
             email,
             telefone,
             dataInicio,
             ativo
         });
-        showToast('Estagiário cadastrado com sucesso!', 'success');
             
     }
     
@@ -609,11 +863,6 @@ function salvarEstagiario() {
             showToast('Erro ao salvar o estagiário', 'error');
         });
 }
-    
-    document.getElementById('modal-estagiario').classList.remove('active');
-    loadEstagiarios();
-    loadDashboardStats();
-
 
 function deleteEstagiario(id) {
   
@@ -810,6 +1059,7 @@ function setReportDefaultDate() {
 
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
+    console.log('Exibindo toast:', message, type, toastContainer); // Depuração
     const toast = document.createElement('div');
     toast.classList.add('toast', type);
     
