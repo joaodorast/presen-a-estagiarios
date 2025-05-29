@@ -30,16 +30,31 @@ def index(request):
         return redirect('login')  # Redireciona para a página de login se não estiver autenticado
     return render(request, 'index.html')
 
+def get_area(id):
+    try:
+        area = Area.objects.get(id=id)
+        return area
+    except Area.DoesNotExist:
+        return None
+
 @csrf_exempt
 def get_estagiarios(request):
     if request.method == 'GET':
         estagiarios = list(Estagiario.objects.values())
+        for estagiario in estagiarios:
+            area = get_area(estagiario['area_id'])
+            estagiario['area'] = area.nome if area else 'Área não encontrada'
         return JsonResponse({'estagiarios': estagiarios}, safe=False)
+    
+def total_estagiarios_area(area_id):
+    return Estagiario.objects.filter(area_id=area_id).count()
     
 @csrf_exempt
 def get_areas(request):
     if request.method == 'GET':
         areas = list(Area.objects.values())
+        for area in areas:
+            area['total_estagiarios'] = total_estagiarios_area(area['id'])
         return JsonResponse({'areas': areas}, safe=False)
     
 
