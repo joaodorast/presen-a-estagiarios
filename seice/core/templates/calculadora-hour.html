@@ -14,14 +14,14 @@
             --primary-dark: #ffcc00;
             --secondary-color: #ffa500;
             --secondary-dark: #ff8c00;
-            --success-color: #ffd700;
-            --success-dark: #ffcc00;
+            --success-color: #28a745;
+            --success-dark: #1e7e34;
             --danger-color: #ff6b6b;
             --danger-dark: #ff5252;
-            --warning-color: #ffd700;
-            --warning-dark: #ffcc00;
-            --info-color: #ffd700;
-            --info-dark: #ffcc00;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
             --light-color: #f8f9fa;
             --light-dark: #e9ecef;
             --dark-color: #2c2c2c;
@@ -39,11 +39,6 @@
             --gray-700: #495057;
             --gray-800: #343a40;
             --gray-900: #212529;
-            --blue: #ffd700;
-            --green: #ffd700;
-            --orange: #ffa500;
-            --purple: #ffd700;
-            --red: #ff6b6b;
         }
 
         * {
@@ -63,7 +58,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -92,10 +87,6 @@
             color: var(--dark-color);
             transform: translateY(-2px);
             box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
-        }
-
-        .back-button i {
-            font-size: 16px;
         }
 
         .header {
@@ -134,6 +125,17 @@
             margin-bottom: 30px;
         }
 
+        .calculator-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
         .calculator-card::before {
             content: '';
             position: absolute;
@@ -150,16 +152,6 @@
 
         .calculator-card:hover::before {
             opacity: 0.3;
-        }
-
-        .calculator-card {
-            background: var(--white);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            position: relative;
         }
 
         .card-header {
@@ -183,6 +175,22 @@
         .card-header .subtitle {
             color: var(--gray-600);
             font-size: 14px;
+        }
+
+        .no-payment-notice {
+            background: linear-gradient(135deg, #fff3cd, #ffeeba);
+            border: 2px solid var(--warning-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--warning-dark);
+            font-weight: 500;
+        }
+
+        .no-payment-notice i {
+            font-size: 18px;
+            margin-right: 8px;
         }
 
         .form-group {
@@ -221,6 +229,49 @@
             box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
         }
 
+        .time-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .time-input-group input {
+            text-align: center;
+        }
+
+        .days-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .day-checkbox {
+            display: flex;
+            align-items: center;
+            background: var(--gray-100);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--gray-300);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .day-checkbox:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+
+        .day-checkbox.selected {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .day-checkbox input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
         .btn {
             width: 100%;
             padding: 15px;
@@ -250,16 +301,14 @@
         }
 
         .btn-success {
-            background: linear-gradient(135deg, var(--dark-color), var(--dark-dark));
+            background: linear-gradient(135deg, var(--success-color), var(--success-dark));
             color: var(--white);
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--success-color);
         }
 
         .btn-success:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: var(--dark-color);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
         }
 
         .results-container {
@@ -298,6 +347,11 @@
             border: 2px solid var(--primary-color);
         }
 
+        .result-card.no-payment {
+            background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+            border-color: var(--gray-500);
+        }
+
         .result-card::before {
             content: '';
             position: absolute;
@@ -321,6 +375,10 @@
             font-weight: 700;
             margin-bottom: 5px;
             color: var(--primary-color);
+        }
+
+        .result-card.no-payment .value {
+            color: var(--gray-400);
         }
 
         .result-card .unit {
@@ -355,6 +413,7 @@
         .history-table {
             width: 100%;
             border-collapse: collapse;
+            overflow-x: auto;
         }
 
         .history-table th,
@@ -375,10 +434,6 @@
             border-left: 3px solid var(--primary-color);
         }
 
-        .history-table td:last-child strong {
-            color: var(--primary-color);
-        }
-
         .badge {
             padding: 5px 12px;
             border-radius: 20px;
@@ -393,9 +448,15 @@
         }
 
         .badge-success {
-            background: rgba(255, 215, 0, 0.2);
-            color: var(--dark-color);
-            border: 1px solid var(--primary-color);
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--success-dark);
+            border: 1px solid var(--success-color);
+        }
+
+        .badge-warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning-dark);
+            border: 1px solid var(--warning-color);
         }
 
         .empty-state {
@@ -409,48 +470,6 @@
             margin-bottom: 15px;
             opacity: 0.5;
             color: var(--primary-color);
-        }
-
-        @media (max-width: 768px) {
-            .calculator-container {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .calculator-card,
-            .results-container,
-            .history-container {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .back-button {
-                position: relative;
-                top: auto;
-                left: auto;
-                margin-bottom: 20px;
-                width: fit-content;
-            }
-
-            .header {
-                margin-top: 20px;
-            }
-        }
-
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .input-group .form-group {
-            flex: 1;
         }
 
         .tooltip {
@@ -484,11 +503,48 @@
             visibility: visible;
             opacity: 1;
         }
+
+        @media (max-width: 768px) {
+            .calculator-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .calculator-card,
+            .results-container,
+            .history-container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-button {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 20px;
+                width: fit-content;
+            }
+
+            .header {
+                margin-top: 20px;
+            }
+
+            .days-selection {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     
-   <a href="{% url 'index' %}" class="back-button">
+    <a href="#" class="back-button" onclick="history.back()">
         <i class="fas fa-arrow-left"></i>
         Voltar ao Sistema
     </a>
@@ -496,50 +552,66 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-calculator"></i> Calculadora de Horas de Estágio</h1>
-            <p>Calcule horas trabalhadas e remuneração para meio período e tempo integral</p>
+            <p>Calcule horas trabalhadas e remuneração personalizadas por dias específicos</p>
         </div>
 
         <div class="calculator-container">
-           
+          
             <div class="calculator-card">
                 <div class="card-header">
                     <h2><i class="fas fa-clock"></i> Meio Período</h2>
                     <p class="subtitle">Até 6 horas diárias</p>
                 </div>
+
+                <div class="no-payment-notice">
+                    <i class="fas fa-info-circle"></i>
+                    Estágio de meio período não recebe remuneração
+                </div>
                 
                 <form id="meio-periodo-form">
                     <div class="form-group">
-                        <label for="mp-horas-dia">
-                            Horas por dia
+                        <label>
+                            Tempo trabalhado por dia
                             <span class="tooltip">
                                 <i class="fas fa-info-circle"></i>
                                 <span class="tooltiptext">Máximo 6 horas por dia para meio período</span>
                             </span>
                         </label>
-                        <input type="number" id="mp-horas-dia" min="1" max="6" step="0.5" value="4" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="mp-dias-semana">Dias por semana</label>
-                            <select id="mp-dias-semana" required>
-                                <option value="5">5 dias</option>
-                                <option value="4">4 dias</option>
-                                <option value="3">3 dias</option>
-                                <option value="2">2 dias</option>
-                                <option value="1">1 dia</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="mp-semanas-mes">Semanas por mês</label>
-                            <input type="number" id="mp-semanas-mes" min="1" max="5" value="4" required>
+                        <div class="time-input-group">
+                            <input type="number" id="mp-horas" min="0" max="6" value="4" placeholder="Horas">
+                            <input type="number" id="mp-minutos" min="0" max="59" value="0" placeholder="Minutos">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="mp-valor-hora">Valor por hora (R$)</label>
-                        <input type="number" id="mp-valor-hora" min="0" step="0.01" value="8.00" required>
+                        <label>Dias da semana trabalhados</label>
+                        <div class="days-selection" id="mp-days-selection">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="mp-seg" value="1">
+                                <label for="mp-seg">Segunda</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="mp-ter" value="2">
+                                <label for="mp-ter">Terça</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="mp-qua" value="3">
+                                <label for="mp-qua">Quarta</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="mp-qui" value="4">
+                                <label for="mp-qui">Quinta</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="mp-sex" value="5">
+                                <label for="mp-sex">Sexta</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mp-semanas-mes">Semanas por mês</label>
+                        <input type="number" id="mp-semanas-mes" min="1" max="5" value="4" required>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
@@ -553,35 +625,53 @@
             <div class="calculator-card">
                 <div class="card-header">
                     <h2><i class="fas fa-business-time"></i> Tempo Integral</h2>
-                    <p class="subtitle">Até 8 horas diárias</p>
+                    <p class="subtitle">Até 8 horas diárias com remuneração</p>
                 </div>
                 
                 <form id="tempo-integral-form">
                     <div class="form-group">
-                        <label for="ti-horas-dia">
-                            Horas por dia
+                        <label>
+                            Tempo trabalhado por dia
                             <span class="tooltip">
                                 <i class="fas fa-info-circle"></i>
                                 <span class="tooltiptext">Máximo 8 horas por dia para tempo integral</span>
                             </span>
                         </label>
-                        <input type="number" id="ti-horas-dia" min="6" max="8" step="0.5" value="8" required>
+                        <div class="time-input-group">
+                            <input type="number" id="ti-horas" min="6" max="8" value="8" placeholder="Horas">
+                            <input type="number" id="ti-minutos" min="0" max="59" value="0" placeholder="Minutos">
+                        </div>
                     </div>
                     
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="ti-dias-semana">Dias por semana</label>
-                            <select id="ti-dias-semana" required>
-                                <option value="5">5 dias</option>
-                                <option value="4">4 dias</option>
-                                <option value="3">3 dias</option>
-                            </select>
+                    <div class="form-group">
+                        <label>Dias da semana trabalhados</label>
+                        <div class="days-selection" id="ti-days-selection">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="ti-seg" value="1">
+                                <label for="ti-seg">Segunda</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="ti-ter" value="2">
+                                <label for="ti-ter">Terça</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="ti-qua" value="3">
+                                <label for="ti-qua">Quarta</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="ti-qui" value="4">
+                                <label for="ti-qui">Quinta</label>
+                            </div>
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="ti-sex" value="5">
+                                <label for="ti-sex">Sexta</label>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="ti-semanas-mes">Semanas por mês</label>
-                            <input type="number" id="ti-semanas-mes" min="1" max="5" value="4" required>
-                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ti-semanas-mes">Semanas por mês</label>
+                        <input type="number" id="ti-semanas-mes" min="1" max="5" value="4" required>
                     </div>
                     
                     <div class="form-group">
@@ -597,15 +687,15 @@
             </div>
         </div>
 
-      
+       
         <div class="results-container" id="results-container" style="display: none;">
             <h2><i class="fas fa-chart-line"></i> Resultados do Cálculo</h2>
             <div class="results-grid" id="results-grid">
-                <!-- Resultados  via javascript -->
+         
             </div>
         </div>
 
-     
+        
         <div class="history-container">
             <div class="history-header">
                 <h2><i class="fas fa-history"></i> Histórico de Cálculos</h2>
@@ -626,10 +716,9 @@
     </div>
 
     <script>
-        
         let calculationHistory = [];
 
-       
+        
         const meioPeridoForm = document.getElementById('meio-periodo-form');
         const tempoIntegralForm = document.getElementById('tempo-integral-form');
         const resultsContainer = document.getElementById('results-container');
@@ -637,25 +726,67 @@
         const historyContent = document.getElementById('history-content');
         const clearHistoryBtn = document.getElementById('clear-history');
 
-        
         meioPeridoForm.addEventListener('submit', handleMeioPeriodoSubmit);
         tempoIntegralForm.addEventListener('submit', handleTempoIntegralSubmit);
         clearHistoryBtn.addEventListener('click', clearHistory);
 
+      
+        setupDayCheckboxes('mp');
+        setupDayCheckboxes('ti');
+
+        function setupDayCheckboxes(prefix) {
+            const dayCheckboxes = document.querySelectorAll(`#${prefix}-days-selection .day-checkbox`);
+            
+            dayCheckboxes.forEach(dayDiv => {
+                const checkbox = dayDiv.querySelector('input');
+                
+                dayDiv.addEventListener('click', (e) => {
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    updateDayCheckboxStyle(dayDiv, checkbox.checked);
+                });
+
+                checkbox.addEventListener('change', () => {
+                    updateDayCheckboxStyle(dayDiv, checkbox.checked);
+                });
+            });
+        }
+
+        function updateDayCheckboxStyle(dayDiv, isChecked) {
+            if (isChecked) {
+                dayDiv.classList.add('selected');
+            } else {
+                dayDiv.classList.remove('selected');
+            }
+        }
+
         function handleMeioPeriodoSubmit(e) {
             e.preventDefault();
             
-            const horasDia = parseFloat(document.getElementById('mp-horas-dia').value);
-            const diasSemana = parseInt(document.getElementById('mp-dias-semana').value);
+            const horas = parseInt(document.getElementById('mp-horas').value) || 0;
+            const minutos = parseInt(document.getElementById('mp-minutos').value) || 0;
             const semanasMes = parseInt(document.getElementById('mp-semanas-mes').value);
-            const valorHora = parseFloat(document.getElementById('mp-valor-hora').value);
+            const diasSelecionados = getSelectedDays('mp');
+
+            if (diasSelecionados.length === 0) {
+                alert('Selecione pelo menos um dia da semana!');
+                return;
+            }
+
+            if (horas > 6 || (horas === 6 && minutos > 0)) {
+                alert('Meio período não pode exceder 6 horas por dia!');
+                return;
+            }
 
             const resultado = calcularHoras({
-                horasDia,
-                diasSemana,
+                horas,
+                minutos,
+                diasSelecionados,
                 semanasMes,
-                valorHora,
-                tipo: 'Meio Período'
+                valorHora: 0,
+                tipo: 'Meio Período',
+                recebeRemuneracao: false
             });
 
             exibirResultados(resultado);
@@ -665,88 +796,173 @@
         function handleTempoIntegralSubmit(e) {
             e.preventDefault();
             
-            const horasDia = parseFloat(document.getElementById('ti-horas-dia').value);
-            const diasSemana = parseInt(document.getElementById('ti-dias-semana').value);
+            const horas = parseInt(document.getElementById('ti-horas').value) || 0;
+            const minutos = parseInt(document.getElementById('ti-minutos').value) || 0;
             const semanasMes = parseInt(document.getElementById('ti-semanas-mes').value);
             const valorHora = parseFloat(document.getElementById('ti-valor-hora').value);
+            const diasSelecionados = getSelectedDays('ti');
+
+            if (diasSelecionados.length === 0) {
+                alert('Selecione pelo menos um dia da semana!');
+                return;
+            }
+
+            if (horas > 8 || (horas === 8 && minutos > 0)) {
+                alert('Tempo integral não pode exceder 8 horas por dia!');
+                return;
+            }
+
+            if (horas < 6) {
+                alert('Tempo integral deve ter pelo menos 6 horas por dia!');
+                return;
+            }
 
             const resultado = calcularHoras({
-                horasDia,
-                diasSemana,
+                horas,
+                minutos,
+                diasSelecionados,
                 semanasMes,
                 valorHora,
-                tipo: 'Tempo Integral'
+                tipo: 'Tempo Integral',
+                recebeRemuneracao: true
             });
 
             exibirResultados(resultado);
             adicionarAoHistorico(resultado);
         }
 
-        function calcularHoras({ horasDia, diasSemana, semanasMes, valorHora, tipo }) {
-            const horasSemana = horasDia * diasSemana;
-            const horasMes = horasSemana * semanasMes;
-            const remuneracaoMes = horasMes * valorHora;
-            const remuneracaoAnual = remuneracaoMes * 12;
-            const horasAnuais = horasMes * 12;
+        function getSelectedDays(prefix) {
+            const checkboxes = document.querySelectorAll(`#${prefix}-days-selection input:checked`);
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
 
+        function calcularHoras({ horas, minutos, diasSelecionados, semanasMes, valorHora, tipo, recebeRemuneracao }) {
+           
+            const totalMinutosPorDia = (horas * 60) + minutos;
+            const totalHorasPorDia = totalMinutosPorDia / 60;
+            
+            const diasPorSemana = diasSelecionados.length;
+            const totalMinutosPorSemana = totalMinutosPorDia * diasPorSemana;
+            const totalHorasPorSemana = totalMinutosPorSemana / 60;
+            
+            const totalMinutosPorMes = totalMinutosPorSemana * semanasMes;
+            const totalHorasPorMes = totalMinutosPorMes / 60;
+            
+            const remuneracaoMensal = recebeRemuneracao ? totalHorasPorMes * valorHora : 0;
+            
             return {
                 tipo,
-                horasDia,
-                diasSemana,
-                semanasMes,
-                valorHora,
-                horasSemana,
-                horasMes,
-                horasAnuais,
-                remuneracaoMes,
-                remuneracaoAnual,
-                timestamp: new Date()
+                horasPorDia: formatarTempo(Math.floor(totalHorasPorDia), (totalMinutosPorDia % 60)),
+                diasPorSemana,
+                horasPorSemana: formatarTempo(Math.floor(totalHorasPorSemana), (totalMinutosPorSemana % 60)),
+                semanasPorMes: semanasMes,
+                horasPorMes: formatarTempo(Math.floor(totalHorasPorMes), (totalMinutosPorMes % 60)),
+                valorHora: recebeRemuneracao ? valorHora : 0,
+                remuneracaoMensal,
+                recebeRemuneracao,
+                diasSelecionados: diasSelecionados.map(d => getNomeDia(d)),
+                dataCalculo: new Date().toLocaleString('pt-BR')
             };
         }
 
+        function formatarTempo(horas, minutos) {
+            if (minutos === 0) {
+                return `${horas}h`;
+            }
+            return `${horas}h ${minutos}min`;
+        }
+
+        function getNomeDia(valor) {
+            const dias = {
+                '1': 'Segunda',
+                '2': 'Terça',
+                '3': 'Quarta',
+                '4': 'Quinta',
+                '5': 'Sexta'
+               
+            };
+            return dias[valor] || '';
+        }
+
         function exibirResultados(resultado) {
-            resultsGrid.innerHTML = `
-                <div class="result-card">
-                    <h3>Horas por Semana</h3>
-                    <div class="value">${resultado.horasSemana}</div>
-                    <div class="unit">horas</div>
-                </div>
-                <div class="result-card">
-                    <h3>Horas por Mês</h3>
-                    <div class="value">${resultado.horasMes}</div>
-                    <div class="unit">horas</div>
-                </div>
-                <div class="result-card">
-                    <h3>Horas por Ano</h3>
-                    <div class="value">${resultado.horasAnuais}</div>
-                    <div class="unit">horas</div>
-                </div>
-                <div class="result-card">
-                    <h3>Remuneração Mensal</h3>
-                    <div class="value">R$ ${resultado.remuneracaoMes.toFixed(2)}</div>
-                    <div class="unit">por mês</div>
-                </div>
-                <div class="result-card">
-                    <h3>Remuneração Anual</h3>
-                    <div class="value">R$ ${resultado.remuneracaoAnual.toFixed(2)}</div>
-                    <div class="unit">por ano</div>
-                </div>
-                <div class="result-card">
-                    <h3>Valor por Hora</h3>
-                    <div class="value">R$ ${resultado.valorHora.toFixed(2)}</div>
-                    <div class="unit">por hora</div>
+            resultsGrid.innerHTML = '';
+            
+           
+            const cardHorasDia = criarCardResultado(
+                'Horas por Dia',
+                resultado.horasPorDia,
+                'fas fa-clock',
+                resultado.recebeRemuneracao
+            );
+            
+            
+            const cardDiasSemana = criarCardResultado(
+                'Dias por Semana',
+                resultado.diasPorSemana,
+                'fas fa-calendar-week',
+                resultado.recebeRemuneracao
+            );
+            
+            
+            const cardHorasSemana = criarCardResultado(
+                'Horas por Semana',
+                resultado.horasPorSemana,
+                'fas fa-calendar-alt',
+                resultado.recebeRemuneracao
+            );
+            
+           
+            const cardHorasMes = criarCardResultado(
+                'Horas por Mês',
+                resultado.horasPorMes,
+                'fas fa-calendar',
+                resultado.recebeRemuneracao
+            );
+            
+           
+            let cardRemuneracao = '';
+            if (resultado.recebeRemuneracao) {
+                cardRemuneracao = criarCardResultado(
+                    'Remuneração Mensal',
+                    `R$ ${resultado.remuneracaoMensal.toFixed(2)}`,
+                    'fas fa-money-bill-wave',
+                    true
+                );
+            } else {
+                cardRemuneracao = criarCardResultado(
+                    'Remuneração Mensal',
+                    'Não recebe',
+                    'fas fa-times-circle',
+                    false
+                );
+            }
+            
+            resultsGrid.innerHTML = cardHorasDia + cardDiasSemana + cardHorasSemana + cardHorasMes + cardRemuneracao;
+            resultsContainer.style.display = 'block';
+            
+        
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function criarCardResultado(titulo, valor, icone, recebeRemuneracao) {
+            const classeCard = recebeRemuneracao ? '' : 'no-payment';
+            
+            return `
+                <div class="result-card ${classeCard}">
+                    <h3><i class="${icone}"></i> ${titulo}</h3>
+                    <div class="value">${valor}</div>
                 </div>
             `;
-
-            resultsContainer.style.display = 'block';
-            resultsContainer.scrollIntoView({ behavior: 'smooth' });
         }
 
         function adicionarAoHistorico(resultado) {
             calculationHistory.unshift(resultado);
+            
+           
             if (calculationHistory.length > 10) {
                 calculationHistory = calculationHistory.slice(0, 10);
             }
+            
             atualizarHistorico();
         }
 
@@ -762,7 +978,7 @@
                 return;
             }
 
-            const tableHTML = `
+            const tabela = `
                 <table class="history-table">
                     <thead>
                         <tr>
@@ -771,71 +987,227 @@
                             <th>Horas/Dia</th>
                             <th>Dias/Semana</th>
                             <th>Horas/Mês</th>
-                            <th>Valor/Hora</th>
-                            <th>Remuneração/Mês</th>
+                            <th>Remuneração</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${calculationHistory.map(calc => `
+                        ${calculationHistory.map(item => `
                             <tr>
-                                <td>${formatarDataHora(calc.timestamp)}</td>
+                                <td>${item.dataCalculo}</td>
+                                <td>${item.tipo}</td>
+                                <td>${item.horasPorDia}</td>
                                 <td>
-                                    <span class="badge ${calc.tipo === 'Meio Período' ? 'badge-primary' : 'badge-success'}">
-                                        ${calc.tipo}
+                                    ${item.diasPorSemana} dias
+                                    <br>
+                                    <small style="color: var(--gray-600);">
+                                        ${item.diasSelecionados.join(', ')}
+                                    </small>
+                                </td>
+                                <td>${item.horasPorMes}</td>
+                                <td>
+                                    ${item.recebeRemuneracao 
+                                        ? `R$ ${item.remuneracaoMensal.toFixed(2)}` 
+                                        : 'Não recebe'
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge ${item.recebeRemuneracao ? 'badge-success' : 'badge-warning'}">
+                                        ${item.recebeRemuneracao ? 'Remunerado' : 'Não Remunerado'}
                                     </span>
                                 </td>
-                                <td>${calc.horasDia}h</td>
-                                <td>${calc.diasSemana} dias</td>
-                                <td>${calc.horasMes}h</td>
-                                <td>R$ ${calc.valorHora.toFixed(2)}</td>
-                                <td><strong>R$ ${calc.remuneracaoMes.toFixed(2)}</strong></td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
-
-            historyContent.innerHTML = tableHTML;
+            
+            historyContent.innerHTML = tabela;
         }
 
         function clearHistory() {
+            if (calculationHistory.length === 0) {
+                alert('Histórico já está vazio!');
+                return;
+            }
+            
             if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
                 calculationHistory = [];
                 atualizarHistorico();
             }
         }
 
-        function formatarDataHora(date) {
-            return date.toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        document.getElementById('mp-horas-dia').addEventListener('input', function() {
-            if (this.value > 6) {
-                this.value = 6;
+        
+        document.getElementById('mp-horas').addEventListener('input', function() {
+            const horas = parseInt(this.value);
+            const minutos = parseInt(document.getElementById('mp-minutos').value) || 0;
+            
+            if (horas > 6 || (horas === 6 && minutos > 0)) {
+                this.style.borderColor = 'var(--danger-color)';
+                this.title = 'Meio período não pode exceder 6 horas por dia';
+            } else {
+                this.style.borderColor = 'var(--gray-300)';
+                this.title = '';
             }
         });
 
-        document.getElementById('ti-horas-dia').addEventListener('input', function() {
-            if (this.value > 8) {
-                this.value = 8;
-            }
-            if (this.value < 6) {
-                this.value = 6;
+        document.getElementById('ti-horas').addEventListener('input', function() {
+            const horas = parseInt(this.value);
+            const minutos = parseInt(document.getElementById('ti-minutos').value) || 0;
+            
+            if (horas > 8 || (horas === 8 && minutos > 0)) {
+                this.style.borderColor = 'var(--danger-color)';
+                this.title = 'Tempo integral não pode exceder 8 horas por dia';
+            } else if (horas < 6) {
+                this.style.borderColor = 'var(--warning-color)';
+                this.title = 'Tempo integral deve ter pelo menos 6 horas por dia';
+            } else {
+                this.style.borderColor = 'var(--gray-300)';
+                this.title = '';
             }
         });
 
       
-        document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('ti-valor-hora').addEventListener('input', function() {
+            let valor = this.value.replace(/[^\d.,]/g, '');
+            valor = valor.replace(',', '.');
             
-            const currentYear = new Date().getFullYear();
-            // aqui tu pode adicionar mais inicializações se necessário
+            if (valor && !isNaN(parseFloat(valor))) {
+                this.value = parseFloat(valor).toFixed(2);
+            }
         });
+
+       
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.calculator-card, .results-container, .history-container');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            cards.forEach((card) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        });
+
+       
+        function salvarDados() {
+            try {
+                sessionStorage.setItem('calculatorHistory', JSON.stringify(calculationHistory));
+            } catch (e) {
+                console.warn('Não foi possível salvar o histórico');
+            }
+        }
+
+        function carregarDados() {
+            try {
+                const dadosSalvos = sessionStorage.getItem('calculatorHistory');
+                if (dadosSalvos) {
+                    calculationHistory = JSON.parse(dadosSalvos);
+                    atualizarHistorico();
+                }
+            } catch (e) {
+                console.warn('Não foi possível carregar o histórico salvo');
+                calculationHistory = [];
+            }
+        }
+
+        
+        function adicionarAoHistorico(resultado) {
+            calculationHistory.unshift(resultado);
+            
+            if (calculationHistory.length > 10) {
+                calculationHistory = calculationHistory.slice(0, 10);
+            }
+            
+            atualizarHistorico();
+            salvarDados();
+        }
+
+        function clearHistory() {
+            if (calculationHistory.length === 0) {
+                alert('Histórico já está vazio!');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja limpar todo o histórico?')) {
+                calculationHistory = [];
+                atualizarHistorico();
+                salvarDados();
+            }
+        }
+
+       
+        carregarDados();
+
+        
+        function exportarHistorico() {
+            if (calculationHistory.length === 0) {
+                alert('Não há dados para exportar!');
+                return;
+            }
+
+            const dados = calculationHistory.map(item => ({
+                'Data/Hora': item.dataCalculo,
+                'Tipo': item.tipo,
+                'Horas por Dia': item.horasPorDia,
+                'Dias por Semana': item.diasPorSemana,
+                'Dias Trabalhados': item.diasSelecionados.join(', '),
+                'Horas por Mês': item.horasPorMes,
+                'Valor por Hora': item.recebeRemuneracao ? `R$ ${item.valorHora.toFixed(2)}` : 'N/A',
+                'Remuneração Mensal': item.recebeRemuneracao ? `R$ ${item.remuneracaoMensal.toFixed(2)}` : 'Não recebe'
+            }));
+
+            const csv = converterParaCSV(dados);
+            baixarCSV(csv, 'historico-calculo-horas.csv');
+        }
+
+        function converterParaCSV(dados) {
+            const headers = Object.keys(dados[0]);
+            const csvContent = [
+                headers.join(','),
+                ...dados.map(row => 
+                    headers.map(header => `"${row[header]}"`).join(',')
+                )
+            ].join('\n');
+            
+            return csvContent;
+        }
+
+        function baixarCSV(conteudo, nomeArquivo) {
+            const blob = new Blob([conteudo], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', nomeArquivo);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+       
+        const historyHeader = document.querySelector('.history-header');
+        const exportBtn = document.createElement('button');
+        exportBtn.innerHTML = '<i class="fas fa-download"></i> Exportar CSV';
+        exportBtn.className = 'btn btn-primary';
+        exportBtn.style.width = 'auto';
+        exportBtn.style.padding = '10px 20px';
+        exportBtn.style.marginLeft = '10px';
+        exportBtn.onclick = exportarHistorico;
+        
+        historyHeader.appendChild(exportBtn);
     </script>
 </body>
 </html>
