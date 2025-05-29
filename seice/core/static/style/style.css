@@ -97,19 +97,19 @@ body {
     max-width: calc(100% - 80px);
 }
 
-/* Sidebar Styles */
+
 .logo {
     padding: 20px;
     display: flex;
     align-items: center;
     gap: 15px;
-    border-bottom: 1px solid rgba(255, 193, 7, 0.3); /* Borda amarela sutil */
+    border-bottom: 1px solid rgba(255, 193, 7, 0.3); 
     background-color: var(--gray-850);
 }
 
 .logo i {
     font-size: 24px;
-    color: var(--primary-color); /* Ícone amarelo */
+    color: var(--primary-color); 
 }
 
 .logo h2 {
@@ -320,7 +320,7 @@ header {
 }
 
 .stat-icon.orange {
-    background-color: var(--primary-color); /* Amarelo */
+    background-color: var(--primary-color); 
 }
 
 .stat-icon.purple {

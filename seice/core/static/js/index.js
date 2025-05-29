@@ -1127,3 +1127,147 @@ function formatarData(dataString) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  let areaIdParaExcluir = null;
+        let areaNomeParaExcluir = null;
+
+       
+        function confirmarExclusaoArea(id, nome) {
+            areaIdParaExcluir = id;
+            areaNomeParaExcluir = nome;
+            
+            
+            document.getElementById('area-nome-exclusao').textContent = nome;
+            
+            
+            document.getElementById('modal-confirmar-exclusao').classList.add('active');
+        }
+
+        
+        function fecharModalConfirmacao() {
+            document.getElementById('modal-confirmar-exclusao').classList.remove('active');
+            areaIdParaExcluir = null;
+            areaNomeParaExcluir = null;
+        }
+
+       
+        function executarExclusao() {
+            if (areaIdParaExcluir) {
+                
+                console.log(`Excluindo área ID: ${areaIdParaExcluir}, Nome: ${areaNomeParaExcluir}`);
+                
+                
+                const linha = document.querySelector(`tr:has(td:first-child:contains('${areaIdParaExcluir}'))`);
+                if (linha) {
+                    linha.remove();
+                }
+                
+                
+                mostrarToast('Área excluída com sucesso!', 'success');
+                
+                
+                fecharModalConfirmacao();
+            }
+        }
+
+       
+        function mostrarToast(mensagem, tipo = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            
+            let icone = '';
+            switch(tipo) {
+                case 'success':
+                    icone = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    icone = 'fas fa-exclamation-circle';
+                    break;
+                case 'warning':
+                    icone = 'fas fa-exclamation-triangle';
+                    break;
+                default:
+                    icone = 'fas fa-info-circle';
+            }
+            
+            toast.innerHTML = `
+                <i class="${icone}"></i>
+                <span>${mensagem}</span>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+           
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+       
+        document.addEventListener('DOMContentLoaded', function() {
+           
+            document.getElementById('btn-confirmar-exclusao').addEventListener('click', executarExclusao);
+
+          
+            document.getElementById('modal-confirmar-exclusao').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    fecharModalConfirmacao();
+                }
+            });
+
+           
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('modal-confirmar-exclusao').classList.contains('active')) {
+                    fecharModalConfirmacao();
+                }
+            });
+
+           
+            const sidebarItems = document.querySelectorAll('.sidebar nav ul li[data-page]');
+            const pages = document.querySelectorAll('.page');
+
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                   
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                  
+                    this.classList.add('active');
+                    
+                    
+                    pages.forEach(page => page.classList.remove('active'));
+                    
+                    const targetPage = document.getElementById(pageId);
+                    if (targetPage) {
+                        targetPage.classList.add('active');
+                    }
+                });
+            });
+
+            
+            const hoje = new Date();
+            const opcoes = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            };
+            document.getElementById('today-date').textContent = hoje.toLocaleDateString('pt-BR', opcoes);
+        });

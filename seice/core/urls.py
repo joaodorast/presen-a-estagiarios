@@ -15,7 +15,7 @@ urlpatterns = [
 
     # ✅ Rota adicionada para a Calculadora de Horas
     path('home/calculadora-horas/', views.calculadora_horas, name='calculadora_horas'),
-
+   
     path('api/estagiarios/', views.get_estagiarios),
     path('api/estagiarios/create/', views.create_estagiario),
     path('api/estagiarios/<int:estagiario_id>/delete/', views.delete_estagiario),
