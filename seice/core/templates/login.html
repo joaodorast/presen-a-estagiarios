@@ -480,22 +480,39 @@
                     <h2>Bem-vindo de volta</h2>
                     <p>Acesse seu dashboard administrativo</p>
                 </div>
-                <div class="modal-body">
-                    <form method="POST" action="{% url 'login' %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="username">Usuário</label>
-                            <input type="text" id="username" name="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Senha</label>
-                            <input type="password" id="password" name="password" required>
-                        </div>
-                        
-                        <div class="modal-footer">
-                            <button type="submit" class="btn primary">Entrar</button>
-                        </div>
-                    </form>
+
+                <form class="login-form" method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="username">Usuário</label>
+                        <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember">
+                            <span>Lembrar-me</span>
+                        </label>
+                        <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                    </div>
+                    
+                    <button type="submit" class="login-button">
+                        Entrar no Dashboard
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>Acesso seguro</span>
+                </div>
+
+                <div class="help-text">
+                    Precisa de ajuda? Entre em contato com o suporte técnico
                 </div>
             </div>
         </div>

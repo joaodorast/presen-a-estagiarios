@@ -144,6 +144,10 @@ function initModals() {
         loadAreaSelect('estagiario-area');
         openModal('modal-estagiario');
     });
+
+    document.getElementById('btn-nova-area').addEventListener('click', function() {
+        openAreaModal();
+    });
     
     
     closeBtns.forEach(btn => {
