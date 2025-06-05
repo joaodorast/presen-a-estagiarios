@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Biométrico - Bem-vindo Estagiário</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ffc107;
+            --primary-dark: #ffb300;
+            --secondary-color: #343a40;
+            --secondary-dark: #212529;
+            --accent-color: #ffd54f;
+            --accent-dark: #ffb300;
+            
+            --success-color: #28a745;
+            --success-dark: #218838;
+            --danger-color: #dc3545;
+            --danger-dark: #c82333;
+            --warning-color: #ffc107;
+            --warning-dark: #e0a800;
+            --info-color: #17a2b8;
+            --info-dark: #138496;
+            
+            --light-color: #f8f9fa;
+            --light-dark: #e9ecef;
+            --dark-color: #343a40;
+            --dark-dark: #212529;
+            --text-color: #212529;
+            --text-light: #6c757d;
+            --text-dark: #000;
+            --white: #ffffff;
+            
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #eeeeee;
+            --gray-300: #e0e0e0;
+            --gray-400: #bdbdbd;
+            --gray-500: #9e9e9e;
+            --gray-600: #757575;
+            --gray-700: #616161;
+            --gray-800: #424242;
+            --gray-850: #373737;
+            --gray-900: #212121;
+            
+            --blue: #6c757d;
+            --green: #6c757d;
+            --orange: #ffc107;
+            --purple: #6c757d;
+            --red: #dc3545;
+            
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #e9ecef;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #9e9e9e;
+            
+            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 30px rgba(255, 193, 7, 0.3);
+            
+            --border-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .system-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .system-card:hover {
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-5px);
+        }
+
+        .card-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--primary-color));
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        
+        .status-display {
+            text-align: center;
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 1s ease forwards 0.3s;
+        }
+
+        .status-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        .status-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .status-message {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.entry {
+            background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+            color: white;
+        }
+
+        .status-badge.exit {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+            color: white;
+        }
+
+        .time-display {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .time-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+
+        .biometric-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .readers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .biometric-reader {
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius);
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .biometric-reader:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .biometric-reader.entry {
+            border-color: var(--success-color);
+        }
+
+        .biometric-reader.entry:hover {
+            background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+            color: white;
+        }
+
+        .biometric-reader.exit {
+            border-color: var(--danger-color);
+        }
+
+        .biometric-reader.exit:hover {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+            color: white;
+        }
+
+        .reader-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .reader-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .reader-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+    
+        .scanning {
+            animation: scanPulse 1.5s infinite;
+            border-color: var(--info-color) !important;
+            position: relative;
+        }
+
+        .scanning::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(23, 162, 184, 0.3), transparent);
+            animation: scanLine 1.5s infinite;
+        }
+
+        .scanning .reader-icon {
+            color: var(--info-color);
+        }
+
+    
+        .welcome-content, .goodbye-content {
+            transition: var(--transition);
+        }
+
+        .goodbye-content {
+            display: none;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    
+        @media (max-width: 768px) {
+            .system-card {
+                padding: 2rem 1.5rem;
+                margin: 10px;
+            }
+
+            .readers-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .biometric-reader {
+                padding: 2rem 1rem;
+            }
+
+            .status-icon {
+                font-size: 3rem;
+            }
+
+            .reader-icon {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 10px;
+            }
+
+            .system-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .status-title {
+                font-size: 2rem;
+            }
+
+            .status-message {
+                font-size: 1rem;
+            }
+        }
+
+       
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-15px);
+            }
+            60% {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scanPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.4);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 0 10px rgba(23, 162, 184, 0);
+            }
+        }
+
+        @keyframes scanLine {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 193, 7, 0.3);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+   
+    <div class="bg-animation">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+
+   
+    <div class="main-container">
+        <div class="system-card">
+            <div class="card-glow"></div>
+            
+           
+            <div class="welcome-content" id="welcomeContent">
+                <div class="status-display">
+                    <div class="status-icon">👋</div>
+                    <h1 class="status-title">Bem-vindo!</h1>
+                    <p class="status-message">Olá Estagiário! Que bom ter você conosco hoje.</p>
+                    <div class="status-badge entry">
+                        <i class="fas fa-check-circle"></i>
+                        Entrada Registrada
+                    </div>
+                    <div class="time-display">
+                        <div class="time-label">Horário de Entrada</div>
+                        <div class="time-value" id="entryTime">--:--:--</div>
+                    </div>
+                </div>
+            </div>
+
+           
+            <div class="goodbye-content" id="goodbyeContent">
+                <div class="status-display">
+                    <div class="status-icon">👋</div>
+                    <h1 class="status-title">Tchau!</h1>
+                    <p class="status-message">Até logo Estagiário! Tenha um ótimo resto do dia.</p>
+                    <div class="status-badge exit">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Saída Registrada
+                    </div>
+                    <div class="time-display">
+                        <div class="time-label">Horário de Saída</div>
+                        <div class="time-value" id="exitTime">--:--:--</div>
+                    </div>
+                </div>
+            </div>
+
+         
+            <div class="biometric-section">
+                <h3 class="section-title">
+                    <i class="fas fa-fingerprint"></i>
+                    Posicione o dedo no leitor biométrico
+                </h3>
+                
+                <div class="readers-grid">
+                    <div class="biometric-reader entry" onclick="processEntry()" id="entryReader">
+                        <div class="reader-icon">
+                            <i class="fas fa-fingerprint"></i>
+                        </div>
+                        <div class="reader-title">ENTRADA</div>
+                        <div class="reader-subtitle">Leitor Biométrico</div>
+                    </div>
+                    
+                    <div class="biometric-reader exit" onclick="processExit()" id="exitReader">
+                        <div class="reader-icon">
+                            <i class="fas fa-fingerprint"></i>
+                        </div>
+                        <div class="reader-title">SAÍDA</div>
+                        <div class="reader-subtitle">Leitor Biométrico</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+       
+        let isInside = false;
+        let isScanning = false;
+
+   
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }, 1500);
+
+            updateTime();
+            setInterval(updateTime, 1000);
+            showWelcome();
+        });
+
+        
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('entryTime').textContent = timeString;
+            document.getElementById('exitTime').textContent = timeString;
+        }
+
+        
+        function showWelcome() {
+            const welcomeContent = document.getElementById('welcomeContent');
+            const goodbyeContent = document.getElementById('goodbyeContent');
+            
+            goodbyeContent.style.display = 'none';
+            goodbyeContent.classList.remove('fade-in');
+            
+            welcomeContent.style.display = 'block';
+            welcomeContent.classList.remove('fade-out');
+            welcomeContent.classList.add('fade-in');
+            
+            updateTime();
+        }
+
+        function showGoodbye() {
+            const welcomeContent = document.getElementById('welcomeContent');
+            const goodbyeContent = document.getElementById('goodbyeContent');
+            
+            welcomeContent.classList.add('fade-out');
+            
+            setTimeout(() => {
+                welcomeContent.style.display = 'none';
+                goodbyeContent.style.display = 'block';
+                goodbyeContent.classList.add('fade-in');
+                updateTime();
+            }, 300);
+        }
+
+       
+        async function processEntry() {
+            if (isScanning) return;
+            
+            const reader = document.getElementById('entryReader');
+            await simulateBiometricScan(reader);
+            
+            if (!isInside) {
+                showWelcome();
+                isInside = true;
+                showSuccessNotification('Entrada registrada com sucesso!');
+            }
+        }
+
+        async function processExit() {
+            if (isScanning) return;
+            
+            const reader = document.getElementById('exitReader');
+            await simulateBiometricScan(reader);
+            
+            if (isInside) {
+                showGoodbye();
+                isInside = false;
+                showSuccessNotification('Saída registrada com sucesso!');
+            }
+        }
+
+        
+        async function simulateBiometricScan(reader) {
+            isScanning = true;
+            reader.classList.add('scanning');
+            
+           
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            reader.classList.remove('scanning');
+            isScanning = false;
+        }
+
+   
+        function showSuccessNotification(message) {
+           
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: var(--shadow-md);
+                z-index: 1001;
+                transform: translateX(400px);
+                transition: var(--transition);
+                font-weight: 600;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+         
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+              
+                setTimeout(() => {
+                    if (document.hidden && isInside) {
+                        showGoodbye();
+                        isInside = false;
+                    }
+                }, 5000);
+            } else {
+               
+                if (!isInside) {
+                    showWelcome();
+                    isInside = true;
+                }
+            }
+        });
+
+      
+        window.addEventListener('beforeunload', function() {
+          
+            console.log('Registering user exit...');
+        });
+
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                processEntry();
+            } else if (e.key === 'Escape' && e.ctrlKey) {
+                processExit();
+            }
+        });
+
+      
+        const readers = document.querySelectorAll('.biometric-reader');
+        readers.forEach(reader => {
+            reader.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95) translateY(-8px)';
+            });
+            
+            reader.addEventListener('touchend', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+        });
+    </script>
+</body>
+</html>
