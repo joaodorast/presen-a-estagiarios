@@ -13,10 +13,11 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 25%, #2d2d2d 50%, #1a1a1a 75%, #0f0f0f 100%);
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            color: white;
         }
 
         body::before {
@@ -26,72 +27,118 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23333" stroke-width="0.5" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 193, 7, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 179, 0, 0.03) 0%, transparent 50%),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M 8 0 L 0 0 0 8" fill="none" stroke="%23333" stroke-width="0.3" opacity="0.4"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.6;
             z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translateX(0px) translateY(0px); }
+            25% { transform: translateX(10px) translateY(-5px); }
+            50% { transform: translateX(-5px) translateY(10px); }
+            75% { transform: translateX(-10px) translateY(-10px); }
         }
 
         .header {
             text-align: center;
-            padding: 40px 20px;
+            padding: 50px 20px;
             color: white;
+            position: relative;
         }
 
-        .logo {
-            font-size: 4rem;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            position: relative;
+     .logo {
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: #ffffff; /* Agora é branco puro */
+    margin-bottom: 15px;
+    text-shadow: 
+        0 0 20px rgba(255, 193, 7, 0.894),
+        2px 2px 8px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(255, 193, 7, 0.1);
+    position: relative;
+    /* Remove o background com degradê */
+    background: none;
+    background-clip: unset;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: #ffffff; /* Preenche o texto com branco puro */
+    animation: logoGlow 3s ease-in-out infinite alternate;
+}
+
+
+        @keyframes logoGlow {
+            0% { 
+                text-shadow: 0 0 20px rgba(255, 193, 7, 0.3), 2px 2px 8px rgba(0, 0, 0, 0.8);
+                filter: brightness(1);
+            }
+            100% { 
+                text-shadow: 0 0 30px rgba(255, 193, 7, 0.5), 2px 2px 8px rgba(0, 0, 0, 0.8);
+                filter: brightness(1.1);
+            }
         }
 
         .logo::after {
             content: '';
             position: absolute;
-            bottom: -15px;
+            bottom: -20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
-            height: 4px;
-            background: linear-gradient(90deg, #ffc107, #ffb300);
-            border-radius: 2px;
+            width: 150px;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, #ffc107, #ffb300, #ffc107, transparent);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+            animation: lineGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes lineGlow {
+            0% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.4); }
+            100% { box-shadow: 0 0 25px rgba(255, 193, 7, 0.7); }
         }
 
         .subtitle {
-            font-size: 1.2rem;
-            color: #cccccc;
-            margin-bottom: 20px;
-            font-weight: 300;
+            font-size: 1.4rem;
+            color: #e0e0e0;
+            margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .instruction {
-            color: #999;
-            margin-bottom: 50px;
-            font-size: 1rem;
+            color: #b0b0b0;
+            margin-bottom: 60px;
+            font-size: 1.1rem;
+            font-weight: 300;
         }
 
         .units-container {
             display: flex;
             justify-content: center;
-            gap: 40px;
+            gap: 50px;
             padding: 0 20px;
             flex-wrap: wrap;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .unit-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px 30px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
+            border-radius: 25px;
+            padding: 50px 35px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.4s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 193, 7, 0.1);
-            min-width: 350px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.4),
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            min-width: 380px;
             position: relative;
             overflow: hidden;
         }
@@ -103,57 +150,103 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.1), transparent);
-            transition: left 0.6s;
+            background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.15), transparent);
+            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .unit-card::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ffc107, #ffb300, #ffc107);
+            border-radius: 25px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
 
         .unit-card:hover::before {
             left: 100%;
         }
 
+        .unit-card:hover::after {
+            opacity: 0.3;
+        }
+
         .unit-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            border-color: #ffc107;
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 10px 25px rgba(255, 193, 7, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 193, 7, 0.6);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
         }
 
         .unit-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 15px;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .unit-subtitle {
-            font-size: 1rem;
-            color: #666;
-            margin-bottom: 25px;
+            font-size: 1.1rem;
+            color: #cccccc;
+            margin-bottom: 35px;
+            font-weight: 300;
         }
 
         .access-button {
-            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-            color: #333;
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 50%, #e6ac00 100%);
+            color: #1a1a1a;
             border: none;
-            padding: 15px 30px;
+            padding: 18px 35px;
             border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.2rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             width: 100%;
-            max-width: 250px;
+            max-width: 280px;
+            box-shadow: 
+                0 8px 20px rgba(255, 193, 7, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .access-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .access-button:hover::before {
+            left: 100%;
         }
 
         .access-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 30px rgba(255, 193, 7, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            background: linear-gradient(135deg, #ffcd3c 0%, #ffc107 50%, #ffb300 100%);
         }
 
-   
         .modal {
             display: none;
             position: fixed;
@@ -162,9 +255,9 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            animation: fadeIn 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.4s ease;
         }
 
         .modal.active {
@@ -174,52 +267,67 @@
         }
 
         .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+            border-radius: 25px;
+            padding: 50px;
             width: 90%;
-            max-width: 450px;
+            max-width: 480px;
             position: relative;
-            animation: slideIn 0.4s ease;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 10px 25px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 193, 7, 0.3);
         }
 
         .close {
             position: absolute;
-            right: 20px;
-            top: 20px;
-            font-size: 28px;
+            right: 25px;
+            top: 25px;
+            font-size: 32px;
             font-weight: bold;
             color: #aaa;
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
 
         .close:hover {
             color: #333;
+            background: rgba(255, 193, 7, 0.1);
+            transform: rotate(90deg);
         }
 
         .modal-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
         .modal-title {
-            font-size: 2rem;
+            font-size: 2.4rem;
             color: #333;
-            margin-bottom: 10px;
-            font-weight: 700;
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .modal-subtitle {
             color: #666;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            font-weight: 300;
         }
 
         .login-form {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
         }
 
         .form-group {
@@ -228,89 +336,124 @@
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: #333;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 18px 25px;
             border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(248, 249, 250, 0.8);
             color: #333;
             font-family: inherit;
+            font-weight: 500;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #ffc107;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1);
-            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 
+                0 0 0 4px rgba(255, 193, 7, 0.15),
+                0 8px 25px rgba(255, 193, 7, 0.1);
+            transform: translateY(-2px);
         }
 
         .form-group input::placeholder {
             color: #aaa;
+            font-weight: 400;
         }
 
         .form-options {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 10px 0;
+            margin: 15px 0 25px 0;
         }
 
         .remember-me {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .remember-me:hover {
+            color: #333;
         }
 
         .remember-me input[type="checkbox"] {
-            width: auto;
+            width: 18px;
+            height: 18px;
             accent-color: #ffc107;
+            cursor: pointer;
         }
 
         .forgot-password {
             color: #ffc107;
             text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: color 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 8px;
         }
 
         .forgot-password:hover {
             color: #e6ac00;
+            background: rgba(255, 193, 7, 0.1);
         }
 
         .login-button {
-            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-            color: #333;
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 50%, #e6ac00 100%);
+            color: #1a1a1a;
             border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 1.1rem;
+            padding: 18px 35px;
+            border-radius: 15px;
+            font-size: 1.2rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 15px;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            box-shadow: 
+                0 8px 20px rgba(255, 193, 7, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .login-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 193, 7, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 30px rgba(255, 193, 7, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            background: linear-gradient(135deg, #ffcd3c 0%, #ffc107 50%, #ffb300 100%);
         }
 
-       
+        .error-message {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -319,7 +462,7 @@
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(-50px) scale(0.9);
+                transform: translateY(-60px) scale(0.9);
             }
             to {
                 opacity: 1;
@@ -327,46 +470,56 @@
             }
         }
 
-       
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @media (max-width: 768px) {
             .logo {
-                font-size: 3rem;
+                font-size: 3.5rem;
             }
             
             .units-container {
                 flex-direction: column;
                 align-items: center;
-                gap: 30px;
+                gap: 35px;
             }
             
             .unit-card {
-                min-width: 300px;
-                padding: 30px 20px;
+                min-width: 320px;
+                padding: 40px 25px;
             }
             
             .modal-content {
                 margin: 20px;
-                padding: 30px;
+                padding: 40px 30px;
             }
             
             .form-options {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
                 align-items: flex-start;
             }
         }
 
         @media (max-width: 480px) {
             .logo {
-                font-size: 2.5rem;
+                font-size: 3rem;
             }
             
             .unit-card {
-                min-width: 280px;
+                min-width: 300px;
             }
             
             .modal-content {
-                padding: 25px;
+                padding: 35px 25px;
             }
         }
     </style>
@@ -375,20 +528,20 @@
     <div class="header">
         <h1 class="logo">SEICE</h1>
         <p class="subtitle">Sistema Empresarial</p>
-        <p class="instruction">Selecione a unidade para acessar o portal</p>
+        <p class="instruction">Selecione a unidade para acessar o login</p>
     </div>
 
     <div class="units-container">
         <div class="unit-card" onclick="openModal('campos-elisios')">
             <h2 class="unit-title">Campos Elísios</h2>
-            <p class="unit-subtitle">Portal de Notas e Serviços</p>
-            <button class="access-button">Acessar Portal</button>
+            <p class="unit-subtitle"></p>
+            <button class="access-button">Acessar Login</button>
         </div>
 
         <div class="unit-card" onclick="openModal('duque-caxias')">
             <h2 class="unit-title">Jardim Primavera</h2>
-            <p class="unit-subtitle">Portal de Notas e Serviços</p>
-            <button class="access-button">Acessar Portal</button>
+            <p class="unit-subtitle"></p>
+            <button class="access-button">Acessar Login</button>
         </div>
     </div>
 
@@ -398,9 +551,13 @@
             <span class="close" onclick="closeModal('campos-elisios')">&times;</span>
             <div class="modal-header">
                 <h2 class="modal-title">Campos Elísios</h2>
-            <p class="modal-subtitle">Faça login para acessar o portal</p>
+                <p class="modal-subtitle">Faça login para acessar o portal</p>
             </div>
             <form class="login-form" onsubmit="handleLogin(event, 'campos-elisios')">
+                <div class="error-message" id="error-campos-elisios">
+                    Usuário ou senha incorretos. Tente novamente.
+                </div>
+                
                 <div class="form-group">
                     <label for="username-ce">Usuário</label>
                     <input type="text" id="username-ce" name="username" placeholder="Digite seu nome de usuário" required>
@@ -435,6 +592,10 @@
                 <p class="modal-subtitle">Faça login para acessar o portal</p>
             </div>
             <form class="login-form" onsubmit="handleLogin(event, 'duque-caxias')">
+                <div class="error-message" id="error-duque-caxias">
+                    Usuário ou senha incorretos. Tente novamente.
+                </div>
+                
                 <div class="form-group">
                     <label for="username-dc">Usuário</label>
                     <input type="text" id="username-dc" name="username" placeholder="Digite seu nome de usuário" required>
@@ -465,12 +626,39 @@
             const modal = document.getElementById(`modal-${unit}`);
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Limpar mensagens de erro ao abrir o modal
+            const errorElement = document.getElementById(`error-${unit}`);
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
         }
 
         function closeModal(unit) {
             const modal = document.getElementById(`modal-${unit}`);
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
+            
+            // Limpar campos e mensagens de erro
+            const form = modal.querySelector('.login-form');
+            if (form) {
+                form.reset();
+            }
+            const errorElement = document.getElementById(`error-${unit}`);
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+
+        function showError(unit) {
+            const errorElement = document.getElementById(`error-${unit}`);
+            if (errorElement) {
+                errorElement.style.display = 'block';
+                // Ocultar a mensagem após 5 segundos
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
         }
 
         function handleLogin(event, unit) {
@@ -481,31 +669,49 @@
             const password = formData.get('password');
             const remember = formData.get('remember');
             
-            // Simular processo de login
-            console.log(`Login attempt for ${unit}:`, {
+            // Credenciais válidas
+            const validUsername = 'seice';
+            const validPassword = 'estagio123';
+            
+            console.log(`Tentativa de login para ${unit}:`, {
                 username: username,
                 password: password,
-                remember: remember ? 'Yes' : 'No'
+                remember: remember ? 'Sim' : 'Não'
             });
-           
             
-            // Simula sucesso no login, estou fazend o roteamento disso
-            setTimeout(() => {
-                alert(`Login realizado com sucesso para ${unit}!`);
-                closeModal(unit);
-                   
-                // Redirecionar para a página específica da unidade
-                if (unit === 'index.html') { 
-                    // window.location.href = '/portal/campos-elisios/dashboard/';
-                    console.log(' Campos Elísios dashboard');
-                } else if (unit === 'index.html') {
-                    // window.location.href = '/portal/duque-caxias/dashboard/';
-                    console.log(' Duque de Caxias dashboard');
+            // Verificar credenciais
+            if (username === validUsername && password === validPassword) {
+                // Login bem-sucedido
+                console.log(`Login realizado com sucesso para ${unit}!`);
+                
+                // Simular carregamento
+                const button = event.target.querySelector('.login-button');
+                const originalText = button.textContent;
+                button.textContent = 'Entrando...';
+                button.disabled = true;
+                
+                setTimeout(() => {
+                    closeModal(unit);
+                    
+                    // Redirecionar para index.html
+                    window.location.href = 'index.html';
+                }, 1500);
+                
+            } else {
+                // Login falhado - mostrar mensagem de erro
+                console.log(`Falha no login para ${unit}: credenciais inválidas`);
+                showError(unit);
+                
+                // Limpar campos de senha
+                const passwordField = event.target.querySelector('input[type="password"]');
+                if (passwordField) {
+                    passwordField.value = '';
+                    passwordField.focus();
                 }
-            }, 1000);
+            }
         }
 
-       
+        // Fechar modal clicando fora
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 const modals = document.querySelectorAll('.modal');
@@ -516,7 +722,7 @@
             }
         }
 
-        
+        // Fechar modal com ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const modals = document.querySelectorAll('.modal');
@@ -525,6 +731,17 @@
                 });
                 document.body.style.overflow = 'auto';
             }
+        });
+
+        // Adicionar efeito de foco nos inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
         });
     </script>
 </body>
