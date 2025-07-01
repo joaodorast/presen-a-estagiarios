@@ -4,14 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jardim Primavera - Sistema de Gestão</title>
-    <link rel="stylesheet" href="{% static 'static/style.css' %}">
+    <title>SIGP - Sistema Jardim Primavera</title>
+    <link rel="stylesheet" href="{% static 'style/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        
+
+
+
 :root {
     
     --primary-color: #ffc107; 
@@ -929,13 +931,96 @@ li a:hover {
 
 
 
+
+
+        #modal-confirmar-exclusao .modal-content {
+            max-width: 450px;
+            border-top: 4px solid var(--danger-color);
+        }
+
+        #modal-confirmar-exclusao .modal-header {
+            background-color: #fdf2f2;
+            border-bottom: 1px solid #fecaca;
+        }
+
+        #modal-confirmar-exclusao .modal-header h3 {
+            color: var(--danger-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #modal-confirmar-exclusao .modal-body {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        #modal-confirmar-exclusao .warning-icon {
+            font-size: 48px;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+
+        #modal-confirmar-exclusao .warning-text {
+            font-size: 16px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        #modal-confirmar-exclusao .area-name {
+            font-weight: 600;
+            color: var(--danger-color);
+            font-size: 18px;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fef2f2;
+            border-radius: 4px;
+            border: 1px solid #fecaca;
+        }
+
+        #modal-confirmar-exclusao .permanent-warning {
+            font-size: 14px;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        #modal-confirmar-exclusao .modal-footer {
+            background-color: #fdf2f2;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn.confirm-delete {
+            background-color: var(--danger-color);
+            color: var(--white);
+            font-weight: 600;
+            padding: 12px 24px;
+        }
+
+        .btn.confirm-delete:hover {
+            background-color: var(--danger-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn.cancel-delete {
+            background-color: var(--gray-500);
+            color: var(--white);
+            padding: 12px 24px;
+        }
+
+        .btn.cancel-delete:hover {
+            background-color: var(--gray-600);
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo">
-            <i class="fas fa-seedling"></i>
-            <h2>Jardim Primavera</h2>
+            <i class="fas fa-user-graduate"></i>
+            <h2>SIGP</h2>
         </div>
         <nav>
             <ul>
@@ -943,21 +1028,17 @@ li a:hover {
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </li>     
+                <li data-page="areas">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Setores</span>
+                </li>
                 <li data-page="funcionarios">
                     <i class="fas fa-users"></i>
                     <span>Funcionários</span>
-                </li>
-                <li data-page="setores">
-                    <i class="fas fa-building"></i>
-                    <span>Setores</span>
-                </li>
+                </li>  
                 <li data-page="presencas">
                     <i class="fas fa-clipboard-check"></i>
                     <span>Controle de Ponto</span>
-                </li>
-                <li data-page="horarios">
-                    <i class="fas fa-clock"></i>
-                    <span>Horários de Trabalho</span>
                 </li>
                 <li data-page="relatorios">
                     <i class="fas fa-chart-bar"></i>
@@ -972,8 +1053,8 @@ li a:hover {
             </ul>
         </nav>
         <div class="sidebar-footer">
-            <p>Sistema de Gestão</p>
-            <p>Jardim Primavera v1.0.0</p>
+            <p>Sistema Jardim Primavera</p>
+            <p>v1.0.0</p>
         </div>
     </div>
               
@@ -998,12 +1079,8 @@ li a:hover {
                 <div class="dashboard-header">
                     <h2>Dashboard</h2>
                     <div class="quick-actions">
-                        <button id="btn-registrar-entrada" class="btn primary">
-                            <i class="fas fa-sign-in-alt"></i> Registrar Entrada
-                        </button>
-                        <button id="btn-registrar-saida" class="btn secondary">
-                            <i class="fas fa-sign-out-alt"></i> Registrar Saída
-                        </button>
+                        <button id="btn-registrar-entrada" class="btn primary"><i class="fas fa-sign-in-alt"></i> Registrar Entrada</button>
+                        <button id="btn-registrar-saida" class="btn secondary"><i class="fas fa-sign-out-alt"></i> Registrar Saída</button>
                     </div>
                 </div>
 
@@ -1014,7 +1091,7 @@ li a:hover {
                         </div>
                         <div class="stat-info">
                             <h3>Total de Funcionários</h3>
-                            <p id="total-funcionarios">{{ total_funcionarios|default:"Carregando..." }}</p>
+                            <p id="total-estagiarios">Carregando...</p>
                         </div>
                     </div>
 
@@ -1024,7 +1101,7 @@ li a:hover {
                         </div>
                         <div class="stat-info">
                             <h3>Presentes Hoje</h3>
-                            <p id="presentes-hoje">{{ presentes_hoje|default:"Carregando..." }}</p>
+                            <p id="presentes-hoje">Carregando...</p>
                         </div>
                     </div>
 
@@ -1034,7 +1111,7 @@ li a:hover {
                         </div>
                         <div class="stat-info">
                             <h3>Presenças do Mês</h3>
-                            <p id="presencas-mes">{{ presencas_mes|default:"Carregando..." }}</p>
+                            <p id="presencas-mes">Carregando...</p>
                         </div>
                     </div>
 
@@ -1044,7 +1121,7 @@ li a:hover {
                         </div>
                         <div class="stat-info">
                             <h3>Horas Totais do Mês</h3>
-                            <p id="horas-mes">{{ horas_mes|default:"Carregando..." }}</p>
+                            <p id="horas-mes">Carregando...</p>
                         </div>
                     </div>
                 </div>
@@ -1056,188 +1133,175 @@ li a:hover {
                             <thead>
                                 <tr>
                                     <th>Funcionário</th>
-                                    <th>Setor</th>
                                     <th>Entrada</th>
                                     <th>Saída</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for presenca in presencas_hoje_lista %}
-                                <tr>
-                                    <td>{{ presenca.funcionario.nome }}</td>
-                                    <td>{{ presenca.funcionario.setor.nome }}</td>
-                                    <td>{{ presenca.entrada|date:"H:i"|default:"--:--" }}</td>
-                                    <td>{{ presenca.saida|date:"H:i"|default:"--:--" }}</td>
-                                    <td>
-                                        <span class="status-badge {% if presenca.saida %}completo{% else %}presente{% endif %}">
-                                            {% if presenca.saida %}Completo{% else %}Presente{% endif %}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center">Nenhuma presença registrada hoje</td>
-                                </tr>
-                                {% endfor %}
+                               
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Página de Funcionários -->
-            <div id="funcionarios" class="page">
-                <div class="page-header">
-                    <h2>Gerenciar Funcionários</h2>
-                    <button id="btn-novo-funcionario" class="btn primary">
-                        <i class="fas fa-plus"></i> Novo Funcionário
-                    </button>
-                </div>
-
-                <div class="search-container">
-                    <input type="text" id="search-funcionario" placeholder="Buscar funcionário...">
-                    <button class="btn secondary"><i class="fas fa-search"></i></button>
-                </div>
-
-                <div class="table-container">
-                    <table id="funcionarios-tabela">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>CPF</th>
-                                <th>Setor</th>
-                                <th>Cargo</th>
-                                <th>Email</th>
-                                <th>Telefone</th>
-                                <th>Data Admissão</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for funcionario in funcionarios %}
-                            <tr>
-                                <td>{{ funcionario.id }}</td>
-                                <td>{{ funcionario.nome }}</td>
-                                <td>{{ funcionario.cpf }}</td>
-                                <td>{{ funcionario.setor.nome }}</td>
-                                <td>{{ funcionario.cargo }}</td>
-                                <td>{{ funcionario.email }}</td>
-                                <td>{{ funcionario.telefone }}</td>
-                                <td>{{ funcionario.data_admissao|date:"d/m/Y" }}</td>
-                                <td>
-                                    <span class="status-badge {% if funcionario.ativo %}ativo{% else %}inativo{% endif %}">
-                                        {% if funcionario.ativo %}Ativo{% else %}Inativo{% endif %}
-                                    </span>
-                                </td>
-                                <td class="actions-column">
-                                    <button class="btn-icon edit" onclick="editarFuncionario({{ funcionario.id }})" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon delete" onclick="confirmarExclusaoFuncionario({{ funcionario.id }}, '{{ funcionario.nome }}')" title="Excluir">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="10" class="text-center">Nenhum funcionário cadastrado</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Página de Setores -->
-            <div id="setores" class="page">
+            <div id="areas" class="page">
                 <div class="page-header">
                     <h2>Gerenciar Setores</h2>
-                    <button id="btn-novo-setor" class="btn primary">
-                        <i class="fas fa-plus"></i> Novo Setor
-                    </button>
+                    <button id="btn-nova-area" class="btn primary"><i class="fas fa-plus"></i> Novo Setor</button>
                 </div>
 
                 <div class="search-container">
-                    <input type="text" id="search-setor" placeholder="Buscar setor...">
+                    <input type="text" id="search-area" placeholder="Buscar setor...">
                     <button class="btn secondary"><i class="fas fa-search"></i></button>
                 </div>
 
                 <div class="table-container">
-                    <table id="setores-tabela">
+                    <table id="areas-tabela">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Nome</th>
                                 <th>Descrição</th>
-                                <th>Responsável</th>
                                 <th>Número de Funcionários</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for setor in setores %}
+                            <!-- Exemplos de setores -->
                             <tr>
-                                <td>{{ setor.id }}</td>
-                                <td>{{ setor.nome }}</td>
-                                <td>{{ setor.descricao }}</td>
-                                <td>{{ setor.responsavel|default:"--" }}</td>
-                                <td>{{ setor.funcionarios.count }}</td>
+                                <td>1</td>
+                                <td>Tecnologia</td>
+                                <td>Setor responsável por desenvolvimento e inovação tecnológica</td>
+                                <td>8</td>
                                 <td class="actions-column">
-                                    <button class="btn-icon edit" onclick="editarSetor({{ setor.id }})" title="Editar">
+                                    <button class="btn-icon edit" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn-icon delete" onclick="confirmarExclusaoSetor({{ setor.id }}, '{{ setor.nome }}')" title="Excluir">
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(1, 'Tecnologia')" title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
-                            {% empty %}
                             <tr>
-                                <td colspan="6" class="text-center">Nenhum setor cadastrado</td>
+                                <td>2</td>
+                                <td>Programação</td>
+                                <td>Setor de desenvolvimento de software e aplicações</td>
+                                <td>6</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(2, 'Programação')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
-                            {% endfor %}
+                            <tr>
+                                <td>3</td>
+                                <td>Design</td>
+                                <td>Setor de criação visual e experiência do usuário</td>
+                                <td>4</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(3, 'Design')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Infraestrutura</td>
+                                <td>Setor de manutenção e gestão de infraestrutura de TI</td>
+                                <td>3</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(4, 'Infraestrutura')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Cybersegurança</td>
+                                <td>Setor de segurança da informação e proteção de dados</td>
+                                <td>2</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(5, 'Cybersegurança')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Página de Presenças -->
+       
+            <div id="funcionarios" class="page">
+                <div class="page-header">
+                    <h2>Gerenciar Funcionários</h2>
+                    <button id="btn-novo-estagiario" class="btn primary"><i class="fas fa-plus"></i> Novo Funcionário</button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="search-estagiario" placeholder="Buscar funcionário...">
+                    <button class="btn secondary"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="table-container">
+                    <table id="estagiarios-tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Setor</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Data Início</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                   
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+           
             <div id="presencas" class="page">
                 <div class="page-header">
                     <h2>Controle de Ponto</h2>
-                    <button id="btn-nova-presenca" class="btn primary">
-                        <i class="fas fa-plus"></i> Nova Presença
-                    </button>
+                    <button id="btn-nova-presenca" class="btn primary"><i class="fas fa-plus"></i> Novo Registro</button>
                 </div>
 
                 <div class="filters-container">
-                    <form method="GET" id="form-filtros">
-                        <div class="filter-group">
-                            <label for="filtro-funcionario">Funcionário:</label>
-                            <select name="funcionario" id="filtro-funcionario">
-                                <option value="">Todos</option>
-                                {% for funcionario in funcionarios %}
-                                <option value="{{ funcionario.id }}" {% if request.GET.funcionario == funcionario.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ funcionario.nome }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="filtro-data-inicio">Data Início:</label>
-                            <input type="date" name="data_inicio" id="filtro-data-inicio" value="{{ request.GET.data_inicio }}">
-                        </div>
-                        <div class="filter-group">
-                            <label for="filtro-data-fim">Data Fim:</label>
-                            <input type="date" name="data_fim" id="filtro-data-fim" value="{{ request.GET.data_fim }}">
-                        </div>
-                        <button type="submit" class="btn secondary">
-                            <i class="fas fa-filter"></i> Filtrar
-                        </button>
-                    </form>
+                    <div class="filter-group">
+                        <label for="filtro-estagiario">Funcionário:</label>
+                        <select id="filtro-estagiario">
+                            <option value="">Todos</option>
+                            
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-data-inicio">Data Início:</label>
+                        <input type="date" id="filtro-data-inicio">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-data-fim">Data Fim:</label>
+                        <input type="date" id="filtro-data-fim">
+                    </div>
+                    <button id="btn-filtrar-presencas" class="btn secondary"><i class="fas fa-filter"></i> Filtrar</button>
                 </div>
 
                 <div class="table-container">
@@ -1246,150 +1310,66 @@ li a:hover {
                             <tr>
                                 <th>ID</th>
                                 <th>Funcionário</th>
-                                <th>Setor</th>
                                 <th>Data</th>
                                 <th>Entrada</th>
                                 <th>Saída</th>
-                                <th>Horas Trabalhadas</th>
+                                <th>Horas</th>
                                 <th>Observação</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for presenca in presencas %}
-                            <tr>
-                                <td>{{ presenca.id }}</td>
-                                <td>{{ presenca.funcionario.nome }}</td>
-                                <td>{{ presenca.funcionario.setor.nome }}</td>
-                                <td>{{ presenca.data|date:"d/m/Y" }}</td>
-                                <td>{{ presenca.entrada|date:"H:i"|default:"--:--" }}</td>
-                                <td>{{ presenca.saida|date:"H:i"|default:"--:--" }}</td>
-                                <td>{{ presenca.horas_trabalhadas|default:"--:--" }}</td>
-                                <td>{{ presenca.observacao|default:"--" }}</td>
-                                <td class="actions-column">
-                                    <button class="btn-icon edit" onclick="editarPresenca({{ presenca.id }})" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon delete" onclick="confirmarExclusaoPresenca({{ presenca.id }})" title="Excluir">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="9" class="text-center">Nenhuma presença registrada</td>
-                            </tr>
-                            {% endfor %}
+                            
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Página de Horários -->
-            <div id="horarios" class="page">
-                <div class="page-header">
-                    <h2>Horários de Trabalho</h2>
-                    <button id="btn-novo-horario" class="btn primary">
-                        <i class="fas fa-plus"></i> Novo Horário
-                    </button>
-                </div>
-
-                <div class="table-container">
-                    <table id="horarios-tabela">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>Entrada</th>
-                                <th>Saída</th>
-                                <th>Intervalo Início</th>
-                                <th>Intervalo Fim</th>
-                                <th>Carga Horária</th>
-                                <th>Funcionários</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for horario in horarios %}
-                            <tr>
-                                <td>{{ horario.id }}</td>
-                                <td>{{ horario.nome }}</td>
-                                <td>{{ horario.entrada|date:"H:i" }}</td>
-                                <td>{{ horario.saida|date:"H:i" }}</td>
-                                <td>{{ horario.intervalo_inicio|date:"H:i"|default:"--:--" }}</td>
-                                <td>{{ horario.intervalo_fim|date:"H:i"|default:"--:--" }}</td>
-                                <td>{{ horario.carga_horaria_diaria }}h</td>
-                                <td>{{ horario.funcionarios.count }}</td>
-                                <td class="actions-column">
-                                    <button class="btn-icon edit" onclick="editarHorario({{ horario.id }})" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn-icon delete" onclick="confirmarExclusaoHorario({{ horario.id }}, '{{ horario.nome }}')" title="Excluir">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="9" class="text-center">Nenhum horário cadastrado</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Página de Relatórios -->
+        
             <div id="relatorios" class="page">
                 <div class="page-header">
                     <h2>Relatórios</h2>
                 </div>
 
                 <div class="report-filters">
-                    <form method="GET" id="form-relatorio">
-                        <div class="filter-group">
-                            <label for="relatorio-mes">Mês:</label>
-                            <select name="mes" id="relatorio-mes">
-                                <option value="1" {% if request.GET.mes == "1" %}selected{% endif %}>Janeiro</option>
-                                <option value="2" {% if request.GET.mes == "2" %}selected{% endif %}>Fevereiro</option>
-                                <option value="3" {% if request.GET.mes == "3" %}selected{% endif %}>Março</option>
-                                <option value="4" {% if request.GET.mes == "4" %}selected{% endif %}>Abril</option>
-                                <option value="5" {% if request.GET.mes == "5" %}selected{% endif %}>Maio</option>
-                                <option value="6" {% if request.GET.mes == "6" %}selected{% endif %}>Junho</option>
-                                <option value="7" {% if request.GET.mes == "7" %}selected{% endif %}>Julho</option>
-                                <option value="8" {% if request.GET.mes == "8" %}selected{% endif %}>Agosto</option>
-                                <option value="9" {% if request.GET.mes == "9" %}selected{% endif %}>Setembro</option>
-                                <option value="10" {% if request.GET.mes == "10" %}selected{% endif %}>Outubro</option>
-                                <option value="11" {% if request.GET.mes == "11" %}selected{% endif %}>Novembro</option>
-                                <option value="12" {% if request.GET.mes == "12" %}selected{% endif %}>Dezembro</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="relatorio-ano">Ano:</label>
-                            <input type="number" name="ano" id="relatorio-ano" min="2020" max="2030" value="{{ request.GET.ano|default:current_year }}">
-                        </div>
-                        <button type="submit" class="btn primary">
-                            <i class="fas fa-file-alt"></i> Gerar Relatório
-                        </button>
-                        <a href="{% url 'exportar_relatorio' %}?mes={{ request.GET.mes }}&ano={{ request.GET.ano }}" class="btn secondary">
-                            <i class="fas fa-download"></i> Exportar
-                        </a>
-                    </form>
+                    <div class="filter-group">
+                        <label for="relatorio-mes">Mês:</label>
+                        <select id="relatorio-mes">
+                            <option value="1">Janeiro</option>
+                            <option value="2">Fevereiro</option>
+                            <option value="3">Março</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Maio</option>
+                            <option value="6">Junho</option>
+                            <option value="7">Julho</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="relatorio-ano">Ano:</label>
+                        <input type="number" id="relatorio-ano" min="2020" max="2030">
+                    </div>
+                    <button id="btn-gerar-relatorio" class="btn primary"><i class="fas fa-file-alt"></i> Gerar Relatório</button>
+                    <button id="btn-exportar-relatorio" class="btn secondary"><i class="fas fa-download"></i> Exportar</button>
                 </div>
 
                 <div class="report-container">
                     <div class="report-summary">
                         <div class="summary-card">
                             <h3>Total de Presenças</h3>
-                            <p id="relatorio-total-presencas">{{ relatorio.total_presencas|default:"-" }}</p>
+                            <p id="relatorio-total-presencas">-</p>
                         </div>
                         <div class="summary-card">
                             <h3>Média de Horas por Dia</h3>
-                            <p id="relatorio-media-horas">{{ relatorio.media_horas|default:"-" }}</p>
+                            <p id="relatorio-media-horas">-</p>
                         </div>
                         <div class="summary-card">
                             <h3>Total de Horas</h3>
-                            <p id="relatorio-total-horas">{{ relatorio.total_horas|default:"-" }}</p>
+                            <p id="relatorio-total-horas">-</p>
                         </div>
                     </div>
 
@@ -1398,26 +1378,13 @@ li a:hover {
                             <thead>
                                 <tr>
                                     <th>Funcionário</th>
-                                    <th>Setor</th>
                                     <th>Total de Presenças</th>
                                     <th>Total de Horas</th>
                                     <th>Média Diária</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in relatorio_funcionarios %}
-                                <tr>
-                                    <td>{{ item.funcionario.nome }}</td>
-                                    <td>{{ item.funcionario.setor.nome }}</td>
-                                    <td>{{ item.total_presencas }}</td>
-                                    <td>{{ item.total_horas }}</td>
-                                    <td>{{ item.media_diaria }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center">Nenhum dado encontrado para o período selecionado</td>
-                                </tr>
-                                {% endfor %}
+                        
                             </tbody>
                         </table>
                     </div>
@@ -1426,7 +1393,7 @@ li a:hover {
         </div>
     </div>
 
-    <!-- Modal de Confirmação de Exclusão -->
+    
     <div id="modal-confirmar-exclusao" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1441,10 +1408,10 @@ li a:hover {
                     <i class="fas fa-trash-alt"></i>
                 </div>
                 <div class="warning-text">
-                    Tem certeza que deseja excluir:
+                    Tem certeza que deseja excluir o setor:
                 </div>
-                <div id="item-nome-exclusao" class="item-name">
-                    <!-- Nome do item será inserido aqui -->
+                <div id="area-nome-exclusao" class="area-name">
+                    <!-- Nome da área será inserido aqui -->
                 </div>
                 <div class="permanent-warning">
                     <strong>Atenção:</strong> Esta ação é permanente e não pode ser desfeita.
@@ -1463,7 +1430,7 @@ li a:hover {
         </div>
     </div>
 
-    <!-- Modal Registrar Entrada -->
+  
     <div id="modal-registrar-entrada" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1471,31 +1438,26 @@ li a:hover {
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{% url 'registrar_entrada' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="entrada-funcionario">Funcionário:</label>
-                        <select name="funcionario" id="entrada-funcionario" required>
-                            <option value="">Selecione o funcionário</option>
-                            {% for funcionario in funcionarios_ativos %}
-                            <option value="{{ funcionario.id }}">{{ funcionario.nome }} - {{ funcionario.setor.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="entrada-observacao">Observação:</label>
-                        <textarea name="observacao" id="entrada-observacao" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn primary">Registrar Entrada</button>
-                        <button type="button" class="btn secondary modal-cancel">Cancelar</button>
-                    </div>
-                </form>
+                <div class="form-group">
+                    <label for="entrada-estagiario">Funcionário:</label>
+                    <select id="entrada-estagiario" required>
+                        <option value="">Selecione o funcionário</option>
+                        <!--  dados no javaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="entrada-observacao">Observação:</label>
+                    <textarea id="entrada-observacao" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-entrada" class="btn primary">Registrar Entrada</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Registrar Saída -->
+   
     <div id="modal-registrar-saida" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1503,407 +1465,78 @@ li a:hover {
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{% url 'registrar_saida' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="saida-funcionario">Funcionário:</label>
-                        <select name="funcionario" id="saida-funcionario" required>
-                            <option value="">Selecione o funcionário</option>
-                            {% for funcionario in funcionarios_presentes %}
-                            <option value="{{ funcionario.id }}">{{ funcionario.nome }} - {{ funcionario.setor.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="saida-observacao">Observação:</label>
-                        <textarea name="observacao" id="saida-observacao" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn primary">Registrar Saída</button>
-                        <button type="button" class="btn secondary modal-cancel">Cancelar</button>
-                    </div>
-                </form>
+                <div class="form-group">
+                    <label for="saida-estagiario">Funcionário:</label>
+                    <select id="saida-estagiario" required>
+                        <option value="">Selecione o funcionário</option>
+                        <!-- dados no javaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="saida-observacao">Observação:</label>
+                    <textarea id="saida-observacao" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-saida" class="btn primary">Registrar Saída</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Funcionário -->
-    <div id="modal-funcionario" class="modal">
+    
+    <div id="modal-estagiario" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-funcionario-titulo">Novo Funcionário</h3>
+                <h3 id="modal-estagiario-titulo">Novo Funcionário</h3>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{% url 'funcionario_save' %}" id="form-funcionario">
-                    {% csrf_token %}
-                    <input type="hidden" name="funcionario_id" id="funcionario-id">
-                    <div class="form-group">
-                        <label for="funcionario-nome">Nome:</label>
-                        <input type="text" name="nome" id="funcionario-nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-cpf">CPF:</label>
-                        <input type="text" name="cpf" id="funcionario-cpf" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-email">Email:</label>
-                        <input type="email" name="email" id="funcionario-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-telefone">Telefone:</label>
-                        <input type="text" name="telefone" id="funcionario-telefone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-cargo">Cargo:</label>
-                        <input type="text" name="cargo" id="funcionario-cargo" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-setor">Setor:</label>
-                        <select name="setor" id="funcionario-setor" required>
-                            <option value="">Selecione o setor</option>
-                            {% for setor in setores %}
-                            <option value="{{ setor.id }}">{{ setor.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-data-admissao">Data de Admissão:</label>
-                        <input type="date" name="data_admissao" id="funcionario-data-admissao" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-horario">Horário de Trabalho:</label>
-                        <select name="horario" id="funcionario-horario" required>
-                            <option value="">Selecione o horário</option>
-                            {% for horario in horarios %}
-                            <option value="{{ horario.id }}">{{ horario.nome }} ({{ horario.entrada|date:"H:i" }} - {{ horario.saida|date:"H:i" }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="funcionario-ativo">Status:</label>
-                        <select name="ativo" id="funcionario-ativo">
-                            <option value="true">Ativo</option>
-                            <option value="false">Inativo</option>
-                        </select>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn primary">Salvar</button>
-                        <button type="button" class="btn secondary modal-cancel">Cancelar</button>
-                    </div>
-                </form>
+                <input type="hidden" id="estagiario-id">
+                <div class="form-group">
+                    <label for="estagiario-nome">Nome:</label>
+                    <input type="text" id="estagiario-nome" required>
+                </div>
+              
+                <div class="form-group">
+                    <label for="estagiario-email">Email:</label>
+                    <input type="email" id="estagiario-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-telefone">Telefone:</label>
+                    <input type="text" id="estagiario-telefone" required>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-data-inicio">Data de Início:</label>
+                    <input type="date" id="estagiario-data-inicio" required>
+                </div>  
+                <div class="form-group">
+                    <label for="estagiario-area">Setor:</label>
+                    <select id="estagiario-area" required>
+                        <option value="">Selecione o setor</option>
+                        <!-- dados no javaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-ativo">Status:</label>
+                    <select id="estagiario-ativo">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-salvar-estagiario" class="btn primary">Salvar</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Setor -->
-    <div id="modal-setor" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-setor-titulo">Novo Setor</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{% url 'setor_save' %}" id="form-setor">
-                    {% csrf_token %}
-                    <input type="hidden" name="setor_id" id="setor-id">
-                    <div class="form-group">
-                        <label for="setor-nome">Nome:</label>
-                        <input type="text" name="nome" id="setor-nome" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="setor-descricao">Descrição:</label>
-                        <textarea name="descricao" id="setor-descricao" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="setor-responsavel">Responsável:</label>
-                        <input type="text" name="responsavel" id="setor-responsavel">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn primary">Salvar</button>
-                        <button type="button" class="btn secondary modal-cancel">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Horário -->
-    <div id="modal-horario" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-horario-titulo">Novo Horário</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{% url 'horario_save' %}" id="form-horario">
-                    {% csrf_token %}
-                    <input type="hidden" name="horario_id" id="horario-id">
-                    <div class="form-group">
-                        <label for="horario-nome">Nome:</label>
-                        <input type="text" name="nome" id="horario-nome" required placeholder="Ex: Horário Comercial">
-                    </div>
-                    <div class="form-group">
-                        <label for="horario-entrada">Horário de Entrada:</label>
-                        <input type="time" name="entrada" id="horario-entrada" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="horario-saida">Horário de Saída:</label>
-                        <input type="time" name="saida" id="horario-saida" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="horario-intervalo-inicio">Início do Intervalo:</label>
-                        <input type="time" name="intervalo_inicio" id="horario-intervalo-inicio">
-                    </div>
-                    <div class="form-group">
-                        <label for="horario-intervalo-fim">Fim do Intervalo:</label>
-                        <input type="time" name="intervalo_fim" id="horario-intervalo-fim">
-                    </div>
-                    <div class="form-group">
-                        <label for="horario-carga-horaria">Carga Horária Diária (horas):</label>
-                        <input type="number" name="carga_horaria_diaria" id="horario-carga-horaria" step="0.5" min="1" max="12" required>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn primary">Salvar</button>
-                        <button type="button" class="btn secondary modal-cancel">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Presença -->
-    <div id="modal-presenca" class="modal">
-        <div class="modal-content">                                                                                                                     
-            <div class="modal-header">
-                <h3 id="modal-presenca-titulo">Nova Presença</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{% url 'presenca_save' %}" id="form-presenca">
-                    {% csrf_token %}
-                    <input type="hidden" name="presenca_id" id="presenca-id">
-                    <div class="form-group">
-                        <label for="presenca-funcionario">Funcionário:</label>
-                        <select name="funcionario" id="presenca-funcionario" required>
-                            <option value="">Selecione o funcionário</option>
-                            {% for funcionario in funcionarios_ativos %}
-                            <option value="{{ funcionario.id }}">{{ funcionario.nome }} - {{ funcionario.setor.nome }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="presenca-data">Data:</label>
-                        <input type="date" name="data" id="presenca-data" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="presenca-entrada">Horário de Entrada:</label>
-                        <input type="time" name="entrada" id="presenca-entrada" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="presenca-saida">Horário de Saída:</label>
-                        <input type="time" name="saida" id="presenca-saida">
-                    </div>
-                    <div class="form-group">
-                        <label for="presenca-observacao">Observação:</label>
-                        <textarea name="observacao" id="presenca-observacao" rows="3"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn primary">Salvar</button>
-                        <button type="button" class="btn secondary modal-cancel">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
+    
     <div id="toast-container"></div>
-
-    <!-- Messages do Django -->
-    {% if messages %}
-    <div class="messages-container">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-            <button type="button" class="alert-close">&times;</button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-
-    <script>
-        // Configuração da data atual
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            };
-            document.getElementById('today-date').textContent = today.toLocaleDateString('pt-BR', options);
-        });
-
-        // Função para confirmar exclusão
-        function confirmarExclusaoFuncionario(id, nome) {
-            document.getElementById('item-nome-exclusao').textContent = nome;
-            document.getElementById('btn-confirmar-exclusao').onclick = function() {
-                window.location.href = "{% url 'funcionario_delete' 0 %}".replace('0', id);
-            };
-            document.getElementById('modal-confirmar-exclusao').style.display = 'block';
-        }
-
-        function confirmarExclusaoSetor(id, nome) {
-            document.getElementById('item-nome-exclusao').textContent = nome;
-            document.getElementById('btn-confirmar-exclusao').onclick = function() {
-                window.location.href = "{% url 'setor_delete' 0 %}".replace('0', id);
-            };
-            document.getElementById('modal-confirmar-exclusao').style.display = 'block';
-        }
-
-        function confirmarExclusaoHorario(id, nome) {
-            document.getElementById('item-nome-exclusao').textContent = nome;
-            document.getElementById('btn-confirmar-exclusao').onclick = function() {
-                window.location.href = "{% url 'horario_delete' 0 %}".replace('0', id);
-            };
-            document.getElementById('modal-confirmar-exclusao').style.display = 'block';
-        }
-
-        function confirmarExclusaoPresenca(id) {
-            document.getElementById('item-nome-exclusao').textContent = 'esta presença';
-            document.getElementById('btn-confirmar-exclusao').onclick = function() {
-                window.location.href = "{% url 'presenca_delete' 0 %}".replace('0', id);
-            };
-            document.getElementById('modal-confirmar-exclusao').style.display = 'block';
-        }
-
-        function fecharModalConfirmacao() {
-            document.getElementById('modal-confirmar-exclusao').style.display = 'none';
-        }
-
-        // Funções para editar itens
-        function editarFuncionario(id) {
-            // Implementar busca AJAX para carregar dados do funcionário
-            fetch(`{% url 'funcionario_get' 0 %}`.replace('0', id))
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('funcionario-id').value = data.id;
-                    document.getElementById('funcionario-nome').value = data.nome;
-                    document.getElementById('funcionario-cpf').value = data.cpf;
-                    document.getElementById('funcionario-email').value = data.email;
-                    document.getElementById('funcionario-telefone').value = data.telefone;
-                    document.getElementById('funcionario-cargo').value = data.cargo;
-                    document.getElementById('funcionario-setor').value = data.setor_id;
-                    document.getElementById('funcionario-data-admissao').value = data.data_admissao;
-                    document.getElementById('funcionario-horario').value = data.horario_id;
-                    document.getElementById('funcionario-ativo').value = data.ativo;
-                    document.getElementById('modal-funcionario-titulo').textContent = 'Editar Funcionário';
-                    document.getElementById('modal-funcionario').style.display = 'block';
-                });
-        }
-
-        function editarSetor(id) {
-            fetch(`{% url 'setor_get' 0 %}`.replace('0', id))
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('setor-id').value = data.id;
-                    document.getElementById('setor-nome').value = data.nome;
-                    document.getElementById('setor-descricao').value = data.descricao;
-                    document.getElementById('setor-responsavel').value = data.responsavel;
-                    document.getElementById('modal-setor-titulo').textContent = 'Editar Setor';
-                    document.getElementById('modal-setor').style.display = 'block';
-                });
-        }
-
-        function editarHorario(id) {
-            fetch(`{% url 'horario_get' 0 %}`.replace('0', id))
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('horario-id').value = data.id;
-                    document.getElementById('horario-nome').value = data.nome;
-                    document.getElementById('horario-entrada').value = data.entrada;
-                    document.getElementById('horario-saida').value = data.saida;
-                    document.getElementById('horario-intervalo-inicio').value = data.intervalo_inicio;
-                    document.getElementById('horario-intervalo-fim').value = data.intervalo_fim;
-                    document.getElementById('horario-carga-horaria').value = data.carga_horaria_diaria;
-                    document.getElementById('modal-horario-titulo').textContent = 'Editar Horário';
-                    document.getElementById('modal-horario').style.display = 'block';
-                });
-        }
-
-        function editarPresenca(id) {
-            fetch(`{% url 'presenca_get' 0 %}`.replace('0', id))
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('presenca-id').value = data.id;
-                    document.getElementById('presenca-funcionario').value = data.funcionario_id;
-                    document.getElementById('presenca-data').value = data.data;
-                    document.getElementById('presenca-entrada').value = data.entrada;
-                    document.getElementById('presenca-saida').value = data.saida;
-                    document.getElementById('presenca-observacao').value = data.observacao;
-                    document.getElementById('modal-presenca-titulo').textContent = 'Editar Presença';
-                    document.getElementById('modal-presenca').style.display = 'block';
-                });
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // Sistema de Controle de Estagiários (SEICE)
+    <script src="{% static 'js/index.js' %}"></script>
+<script>
+      // Sistema de Controle de Estagiários (SEICE)
 // Versão 1.0.0
 
 // Mock data para simulação do sistema
@@ -3176,8 +2809,7 @@ function formatarData(dataString) {
             };
             document.getElementById('today-date').textContent = hoje.toLocaleDateString('pt-BR', opcoes);
         });
-
-    </script>
-
+  
+</script>
 </body>
 </html>
