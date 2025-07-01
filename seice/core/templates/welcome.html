@@ -50,24 +50,22 @@
             position: relative;
         }
 
-     .logo {
-    font-size: 4.5rem;
-    font-weight: 900;
-    color: #ffffff; /* Agora é branco puro */
-    margin-bottom: 15px;
-    text-shadow: 
-        0 0 20px rgba(255, 193, 7, 0.894),
-        2px 2px 8px rgba(0, 0, 0, 0.8),
-        0 0 40px rgba(255, 193, 7, 0.1);
-    position: relative;
-    /* Remove o background com degradê */
-    background: none;
-    background-clip: unset;
-    -webkit-background-clip: unset;
-    -webkit-text-fill-color: #ffffff; /* Preenche o texto com branco puro */
-    animation: logoGlow 3s ease-in-out infinite alternate;
-}
-
+        .logo {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 0 20px rgba(255, 193, 7, 0.894),
+                2px 2px 8px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(255, 193, 7, 0.1);
+            position: relative;
+            background: none;
+            background-clip: unset;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: #ffffff;
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
 
         @keyframes logoGlow {
             0% { 
@@ -434,12 +432,18 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
-        .login-button:hover {
+        .login-button:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 
                 0 12px 30px rgba(255, 193, 7, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.4);
             background: linear-gradient(135deg, #ffcd3c 0%, #ffc107 50%, #ffb300 100%);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .error-message {
@@ -452,6 +456,33 @@
             margin-bottom: 20px;
             display: none;
             animation: slideDown 0.3s ease;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #1a1a1a;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @keyframes fadeIn {
@@ -538,7 +569,7 @@
             <button class="access-button">Acessar Login</button>
         </div>
 
-        <div class="unit-card" onclick="openModal('duque-caxias')">
+        <div class="unit-card" onclick="openModal('jardim-primavera')">
             <h2 class="unit-title">Jardim Primavera</h2>
             <p class="unit-subtitle"></p>
             <button class="access-button">Acessar Login</button>
@@ -556,6 +587,10 @@
             <form class="login-form" onsubmit="handleLogin(event, 'campos-elisios')">
                 <div class="error-message" id="error-campos-elisios">
                     Usuário ou senha incorretos. Tente novamente.
+                </div>
+                
+                <div class="success-message" id="success-campos-elisios">
+                    Login realizado com sucesso! Redirecionando...
                 </div>
                 
                 <div class="form-group">
@@ -583,27 +618,31 @@
         </div>
     </div>
 
-    <!-- Modal Duque de Caxias -->
-    <div id="modal-duque-caxias" class="modal">
+    <!-- Modal Jardim Primavera -->
+    <div id="modal-jardim-primavera" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('duque-caxias')">&times;</span>
+            <span class="close" onclick="closeModal('jardim-primavera')">&times;</span>
             <div class="modal-header">
                 <h2 class="modal-title">Jardim Primavera</h2>
                 <p class="modal-subtitle">Faça login para acessar o portal</p>
             </div>
-            <form class="login-form" onsubmit="handleLogin(event, 'duque-caxias')">
-                <div class="error-message" id="error-duque-caxias">
+            <form class="login-form" onsubmit="handleLogin(event, 'jardim-primavera')">
+                <div class="error-message" id="error-jardim-primavera">
                     Usuário ou senha incorretos. Tente novamente.
                 </div>
                 
-                <div class="form-group">
-                    <label for="username-dc">Usuário</label>
-                    <input type="text" id="username-dc" name="username" placeholder="Digite seu nome de usuário" required>
+                <div class="success-message" id="success-jardim-primavera">
+                    Login realizado com sucesso! Redirecionando...
                 </div>
                 
                 <div class="form-group">
-                    <label for="password-dc">Senha</label>
-                    <input type="password" id="password-dc" name="password" placeholder="Digite sua senha" required>
+                    <label for="username-jp">Usuário</label>
+                    <input type="text" id="username-jp" name="username" placeholder="Digite seu nome de usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password-jp">Senha</label>
+                    <input type="password" id="password-jp" name="password" placeholder="Digite sua senha" required>
                 </div>
 
                 <div class="form-options">
@@ -621,128 +660,262 @@
         </div>
     </div>
 
-    <script>
-        function openModal(unit) {
-            const modal = document.getElementById(`modal-${unit}`);
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            // Limpar mensagens de erro ao abrir o modal
-            const errorElement = document.getElementById(`error-${unit}`);
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
-        }
+   <script>
+       // Função para obter o CSRF token
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.split('; ')
+           .find(row => row.startsWith('csrftoken='))
+           ?.split('=')[1];
+}
 
-        function closeModal(unit) {
-            const modal = document.getElementById(`modal-${unit}`);
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            // Limpar campos e mensagens de erro
-            const form = modal.querySelector('.login-form');
-            if (form) {
-                form.reset();
-            }
-            const errorElement = document.getElementById(`error-${unit}`);
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
+function openModal(unit) {
+    const modal = document.getElementById(`modal-${unit}`);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+      
+        hideMessage(unit, 'error');
+        hideMessage(unit, 'success');
+        
+        
+        const firstInput = modal.querySelector('input[type="text"]');
+        if (firstInput) {
+            setTimeout(() => firstInput.focus(), 300);
         }
+    }
+}
 
-        function showError(unit) {
-            const errorElement = document.getElementById(`error-${unit}`);
-            if (errorElement) {
-                errorElement.style.display = 'block';
-                // Ocultar a mensagem após 5 segundos
-                setTimeout(() => {
-                    errorElement.style.display = 'none';
-                }, 5000);
-            }
+function closeModal(unit) {
+    const modal = document.getElementById(`modal-${unit}`);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        
+   
+        const form = modal.querySelector('.login-form');
+        if (form) {
+            form.reset();
         }
+        hideMessage(unit, 'error');
+        hideMessage(unit, 'success');
+    }
+}
 
-        function handleLogin(event, unit) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const username = formData.get('username');
-            const password = formData.get('password');
-            const remember = formData.get('remember');
-            
-            // Credenciais válidas
-            const validUsername = 'seice';
-            const validPassword = 'estagio123';
-            
-            console.log(`Tentativa de login para ${unit}:`, {
+function showMessage(unit, type, message = null) {
+    const elementId = `${type}-${unit}`;
+    const element = document.getElementById(elementId);
+    if (element) {
+        if (message) {
+            element.textContent = message;
+        }
+        element.style.display = 'block';
+        
+
+        if (type === 'error') {
+            setTimeout(() => {
+                hideMessage(unit, type);
+            }, 5000);
+        }
+    }
+}
+
+function hideMessage(unit, type) {
+    const elementId = `${type}-${unit}`;
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.display = 'none';
+    }
+}
+
+function setButtonLoading(button, loading) {
+    if (loading) {
+        button.disabled = true;
+        button.innerHTML = '<span class="loading-spinner"></span>Entrando...';
+    } else {
+        button.disabled = false;
+        button.textContent = 'Entrar no Portal';
+    }
+}
+
+async function handleLogin(event, unit) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    const password = formData.get('password');
+    const button = form.querySelector('.login-button');
+    
+   
+    if (!username || !password) {
+        showMessage(unit, 'error', 'Por favor, preencha todos os campos.');
+        return;
+    }
+    
+  
+    hideMessage(unit, 'error');
+    hideMessage(unit, 'success');
+    
+   
+    setButtonLoading(button, true);
+    
+    try {
+        const response = await fetch('/unit-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken() || '',
+            },
+            body: JSON.stringify({
+                unit: unit,
                 username: username,
-                password: password,
-                remember: remember ? 'Sim' : 'Não'
-            });
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+       
+            console.log(`Login realizado com sucesso para ${unit}!`);
+            showMessage(unit, 'success', data.message || 'Login realizado com sucesso!');
             
-            // Verificar credenciais
-            if (username === validUsername && password === validPassword) {
-                // Login bem-sucedido
-                console.log(`Login realizado com sucesso para ${unit}!`);
-                
-                // Simular carregamento
-                const button = event.target.querySelector('.login-button');
-                const originalText = button.textContent;
-                button.textContent = 'Entrando...';
-                button.disabled = true;
-                
-                setTimeout(() => {
-                    closeModal(unit);
-                    
-                    // Redirecionar para index.html
-                    window.location.href = 'index.html';
-                }, 1500);
-                
-            } else {
-                // Login falhado - mostrar mensagem de erro
-                console.log(`Falha no login para ${unit}: credenciais inválidas`);
-                showError(unit);
-                
-                // Limpar campos de senha
-                const passwordField = event.target.querySelector('input[type="password"]');
-                if (passwordField) {
-                    passwordField.value = '';
-                    passwordField.focus();
-                }
+          
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+            
+        } else {
+          
+            console.log(`Falha no login para ${unit}:`, data.error);
+            showMessage(unit, 'error', data.error || 'Usuário ou senha incorretos. Tente novamente.');
+            
+            
+            const passwordField = form.querySelector('input[type="password"]');
+            if (passwordField) {
+                passwordField.value = '';
+                passwordField.focus();
             }
+            
+            setButtonLoading(button, false);
         }
+        
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+        showMessage(unit, 'error', 'Erro de conexão. Tente novamente.');
+        setButtonLoading(button, false);
+    }
+}
 
-        // Fechar modal clicando fora
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                const modals = document.querySelectorAll('.modal');
-                modals.forEach(modal => {
-                    modal.classList.remove('active');
-                });
-                document.body.style.overflow = 'auto';
-            }
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            const unit = modal.id.replace('modal-', '');
+            closeModal(unit);
+        });
+    }
+}
+
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const activeModal = document.querySelector('.modal.active');
+        if (activeModal) {
+            const unit = activeModal.id.replace('modal-', '');
+            closeModal(unit);
         }
+    }
+});
 
-        // Fechar modal com ESC
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                const modals = document.querySelectorAll('.modal');
-                modals.forEach(modal => {
-                    modal.classList.remove('active');
-                });
-                document.body.style.overflow = 'auto';
+// Verificar se o usuário já está logado ao carregar a página
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/get-user-info/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCSRFToken() || '',
             }
         });
 
-        // Adicionar efeito de foco nos inputs
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'translateY(-2px)';
-            });
+        if (response.ok) {
+            const data = await response.json();
             
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = 'translateY(0)';
-            });
-        });
+            if (data.authenticated) {
+                // User já logado, redirecionar para a devida page
+                const redirectUrl = data.unit === 'campos-elisios' ? '/index/' : '/index-jardim-primavera/';
+                window.location.href = redirectUrl;
+            }
+        }
+    } catch (error) {
+        // User não logado, continuar normalmente
+        console.log('Usuário não está logado, mostrando página de seleção');
+    }
+});
+
+
+document.querySelectorAll('input[type="text"], input[type="password"]').forEach(input => {
+    input.addEventListener('input', function() {
+      
+        const modal = this.closest('.modal');
+        if (modal) {
+            const unit = modal.id.replace('modal-', '');
+            
+            if (this.value.trim()) {
+                hideMessage(unit, 'error');
+            }
+        }
+    });
+});
+
+
+document.addEventListener('keydown', function(event) {
+    const activeModal = document.querySelector('.modal.active');
+    if (activeModal && event.key === 'Enter' && document.activeElement.type !== 'submit') {
+        const inputs = activeModal.querySelectorAll('input');
+        const currentIndex = Array.from(inputs).indexOf(document.activeElement);
+        
+        event.preventDefault();
+        
+        const nextInput = inputs[currentIndex + 1];
+        if (nextInput) {
+            nextInput.focus();
+        } else {
+            const submitButton = activeModal.querySelector('button[type="submit"]');
+            if (submitButton && !submitButton.disabled) {
+                submitButton.click();
+            }
+        }
+    }
+});
+
+
+document.querySelectorAll('.login-button').forEach(button => {
+    button.addEventListener('click', function(event) {
+        if (this.disabled) {
+            event.preventDefault();
+            return false;
+        }
+    });
+});
+
+
+window.addEventListener('online', function() {
+    console.log('Conexão restaurada');
+});
+
+window.addEventListener('offline', function() {
+    console.log('Conexão perdida');
+    
+    const activeModal = document.querySelector('.modal.active');
+    if (activeModal) {
+        const unit = activeModal.id.replace('modal-', '');
+        showMessage(unit, 'error', 'Sem conexão com a internet. Verifique sua conexão.');
+    }
+});
     </script>
 </body>
 </html>

@@ -182,4 +182,4 @@ def registrar_entrada(request):
 def calculadora_horas(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return render(request, 'calculadora-hour.html')
+    return render(request, 'calculadora-hour.html')   
