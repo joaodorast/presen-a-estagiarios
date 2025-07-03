@@ -44,6 +44,8 @@ def get_estagiarios(request):
         for estagiario in estagiarios:
             area = get_area(estagiario['area_id'])
             estagiario['area'] = area.nome if area else 'Área não encontrada'
+            estagiario['temDigital'] = bool(estagiario['digital'])
+            print(estagiario['temDigital'])
         return JsonResponse({'estagiarios': estagiarios}, safe=False)
     
 def total_estagiarios_area(area_id):
@@ -177,6 +179,25 @@ def registrar_entrada(request):
         entrada = parse_time(data['entrada'])
         presenca = Presenca.objects.create(estagiario=estagiario, data=data['data'], entrada=entrada)
         return JsonResponse({'message': 'Entrada registrada com sucesso!', 'id': presenca.id}, status=201)
+    
+
+@csrf_exempt
+def add_digital(request):
+    print(request.method)
+    print(request.body)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        try:
+            estagiario = Estagiario.objects.get(id=data['estagiarioId'])
+            estagiario.digital = data['digital']
+            estagiario.save()
+            return JsonResponse({'message': 'Digital adicionada com sucesso!'}, status=200)
+        except Estagiario.DoesNotExist:
+            return JsonResponse({'error': 'Estagiário não encontrado'}, status=404)
+    return HttpResponse(
+        'Método não permitido. Use POST para adicionar digital.',
+        status=405
+    )
 
 #  adiconei uma nova view: 
 def calculadora_horas(request):
