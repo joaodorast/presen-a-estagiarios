@@ -1,3 +1,75 @@
+function showScreen(tela) {
+    document.getElementById('tela-cadastro').style.display = tela === 'cadastro' ? 'block' : 'none';
+    document.getElementById('tela-ponto').style.display = tela === 'ponto' ? 'block' : 'none';
+    if (tela === 'cadastro') carregarEstagiariosCadastro();
+}
+
+// Carrega estagiários para o select de cadastro de digitais
+function carregarEstagiariosCadastro() {
+    fetch('http://127.0.0.1:8000/api/estagiarios/')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('estagiarioSelectCadastro');
+            select.innerHTML = '<option value="">Selecione...</option>';
+            data.estagiarios.forEach(est => {
+                select.innerHTML += `<option value="${est.id}">${est.nome} (${est.area})</option>`;
+            });
+        })
+        .catch(() => {
+            const select = document.getElementById('estagiarioSelectCadastro');
+            select.innerHTML = '<option value="">Erro ao carregar</option>';
+        });
+}
+
+// Função para capturar e cadastrar digital
+function capturarDigitalCadastro() {
+    const estagiarioId = document.getElementById('estagiarioSelectCadastro').value;
+    if (!estagiarioId) {
+        document.getElementById('statusCadastro').innerText = "Selecione um estagiário!";
+        return;
+    }
+    // Aqui você chama a função do SDK para capturar a digital
+    // Exemplo fictício:
+    const digital = localStorage.getItem("intermediate"); // ou chame o SDK
+    if (!digital) {
+        document.getElementById('statusCadastro').innerText = "Capture a digital primeiro!";
+        return;
+    }
+    fetch('http://127.0.0.1:8000/api/add-digital/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estagiarioId, digital })
+    })
+    .then(response => response.json())
+    .then(data => document.getElementById('statusCadastro').innerText = "Digital cadastrada com sucesso!")
+    .catch(() => document.getElementById('statusCadastro').innerText = "Erro ao cadastrar digital.");
+}
+
+// Função para capturar digital e bater ponto
+function capturarDigitalPonto() {
+    // Aqui você chama o SDK para capturar a digital
+    const digital = localStorage.getItem("intermediate"); // ou chame o SDK
+    if (!digital) {
+        document.getElementById('statusPonto').innerText = "Capture a digital primeiro!";
+        return;
+    }
+    fetch('http://127.0.0.1:8000/api/dashboard/bater-ponto/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ digital })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            document.getElementById('statusPonto').innerText = "Ponto registrado para " + data.estagiario_nome;
+        } else {
+            document.getElementById('statusPonto').innerText = "Digital não reconhecida!";
+        }
+    })
+    .catch(() => document.getElementById('statusPonto').innerText = "Erro ao bater ponto.");
+}
+
+
 
 var test = null;
 
@@ -631,23 +703,6 @@ function delayAnimate(id,visibility)
    document.getElementById(id).style.display = visibility;
 }
 
-
-function carregarEstagiarios() {
-    fetch('http://127.0.0.1:8000/api/estagiarios/')
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('estagiarioSelect');
-            select.innerHTML = '<option value="">Selecione...</option>';
-            data.estagiarios.forEach(est => {
-                const status = est.temDigital ? '✅' : '❌';
-                select.innerHTML += `<option value="${est.id}">${est.nome} (${est.area}) ${status}</option>`;
-            });
-        })
-        .catch(() => {
-            const select = document.getElementById('estagiarioSelect');
-            select.innerHTML = '<option value="">Erro ao carregar</option>';
-        });
-}
 
 window.onload = function () {
     localStorage.clear();
