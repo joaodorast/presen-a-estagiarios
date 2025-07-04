@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/presencas/saida/', views.registrar_saida),
 
     path('api/add-digital/', views.add_digital, name='add_digital'),
+    path('api/bater-ponto/', views.bater_ponto, name='bater_ponto'),
 ]
