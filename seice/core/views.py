@@ -8,6 +8,7 @@ import json
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from datetime import datetime, date
 
 def login_view(request):
     if request.method == 'POST':
@@ -196,6 +197,50 @@ def add_digital(request):
             return JsonResponse({'error': 'Estagiário não encontrado'}, status=404)
     return HttpResponse(
         'Método não permitido. Use POST para adicionar digital.',
+        status=405
+    )
+
+@csrf_exempt
+def bater_ponto(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        digital_recebida = data.get('digital')
+        hora_entrada = data.get('entrada')  # opcional, pode usar hora atual
+        data_hoje = data.get('data') or date.today().isoformat()
+
+        # Aqui você deve usar sua biblioteca de comparação de digitais
+        # Exemplo simples: comparação direta (substitua pela sua lógica real)
+        try:
+            estagiario = Estagiario.objects.get(digital=digital_recebida)
+        except Estagiario.DoesNotExist:
+            return JsonResponse({'sucesso': False, 'mensagem': 'Digital não reconhecida!'}, status=404)
+
+        # Verifica se já existe presença aberta hoje para esse estagiário
+        ja_presente = Presenca.objects.filter(
+            estagiario=estagiario,
+            data=data_hoje,
+            saida__isnull=True
+        ).exists()
+        if ja_presente:
+            return JsonResponse({'sucesso': False, 'mensagem': 'Estagiário já está presente hoje!'}, status=400)
+
+        # Registra a presença
+        if not hora_entrada:
+            hora_entrada = datetime.now().strftime('%H:%M:%S')
+        entrada = parse_time(hora_entrada)
+        presenca = Presenca.objects.create(
+            estagiario=estagiario,
+            data=data_hoje,
+            entrada=entrada
+        )
+        return JsonResponse({
+            'sucesso': True,
+            'mensagem': 'Ponto registrado com sucesso!',
+            'estagiario_nome': estagiario.nome,
+            'id': presenca.id
+        }, status=201)
+    return HttpResponse(
+        'Método não permitido. Use POST para registrar ponto.',
         status=405
     )
 
