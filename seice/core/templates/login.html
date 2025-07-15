@@ -17,7 +17,7 @@
             overflow: hidden;
         }
 
-        /* LOADING SCREEN - NÍVEL EMPRESARIAL MUNDIAL */
+      
         .loading-screen {
             position: fixed;
             top: 0;
@@ -39,7 +39,7 @@
             pointer-events: none;
         }
 
-        /* Background Pattern Empresarial */
+       
         .loading-screen::before {
             content: '';
             position: absolute;
@@ -62,7 +62,7 @@
             position: relative;
         }
 
-        /* Logo Empresarial */
+      
         .loading-logo {
             font-size: 4.5rem;
             font-weight: 200;
@@ -87,7 +87,7 @@
             }
         }
 
-        /* Subtitle Empresarial */
+       
         .loading-subtitle {
             font-size: 0.875rem;
             color: #888888;
@@ -110,14 +110,13 @@
             }
         }
 
-        /* Progress Container Empresarial */
+     
         .progress-container {
             width: 400px;
             position: relative;
             margin-bottom: 48px;
         }
 
-        /* Progress Track */
         .progress-track {
             width: 100%;
             height: 2px;
@@ -127,7 +126,7 @@
             position: relative;
         }
 
-        /* Progress Bar */
+ 
         .progress-bar {
             height: 100%;
             background: linear-gradient(90deg, #ffc107 0%, #ffffff 50%, #ffc107 100%);
@@ -137,7 +136,7 @@
             position: relative;
         }
 
-        /* Progress Glow */
+        
         .progress-bar::after {
             content: '';
             position: absolute;
@@ -151,7 +150,7 @@
             opacity: 0.6;
         }
 
-        /* Progress Percentage */
+       
         .progress-percentage {
             position: absolute;
             top: -30px;
@@ -168,7 +167,7 @@
             opacity: 1;
         }
 
-        /* Status Text */
+       
         .loading-status {
             font-size: 0.875rem;
             color: #666666;
@@ -195,7 +194,7 @@
             }
         }
 
-        /* System Indicator */
+        
         .system-indicator {
             display: flex;
             align-items: center;
@@ -235,7 +234,7 @@
             letter-spacing: 1px;
         }
 
-        /* Versão do Sistema */
+      
         .version-info {
             position: absolute;
             bottom: 40px;
@@ -259,7 +258,7 @@
             }
         }
 
-        /* Copyright */
+       
         .copyright-info {
             position: absolute;
             bottom: 40px;
@@ -283,7 +282,7 @@
             }
         }
 
-        /* Responsive Design */
+       
         @media (max-width: 768px) {
             .loading-logo {
                 font-size: 3rem;
@@ -311,7 +310,7 @@
             }
         }
 
-        /* RESTO DO CÓDIGO DO SISTEMA DE LOGIN (MANTIDO INTACTO) */
+      
         .login-wrapper {
             display: flex;
             height: 100vh;
@@ -742,7 +741,7 @@
     </style>
 </head>
 <body>
-    <!-- LOADING SCREEN PROFISSIONAL DE NÍVEL EMPRESARIAL -->
+    
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-content">
             <h1 class="loading-logo">SEICE</h1>
@@ -772,7 +771,7 @@
         <div class="copyright-info">© 2025 SEICE Enterprise</div>
     </div>
 
-    <!-- SISTEMA DE LOGIN (MANTIDO INTACTO) -->
+   
     <div class="login-wrapper" id="loginWrapper">
         <div class="left-panel">
             <div class="brand-content">
@@ -844,7 +843,7 @@
     </div>
 
     <script>
-        // SISTEMA DE LOADING PROFISSIONAL
+       
         class EnterpriseLoader {
             constructor() {
                 this.loadingScreen = document.getElementById('loadingScreen');
@@ -887,24 +886,24 @@
                 if (this.currentStep < this.loadingSteps.length) {
                     const step = this.loadingSteps[this.currentStep];
                     
-                    // Update status
+                  
                     this.loadingStatus.textContent = step.message;
                     this.systemInfo.textContent = step.info;
                     
-                    // Update progress
+                   
                     const targetProgress = ((this.currentStep + 1) / this.loadingSteps.length) * 100;
                     this.animateProgress(targetProgress);
                     
-                    // Update dots
+                    
                     this.updateDots();
                     
-                    // Move to next step
+                    
                     setTimeout(() => {
                         this.currentStep++;
                         this.executeLoadingStep();
                     }, step.duration);
                 } else {
-                    // Loading complete
+                   
                     setTimeout(() => {
                         this.completeLoading();
                     }, 700);
@@ -922,7 +921,7 @@
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
                     
-                    // Easing function
+                  
                     const easeProgress = 1 - Math.pow(1 - progress, 3);
                     
                     this.progress = startProgress + (progressDiff * easeProgress);
@@ -946,10 +945,10 @@
             }
             
             completeLoading() {
-                // Fade out loading screen
+               
                 this.loadingScreen.classList.add('fade-out');
                 
-                // Show login after fade out
+              
                 setTimeout(() => {
                     this.loadingScreen.style.display = 'none';
                     this.loginWrapper.classList.add('show');
@@ -957,7 +956,7 @@
             }
         }
         
-        // Initialize professional loading system
+      
         window.addEventListener('load', () => {
             const loader = new EnterpriseLoader();
             loader.init();
