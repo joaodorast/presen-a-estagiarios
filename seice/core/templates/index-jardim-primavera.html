@@ -1878,46 +1878,46 @@ function initAreaSearch() {
 function renderAreasTable(areasToShow) {
     const tableBody = document.querySelector('#areas-tabela tbody');
     tableBody.innerHTML = '';
+
     if (!areasToShow.length) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="5" class="text-center">Nenhuma área encontrada.</td>`;
-        tableBody.appendChild(row);
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center">Nenhuma área encontrada.</td></tr>`;
         return;
     }
-    console.log('Áreas a serem exibidas:', areasToShow); // Depuração
-    areasToShow.forEach(area => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+
+    const createActionButton = (type, id) => `
+        <button class="btn-icon ${type}" data-id="${id}">
+            <i class="fas fa-${type === 'edit' ? 'edit' : 'trash-alt'}"></i>
+        </button>`;
+
+    const rowsHTML = areasToShow.map(area => `
+        <tr>
             <td>${area.id}</td>
             <td>${area.nome}</td>
             <td>${area.descricao || '-'}</td>
             <td>${area.total_estagiarios || 0}</td>
             <td>
                 <div class="actions-column">
-                    <button class="btn-icon edit" data-id="${area.id}"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon delete" data-id="${area.id}"><i class="fas fa-trash-alt"></i></button>
+                    ${createActionButton('edit', area.id)}
+                    ${createActionButton('delete', area.id)}
                 </div>
             </td>
-        `;
-        tableBody.appendChild(row);
+        </tr>`).join('');
+
+    tableBody.innerHTML = rowsHTML;
+
+    tableBody.querySelectorAll('.btn-icon.edit').forEach(btn => {
+        btn.addEventListener('click', () => editArea(+btn.dataset.id));
     });
 
-    document.querySelectorAll('#areas-tabela .btn-icon.edit').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const id = parseInt(this.getAttribute('data-id'));
-            editArea(id);
-        });
-    });
-    document.querySelectorAll('#areas-tabela .btn-icon.delete').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const id = parseInt(this.getAttribute('data-id'));
+    tableBody.querySelectorAll('.btn-icon.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = +btn.dataset.id;
             if (confirm('Tem certeza que deseja excluir esta área?')) {
                 deleteArea(id);
             }
         });
     });
 }
-
 
 
 function initTodayPresences() {
