@@ -17,21 +17,21 @@
             overflow: hidden;
         }
 
-      
+        /* LOADING SCREEN - NÍVEL EMPRESARIAL MUNDIAL */
         .loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 25%, #2d2d2d 50%, #1a1a1a 75%, #0f0f0f 100%);
+            background: #0a0a0a;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             opacity: 1;
-            transition: opacity 0.8s ease-out;
+            transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .loading-screen.fade-out {
@@ -39,6 +39,7 @@
             pointer-events: none;
         }
 
+        /* Background Pattern Empresarial */
         .loading-screen::before {
             content: '';
             position: absolute;
@@ -46,221 +47,271 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M 8 0 L 0 0 0 8" fill="none" stroke="%23333" stroke-width="0.3" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.1;
-            animation: gridMove 20s linear infinite;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(8px, 8px); }
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255, 193, 7, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 75% 75%, rgba(255, 193, 7, 0.03) 0%, transparent 40%),
+                linear-gradient(135deg, #0a0a0a 0%, #111111 25%, #0f0f0f 50%, #111111 75%, #0a0a0a 100%);
+            z-index: 0;
         }
 
         .loading-content {
-            text-align: center;
-            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
             position: relative;
         }
 
+        /* Logo Empresarial */
         .loading-logo {
-            font-size: 5rem;
-            font-weight: 900;
+            font-size: 4.5rem;
+            font-weight: 200;
             color: #ffffff;
-            margin-bottom: 30px;
-            text-shadow: 0 0 30px rgba(255, 193, 7, 0.3);
+            margin-bottom: 16px;
+            letter-spacing: 8px;
             position: relative;
-            animation: logoGlow 2s ease-in-out infinite alternate;
+            opacity: 0;
+            animation: logoFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
 
-        @keyframes logoGlow {
-            0% { 
-                text-shadow: 0 0 30px rgba(255, 193, 7, 0.3), 0 0 60px rgba(255, 193, 7, 0.1);
-                transform: scale(1);
+        @keyframes logoFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+                letter-spacing: 20px;
             }
-            100% { 
-                text-shadow: 0 0 40px rgba(255, 193, 7, 0.5), 0 0 80px rgba(255, 193, 7, 0.2);
-                transform: scale(1.02);
-            }
-        }
-
-        .loading-logo::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #ffc107, transparent);
-            border-radius: 2px;
-            animation: lineGlow 1.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes lineGlow {
-            0% { 
-                box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
-                opacity: 0.7;
-            }
-            100% { 
-                box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+            100% {
                 opacity: 1;
+                transform: translateY(0);
+                letter-spacing: 8px;
             }
         }
 
-        .loading-text {
-            font-size: 1.2rem;
-            color: #cccccc;
-            margin-bottom: 50px;
+        /* Subtitle Empresarial */
+        .loading-subtitle {
+            font-size: 0.875rem;
+            color: #888888;
+            margin-bottom: 60px;
             font-weight: 300;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            animation: textFade 2s ease-in-out infinite alternate;
+            opacity: 0;
+            animation: subtitleFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s forwards;
         }
 
-        @keyframes textFade {
-            0% { opacity: 0.7; }
-            100% { opacity: 1; }
+        @keyframes subtitleFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .loading-spinner {
-            width: 80px;
-            height: 80px;
+        /* Progress Container Empresarial */
+        .progress-container {
+            width: 400px;
             position: relative;
-            margin: 0 auto 40px;
+            margin-bottom: 48px;
         }
 
-        .spinner-ring {
-            position: absolute;
+        /* Progress Track */
+        .progress-track {
             width: 100%;
-            height: 100%;
-            border: 3px solid transparent;
-            border-radius: 50%;
-            animation: spin 1.5s linear infinite;
-        }
-
-        .spinner-ring:nth-child(1) {
-            border-top-color: #ffc107;
-            animation-duration: 1.5s;
-        }
-
-        .spinner-ring:nth-child(2) {
-            border-right-color: #ffb300;
-            animation-duration: 2s;
-            animation-direction: reverse;
-        }
-
-        .spinner-ring:nth-child(3) {
-            border-bottom-color: #ff8f00;
-            animation-duration: 2.5s;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-progress {
-            width: 300px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 1px;
             overflow: hidden;
             position: relative;
-            margin: 0 auto;
         }
 
+        /* Progress Bar */
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #ffc107, #ffb300, #ff8f00);
-            border-radius: 2px;
+            background: linear-gradient(90deg, #ffc107 0%, #ffffff 50%, #ffc107 100%);
+            border-radius: 1px;
             width: 0%;
-            animation: progressLoad 3s ease-in-out forwards;
+            transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
         }
 
+        /* Progress Glow */
         .progress-bar::after {
             content: '';
             position: absolute;
-            top: 0;
+            top: -1px;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            animation: progressShine 1.5s ease-in-out infinite;
+            bottom: -1px;
+            background: inherit;
+            border-radius: 1px;
+            filter: blur(2px);
+            opacity: 0.6;
         }
 
-        @keyframes progressLoad {
-            0% { width: 0%; }
-            20% { width: 15%; }
-            40% { width: 35%; }
-            60% { width: 60%; }
-            80% { width: 85%; }
-            100% { width: 100%; }
-        }
-
-        @keyframes progressShine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .loading-status {
-            margin-top: 30px;
-            font-size: 0.9rem;
-            color: #999;
+        /* Progress Percentage */
+        .progress-percentage {
+            position: absolute;
+            top: -30px;
+            right: 0;
+            font-size: 0.75rem;
+            color: #ffffff;
             font-weight: 300;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .dots {
-            animation: dots 1.5s steps(3, end) infinite;
+        .progress-percentage.visible {
+            opacity: 1;
         }
 
-        @keyframes dots {
-            0%, 20% { content: ''; }
-            40% { content: '.'; }
-            60% { content: '..'; }
-            80%, 100% { content: '...'; }
+        /* Status Text */
+        .loading-status {
+            font-size: 0.875rem;
+            color: #666666;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-align: center;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: statusFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
         }
 
-        .dots::after {
-            content: '';
-            animation: dots 1.5s steps(3, end) infinite;
-        }
-
-       
-        .particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: rgba(255, 193, 7, 0.5);
-            border-radius: 50%;
-            animation: float 6s linear infinite;
-        }
-
-        @keyframes float {
+        @keyframes statusFadeIn {
             0% {
-                transform: translateY(100vh) translateX(0);
                 opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
+                transform: translateY(10px);
             }
             100% {
-                transform: translateY(-100vh) translateX(100px);
-                opacity: 0;
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-       
+        /* System Indicator */
+        .system-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            animation: indicatorFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.9s forwards;
+        }
+
+        @keyframes indicatorFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .system-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #333333;
+            transition: all 0.3s ease;
+        }
+
+        .system-dot.active {
+            background: #ffc107;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+        }
+
+        .system-info {
+            font-size: 0.75rem;
+            color: #555555;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Versão do Sistema */
+        .version-info {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-size: 0.75rem;
+            color: #333333;
+            font-weight: 300;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: versionFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.2s forwards;
+        }
+
+        @keyframes versionFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Copyright */
+        .copyright-info {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            font-size: 0.75rem;
+            color: #333333;
+            font-weight: 300;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: copyrightFadeIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.2s forwards;
+        }
+
+        @keyframes copyrightFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .loading-logo {
+                font-size: 3rem;
+                letter-spacing: 4px;
+            }
+            
+            .progress-container {
+                width: 300px;
+            }
+            
+            .version-info,
+            .copyright-info {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .loading-logo {
+                font-size: 2.5rem;
+                letter-spacing: 2px;
+            }
+            
+            .progress-container {
+                width: 250px;
+            }
+        }
+
+        /* RESTO DO CÓDIGO DO SISTEMA DE LOGIN (MANTIDO INTACTO) */
         .login-wrapper {
             display: flex;
             height: 100vh;
@@ -555,10 +606,6 @@
         }
 
         @media (max-width: 1024px) {
-            .loading-logo {
-                font-size: 3.5rem;
-            }
-
             .login-wrapper {
                 flex-direction: column;
             }
@@ -594,14 +641,6 @@
         }
 
         @media (max-width: 768px) {
-            .loading-logo {
-                font-size: 3rem;
-            }
-
-            .loading-progress {
-                width: 250px;
-            }
-
             .left-panel {
                 height: 30vh;
                 padding: 20px;
@@ -624,14 +663,6 @@
         }
 
         @media (max-width: 480px) {
-            .loading-logo {
-                font-size: 2.5rem;
-            }
-
-            .loading-progress {
-                width: 200px;
-            }
-
             .left-panel {
                 height: 25vh;
                 padding: 15px;
@@ -711,31 +742,37 @@
     </style>
 </head>
 <body>
-   
+    <!-- LOADING SCREEN PROFISSIONAL DE NÍVEL EMPRESARIAL -->
     <div class="loading-screen" id="loadingScreen">
-        <div class="particles" id="particles"></div>
-        
         <div class="loading-content">
             <h1 class="loading-logo">SEICE</h1>
-            <p class="loading-text">Sistema Empresarial</p>
+            <p class="loading-subtitle">Sistema Empresarial</p>
             
-            <div class="loading-spinner">
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
+            <div class="progress-container">
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+                <div class="progress-track">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
             </div>
             
-            <div class="loading-progress">
-                <div class="progress-bar"></div>
+            <div class="loading-status" id="loadingStatus">
+                Inicializando sistema
             </div>
             
-            <div class="loading-status">
-                <span id="loadingText">Inicializando sistema</span><span class="dots"></span>
+            <div class="system-indicator">
+                <div class="system-dot" id="dot1"></div>
+                <div class="system-dot" id="dot2"></div>
+                <div class="system-dot" id="dot3"></div>
+                <div class="system-dot" id="dot4"></div>
+                <div class="system-info" id="systemInfo">Core System</div>
             </div>
         </div>
+        
+        <div class="version-info">v2.4.1</div>
+        <div class="copyright-info">© 2025 SEICE Enterprise</div>
     </div>
 
-    
+    <!-- SISTEMA DE LOGIN (MANTIDO INTACTO) -->
     <div class="login-wrapper" id="loginWrapper">
         <div class="left-panel">
             <div class="brand-content">
@@ -807,59 +844,124 @@
     </div>
 
     <script>
-        
-        const loadingMessages = [
-            "Inicializando sistema",
-            "Carregando módulos",
-            "Configurando segurança",
-            "Preparando interface",
-            "Conectando ao servidor",
-            "Finalizando carregamento"
-        ];
-
-        let currentMessage = 0;
-        const loadingText = document.getElementById('loadingText');
-        const loadingScreen = document.getElementById('loadingScreen');
-        const loginWrapper = document.getElementById('loginWrapper');
-
-     
-        function createParticles() {
-            const particles = document.getElementById('particles');
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                particles.appendChild(particle);
+        // SISTEMA DE LOADING PROFISSIONAL
+        class EnterpriseLoader {
+            constructor() {
+                this.loadingScreen = document.getElementById('loadingScreen');
+                this.loginWrapper = document.getElementById('loginWrapper');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressPercentage = document.getElementById('progressPercentage');
+                this.loadingStatus = document.getElementById('loadingStatus');
+                this.systemInfo = document.getElementById('systemInfo');
+                this.dots = [
+                    document.getElementById('dot1'),
+                    document.getElementById('dot2'),
+                    document.getElementById('dot3'),
+                    document.getElementById('dot4')
+                ];
+                
+                this.loadingSteps = [
+                    { message: 'Inicializando sistema', info: 'Core System', duration: 800 },
+                    { message: 'Carregando módulos de segurança', info: 'Security Module', duration: 1000 },
+                    { message: 'Configurando interface', info: 'UI Framework', duration: 900 },
+                    { message: 'Estabelecendo conexão segura', info: 'Network Layer', duration: 1100 },
+                    { message: 'Validando certificados', info: 'SSL Certificate', duration: 800 },
+                    { message: 'Preparando dashboard', info: 'Dashboard Engine', duration: 1000 },
+                    { message: 'Sistema pronto', info: 'Ready', duration: 900 }
+                ];
+                
+                this.currentStep = 0;
+                this.progress = 0;
+                this.currentDot = 0;
             }
-        }
-
-      
-        function updateLoadingMessage() {
-            if (currentMessage < loadingMessages.length) {
-                loadingText.textContent = loadingMessages[currentMessage];
-                currentMessage++;
-                setTimeout(updateLoadingMessage, 500);
+            
+            init() {
+                this.startLoading();
             }
-        }
-
-        
-        function initializeLoading() {
-            createParticles();
-            updateLoadingMessage();
-          
-            setTimeout(() => {
-                loadingScreen.classList.add('fade-out');
+            
+            startLoading() {
+                this.executeLoadingStep();
+            }
+            
+            executeLoadingStep() {
+                if (this.currentStep < this.loadingSteps.length) {
+                    const step = this.loadingSteps[this.currentStep];
+                    
+                    // Update status
+                    this.loadingStatus.textContent = step.message;
+                    this.systemInfo.textContent = step.info;
+                    
+                    // Update progress
+                    const targetProgress = ((this.currentStep + 1) / this.loadingSteps.length) * 100;
+                    this.animateProgress(targetProgress);
+                    
+                    // Update dots
+                    this.updateDots();
+                    
+                    // Move to next step
+                    setTimeout(() => {
+                        this.currentStep++;
+                        this.executeLoadingStep();
+                    }, step.duration);
+                } else {
+                    // Loading complete
+                    setTimeout(() => {
+                        this.completeLoading();
+                    }, 700);
+                }
+            }
+            
+            animateProgress(targetProgress) {
+                const startProgress = this.progress;
+                const progressDiff = targetProgress - startProgress;
+                const duration = 300;
+                const startTime = Date.now();
+                
+                const animate = () => {
+                    const currentTime = Date.now();
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Easing function
+                    const easeProgress = 1 - Math.pow(1 - progress, 3);
+                    
+                    this.progress = startProgress + (progressDiff * easeProgress);
+                    this.progressBar.style.width = `${this.progress}%`;
+                    this.progressPercentage.textContent = `${Math.round(this.progress)}%`;
+                    this.progressPercentage.classList.add('visible');
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                
+                requestAnimationFrame(animate);
+            }
+            
+            updateDots() {
+                if (this.currentDot < this.dots.length) {
+                    this.dots[this.currentDot].classList.add('active');
+                    this.currentDot++;
+                }
+            }
+            
+            completeLoading() {
+                // Fade out loading screen
+                this.loadingScreen.classList.add('fade-out');
+                
+                // Show login after fade out
                 setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    loginWrapper.classList.add('show');
-                }, 800);
-            }, 3000);
+                    this.loadingScreen.style.display = 'none';
+                    this.loginWrapper.classList.add('show');
+                }, 1200);
+            }
         }
-
         
-        window.addEventListener('load', initializeLoading);
+        // Initialize professional loading system
+        window.addEventListener('load', () => {
+            const loader = new EnterpriseLoader();
+            loader.init();
+        });
     </script>
 </body>
 </html>
