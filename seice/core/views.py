@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']

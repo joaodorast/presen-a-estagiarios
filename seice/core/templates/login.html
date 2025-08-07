@@ -164,6 +164,58 @@
             font-weight: 300;
         }
 
+        /* Estilos para mensagens de erro */
+        .error-messages {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #c33;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .error-message::before {
+            content: '⚠️';
+            font-size: 16px;
+        }
+
+        .success-message {
+            background: #efe;
+            border: 1px solid #cfc;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #3c3;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .success-message::before {
+            content: '✅';
+            font-size: 16px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .login-form {
             display: flex;
             flex-direction: column;
@@ -194,12 +246,22 @@
             font-family: inherit;
         }
 
+        .form-group input.error {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+        }
+
         .form-group input:focus {
             outline: none;
             border-color: #ffc107;
             background: white;
             box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1);
             transform: translateY(-1px);
+        }
+
+        .form-group input.error:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
         }
 
         .form-group input::placeholder {
@@ -255,6 +317,11 @@
             overflow: hidden;
         }
 
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .login-button::before {
             content: '';
             position: absolute;
@@ -266,16 +333,16 @@
             transition: left 0.6s;
         }
 
-        .login-button:hover::before {
+        .login-button:hover:not(:disabled)::before {
             left: 100%;
         }
 
-        .login-button:hover {
+        .login-button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 12px 30px rgba(255, 193, 7, 0.3);
         }
 
-        .login-button:active {
+        .login-button:active:not(:disabled) {
             transform: translateY(0);
         }
 
@@ -445,7 +512,7 @@
         }
     </style>
 </head>
-<body>
+<body>      
     <div class="login-wrapper">
        
         <div class="left-panel">
@@ -481,17 +548,57 @@
                     <p>Acesse seu dashboard administrativo</p>
                 </div>
 
+                <!-- Área para mensagens de erro/sucesso -->
+                <div class="error-messages">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="{% if message.tags == 'error' %}error-message{% elif message.tags == 'success' %}success-message{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if form.errors %}
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <div class="error-message">
+                                    {% if field == 'username' %}Usuário: {% elif field == 'password' %}Senha: {% endif %}{{ error }}
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <div class="error-message">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
                 <form class="login-form" method="POST" action="{% url 'login' %}">
                     {% csrf_token %}
                     
                     <div class="form-group">
                         <label for="username">Usuário</label>
-                        <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário" required>
+                        <input type="text" 
+                               id="username" 
+                               name="username" 
+                               placeholder="Digite seu nome de usuário" 
+                               value="{{ form.username.value|default_if_none:'' }}"
+                               class="{% if form.username.errors %}error{% endif %}"
+                               required>
                     </div>
                     
                     <div class="form-group">
                         <label for="password">Senha</label>
-                        <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Digite sua senha" 
+                               class="{% if form.password.errors %}error{% endif %}"
+                               required>
                     </div>
 
                     <div class="form-options">
@@ -517,6 +624,107 @@
             </div>
         </div>
     </div>
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('.login-form');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.querySelector('.login-button');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();       
+                    
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                // Remove mensagens de erro anteriores
+                removeErrorMessages();
+                
+                // Remove classes de erro dos inputs
+                usernameInput.classList.remove('error');
+                passwordInput.classList.remove('error');
+                
+                // Validações básicas
+                if (!username || !password) {
+                    if (!username) {
+                        usernameInput.classList.add('error');
+                    }
+                    if (!password) {
+                        passwordInput.classList.add('error');
+                    }
+                    showErrorMessage('Por favor, preencha todos os campos.');
+                    return;
+                }
+                
+                // Mostra loading no botão
+                const originalText = loginButton.textContent;
+                loginButton.textContent = 'ENTRANDO...';
+                loginButton.disabled = true;
+                
+                // Simula requisição (aqui você faria a requisição real para o Django)
+                setTimeout(() => {
+                    // Aqui você deve fazer a requisição AJAX real para sua view Django
+                    // Por enquanto, vou simular uma validação básica
+                    
+                    // Exemplo: se não for credenciais válidas, mostra erro
+                    if (username !== 'admin' || password !== '123456') {
+                        showErrorMessage('Usuário ou senha incorretos. Verifique suas credenciais.');
+                        usernameInput.classList.add('error');
+                        passwordInput.classList.add('error');
+                        passwordInput.value = ''; // Limpa a senha
+                    } else {
+                     
+                        showSuccessMessage('Login realizado com sucesso! Redirecionando...');
+                        setTimeout(() => {
+                            // Aqui você redirecionaria para o dashboard
+                            // window.location.href = '/dashboard/';
+                            console.log('Redirecionando para dashboard...');
+                        }, 1500);
+                        return;
+                    }
+                    
+                    // Restaura o botão
+                    loginButton.textContent = originalText;
+                    loginButton.disabled = false;
+                }, 1000);
+            });
+            
+            function showErrorMessage(message) {
+                const errorContainer = document.querySelector('.error-messages');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                errorContainer.appendChild(errorDiv);
+            }
+            
+            function showSuccessMessage(message) {
+                const errorContainer = document.querySelector('.error-messages');
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-message';
+                successDiv.textContent = message;
+                errorContainer.appendChild(successDiv);
+            }
+            
+            function removeErrorMessages() {
+                const messages = document.querySelectorAll('.error-message, .success-message');
+                messages.forEach(msg => msg.remove());
+            }
+            
+        
+            usernameInput.addEventListener('input', function() {
+                this.classList.remove('error');
+                if (this.value.trim()) {
+                    removeErrorMessages();
+                }
+            });
+            
+            passwordInput.addEventListener('input', function() {
+                this.classList.remove('error');
+                if (this.value.trim()) {
+                    removeErrorMessages();
+                }
+            });
+        });
+    </script>
 </body>
-</html>
 </html>

@@ -50,24 +50,22 @@
             position: relative;
         }
 
-     .logo {
-    font-size: 4.5rem;
-    font-weight: 900;
-    color: #ffffff; /* Agora é branco puro */
-    margin-bottom: 15px;
-    text-shadow: 
-        0 0 20px rgba(255, 193, 7, 0.894),
-        2px 2px 8px rgba(0, 0, 0, 0.8),
-        0 0 40px rgba(255, 193, 7, 0.1);
-    position: relative;
-    /* Remove o background com degradê */
-    background: none;
-    background-clip: unset;
-    -webkit-background-clip: unset;
-    -webkit-text-fill-color: #ffffff; /* Preenche o texto com branco puro */
-    animation: logoGlow 3s ease-in-out infinite alternate;
-}
-
+        .logo {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 0 20px rgba(255, 193, 7, 0.894),
+                2px 2px 8px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(255, 193, 7, 0.1);
+            position: relative;
+            background: none;
+            background-clip: unset;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: #ffffff;
+            animation: logoGlow 3s ease-in-out infinite alternate;
+        }
 
         @keyframes logoGlow {
             0% { 
@@ -78,25 +76,6 @@
                 text-shadow: 0 0 30px rgba(255, 193, 7, 0.5), 2px 2px 8px rgba(0, 0, 0, 0.8);
                 filter: brightness(1.1);
             }
-        }
-
-        .logo::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 5px;
-            background: linear-gradient(90deg, transparent, #ffc107, #ffb300, #ffc107, transparent);
-            border-radius: 3px;
-            box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
-            animation: lineGlow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes lineGlow {
-            0% { box-shadow: 0 0 15px rgba(255, 193, 7, 0.4); }
-            100% { box-shadow: 0 0 25px rgba(255, 193, 7, 0.7); }
         }
 
         .subtitle {
@@ -627,7 +606,7 @@
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // Limpar mensagens de erro ao abrir o modal
+           
             const errorElement = document.getElementById(`error-${unit}`);
             if (errorElement) {
                 errorElement.style.display = 'none';
@@ -639,7 +618,6 @@
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
             
-            // Limpar campos e mensagens de erro
             const form = modal.querySelector('.login-form');
             if (form) {
                 form.reset();
@@ -654,7 +632,7 @@
             const errorElement = document.getElementById(`error-${unit}`);
             if (errorElement) {
                 errorElement.style.display = 'block';
-                // Ocultar a mensagem após 5 segundos
+              
                 setTimeout(() => {
                     errorElement.style.display = 'none';
                 }, 5000);
@@ -669,7 +647,7 @@
             const password = formData.get('password');
             const remember = formData.get('remember');
             
-            // Credenciais válidas
+           
             const validUsername = 'seice';
             const validPassword = 'estagio123';
             
@@ -679,12 +657,12 @@
                 remember: remember ? 'Sim' : 'Não'
             });
             
-            // Verificar credenciais
+            
             if (username === validUsername && password === validPassword) {
-                // Login bem-sucedido
+               
                 console.log(`Login realizado com sucesso para ${unit}!`);
                 
-                // Simular carregamento
+               
                 const button = event.target.querySelector('.login-button');
                 const originalText = button.textContent;
                 button.textContent = 'Entrando...';
@@ -693,16 +671,16 @@
                 setTimeout(() => {
                     closeModal(unit);
                     
-                    // Redirecionar para index.html
+                    
                     window.location.href = 'index.html';
                 }, 1500);
                 
             } else {
-                // Login falhado - mostrar mensagem de erro
+               
                 console.log(`Falha no login para ${unit}: credenciais inválidas`);
                 showError(unit);
                 
-                // Limpar campos de senha
+               
                 const passwordField = event.target.querySelector('input[type="password"]');
                 if (passwordField) {
                     passwordField.value = '';
@@ -711,7 +689,7 @@
             }
         }
 
-        // Fechar modal clicando fora
+        
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 const modals = document.querySelectorAll('.modal');
@@ -722,7 +700,7 @@
             }
         }
 
-        // Fechar modal com ESC
+       
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const modals = document.querySelectorAll('.modal');
@@ -733,7 +711,7 @@
             }
         });
 
-        // Adicionar efeito de foco nos inputs
+      
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', function() {
                 this.parentElement.style.transform = 'translateY(-2px)';
