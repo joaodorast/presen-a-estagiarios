@@ -256,7 +256,7 @@ function openAreaModal(area = null) {
         modal.querySelector('.modal-cancel').onclick = () => modal.classList.remove('active');
     }
 
- 
+    
     document.getElementById('modal-area-titulo').textContent = area ? 'Editar Área' : 'Nova Área';
     document.getElementById('area-id').value = area ? area.id : '';
     document.getElementById('area-nome').value = area ? area.nome : '';
@@ -979,7 +979,7 @@ function gerarRelatorio() {
                     const [horas, minutos] = p.horas.split(':').map(Number);
                     horasEstagiario += horas + (minutos / 60);
                 }
-            });
+            });  
             
             relatorioEstagiarios.push({
                 nome: estagiario.nome,
