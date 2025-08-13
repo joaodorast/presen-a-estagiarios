@@ -883,7 +883,7 @@ function deleteEstagiario(id) {
         estagiarios.splice(index, 1);
         fetchEstagiarios();
         fetch(`/api/estagiarios/${id}/delete/`, {
-            method: 'DELETE',
+            method: 'DELETE', 
         })
             .then(response => {
                 if (!response.ok) {
@@ -971,7 +971,7 @@ function gerarRelatorio() {
     
     estagiarios.forEach(estagiario => {
         const presencasEstagiario = presencasFiltradas.filter(p => p.estagiario_id === estagiario.id);
-        
+                
         if (presencasEstagiario.length > 0) {
             let horasEstagiario = 0;
             presencasEstagiario.forEach(p => {
@@ -986,7 +986,7 @@ function gerarRelatorio() {
                 totalPresencas: presencasEstagiario.length,
                 totalHoras: horasEstagiario.toFixed(2),
                 mediaDiaria: (horasEstagiario / presencasEstagiario.length).toFixed(2)
-            });
+            });  
         }
     });
     
@@ -1060,7 +1060,7 @@ function setReportDefaultDate() {
     document.getElementById('relatorio-mes').value = mesAtual;
     document.getElementById('relatorio-ano').value = anoAtual;
 }
-
+  
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
     console.log('Exibindo toast:', message, type, toastContainer); // Depuração
@@ -1197,7 +1197,7 @@ function formatarData(dataString) {
                     break;
                 case 'error':
                     icone = 'fas fa-exclamation-circle';
-                    break;
+                    break;                                                    
                 case 'warning':
                     icone = 'fas fa-exclamation-triangle';
                     break;
