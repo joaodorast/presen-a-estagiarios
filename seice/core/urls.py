@@ -1,3 +1,4 @@
+
 # filepath: seice/urls.py
 from django.contrib import admin
 from django.urls import path
@@ -26,4 +27,8 @@ urlpatterns = [
 
     path('api/add-digital/', views.add_digital, name='add_digital'),
     path('api/bater-ponto/', views.bater_ponto, name='bater_ponto'),
+
+    # URLs para integração com Control ID
+    path('push', views.push, name='push'),
+    path('result', views.result, name='result'),
 ]
