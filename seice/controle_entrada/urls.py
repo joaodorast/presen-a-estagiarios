@@ -24,5 +24,6 @@ urlpatterns = [
     path('api/presencas/', views.get_presencas),
     path('api/presencas/saida/', views.registrar_saida),
 
-     path('api/add-digital/', views.add_digital, name='add_digital'),
+     path('api/carregar-objetos/', views.carregar_objetos_controlid),
+     path('api/login_control_id/', views.login_control_id, name='login_controlid'),
 ]
