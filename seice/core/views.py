@@ -10,6 +10,8 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, date
 
+import requests
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -17,10 +19,32 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+
             return redirect('index')  # Redireciona para a página inicial
         else:
             return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
     return render(request, 'login.html')
+
+@csrf_exempt
+def login_control_id(request):
+    if request.method == 'POST':
+        user = "admin"
+        password = "admin"
+        base_url = "http://192.168.3.40:81/login.fcgi"
+        facial_id_url = "http://192.168.3.40:81/login.fcgi"
+        try:
+            # Envia login e senha para o Facial ID
+            resp = requests.post(
+                facial_id_url,
+                data={'login': user, 'password': password}
+            )
+            resp.raise_for_status()
+            session_data = resp.json()
+            # Salva o token de sessão na sessão do Django (opcional)
+            request.session['facial_id_session'] = session_data.get('session')
+            return JsonResponse({'status': 'ok', 'session': session_data.get('session')}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
 def logout_view(request):
     logout(request)
@@ -265,96 +289,37 @@ def receber_evento(request):
             return JsonResponse({'erro': str(e)}, status=400)
     return JsonResponse({'erro': 'Método não permitido'}, status=405) 
 
-import json
-import re
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .models import PushCommand, ResultCommand
-
 import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.timezone import now
+
+
 
 @csrf_exempt
-def push(request):
+def carregar_objetos_controlid(request):
     if request.method == 'GET':
-        device_id = request.GET.get('deviceId')
-        uuid = request.GET.get('uuid')
+        # Chama a função que faz login no Facial ID e retorna o token de sessão
+        resp = login_control_id(request)
+        # Se login_control_id retorna um JsonResponse, extraia o token
+        if isinstance(resp, JsonResponse):
+            session_data = resp.content.decode()
+            try:
+                import json
+                session = json.loads(session_data).get('session')
+            except Exception:
+                return JsonResponse({'erro': 'Falha ao obter sessão do Facial ID.'}, status=500)
+        elif isinstance(resp, dict):
+            session = resp.get('session')
+        else:
+            session = None
 
-        if not device_id or not uuid:
-            return JsonResponse({'error': 'Faltando parâmetros'}, status=400)
+        if not session:
+            return JsonResponse({'erro': 'Não foi possível obter o token de sessão.'}, status=400)
 
-        # Você precisa definir a URL do dispositivo (IP fixo, hostname ou DNS)
-        DEVICE_BASE_URL = f"http://192.168.1.93:8081"
-
-        # Faz uma requisição para obter os dados do evento
+        url = f"http://192.168.3.40:81/load_objects.fcgi?session={session}"
         try:
-            response = requests.get(f"{DEVICE_BASE_URL}/event?uuid={uuid}", timeout=5)
-            if response.status_code != 200:
-                print(f"Erro ao buscar evento: {response.status_code} - {response.text}")
-                return JsonResponse({'error': 'Erro ao buscar evento no dispositivo'}, status=500)
-
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
             dados = response.json()
-
-            # Exemplo de dados que podem vir do evento
-            evento = {
-                "usuario": dados.get("user", {}).get("name", "Desconhecido"),
-                "uuid": uuid,
-                "device_id": device_id,
-                "tipo": dados.get("event", {}).get("type", "desconhecido"),
-                "horario": dados.get("event", {}).get("timestamp", now().isoformat()),
-            }
-
-            # Aqui você pode salvar no seu modelo de logs
-            print("Evento:", evento)
-
-            # TODO: Salvar no banco de dados se quiser
-            # LogDeAcesso.objects.create(...)
-
-            return JsonResponse({"mensagem": "Evento registrado com sucesso", "dados": evento})
-
-        except requests.RequestException as e:
-            print(f"Erro ao conectar com o dispositivo: {e}")
-            return JsonResponse({'error': 'Falha na conexão com o leitor'}, status=500)
-
-    return JsonResponse({'error': 'Método não permitido'}, status=405)
-
-
-@csrf_exempt
-def result(request):
-    if request.method == 'POST':
-        device_id = request.GET.get('deviceId')
-        uuid = request.GET.get('uuid')
-        endpoint_param = request.GET.get('endpoint')
-
-        if not device_id or not uuid:
-            return JsonResponse({'erro': 'Parâmetros deviceId e uuid são obrigatórios.'}, status=400)
-
-        try:
-            body_str = request.body.decode('utf-8')
-            # Corrige 'undefined' no JSON para null, se necessário
-            body_str = re.sub(r'"endpoint"\s*:\s*undefined', '"endpoint": null', body_str)
-            dados = json.loads(body_str) if body_str else {}
-        except json.JSONDecodeError:
-            return JsonResponse({'erro': 'Corpo da requisição não é um JSON válido.'}, status=400)
-
-        # Se houver erro no payload, logue e responda OK para evitar retry
-        if 'error' in dados:
-            print(f"Erro recebido do dispositivo: {dados['error']}")
-            return JsonResponse({'status': 'erro no payload do dispositivo'}, status=200)
-
-        response_data = dados.get('response')
-        error_data = dados.get('error')
-
-        ResultCommand.objects.create(
-            device_id=device_id,
-            uuid=uuid,
-            endpoint=endpoint_param,
-            response=response_data,
-            error=error_data
-        )
-
-        return JsonResponse({'status': 'ok'}, status=200)
-    else:
-        return JsonResponse({'erro': 'Método não permitido'}, status=405)
+            return JsonResponse({'dados': dados}, status=200)
+        except Exception as e:
+            return JsonResponse({'erro': str(e)}, status=500)
+    return JsonResponse({'erro': 'Método não permitido'}, status=405)
