@@ -248,4 +248,113 @@ def bater_ponto(request):
 def calculadora_horas(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return render(request, 'calculadora-hour.html')   
+    return render(request, 'calculadora-hour.html')  
+
+@csrf_exempt
+def receber_evento(request):
+    if request.method == 'GET':
+        try:
+            dados = json.loads(request.body)
+            print("Evento recebido:", dados)
+
+            # Você pode salvar no banco aqui, por exemplo:
+            # Evento.objects.create(**dados)
+
+            return JsonResponse({'status': 'ok'}, status=200)
+        except Exception as e:
+            return JsonResponse({'erro': str(e)}, status=400)
+    return JsonResponse({'erro': 'Método não permitido'}, status=405) 
+
+import json
+import re
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import PushCommand, ResultCommand
+
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.timezone import now
+
+@csrf_exempt
+def push(request):
+    if request.method == 'GET':
+        device_id = request.GET.get('deviceId')
+        uuid = request.GET.get('uuid')
+
+        if not device_id or not uuid:
+            return JsonResponse({'error': 'Faltando parâmetros'}, status=400)
+
+        # Você precisa definir a URL do dispositivo (IP fixo, hostname ou DNS)
+        DEVICE_BASE_URL = f"http://192.168.1.93:8081"
+
+        # Faz uma requisição para obter os dados do evento
+        try:
+            response = requests.get(f"{DEVICE_BASE_URL}/event?uuid={uuid}", timeout=5)
+            if response.status_code != 200:
+                print(f"Erro ao buscar evento: {response.status_code} - {response.text}")
+                return JsonResponse({'error': 'Erro ao buscar evento no dispositivo'}, status=500)
+
+            dados = response.json()
+
+            # Exemplo de dados que podem vir do evento
+            evento = {
+                "usuario": dados.get("user", {}).get("name", "Desconhecido"),
+                "uuid": uuid,
+                "device_id": device_id,
+                "tipo": dados.get("event", {}).get("type", "desconhecido"),
+                "horario": dados.get("event", {}).get("timestamp", now().isoformat()),
+            }
+
+            # Aqui você pode salvar no seu modelo de logs
+            print("Evento:", evento)
+
+            # TODO: Salvar no banco de dados se quiser
+            # LogDeAcesso.objects.create(...)
+
+            return JsonResponse({"mensagem": "Evento registrado com sucesso", "dados": evento})
+
+        except requests.RequestException as e:
+            print(f"Erro ao conectar com o dispositivo: {e}")
+            return JsonResponse({'error': 'Falha na conexão com o leitor'}, status=500)
+
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+
+@csrf_exempt
+def result(request):
+    if request.method == 'POST':
+        device_id = request.GET.get('deviceId')
+        uuid = request.GET.get('uuid')
+        endpoint_param = request.GET.get('endpoint')
+
+        if not device_id or not uuid:
+            return JsonResponse({'erro': 'Parâmetros deviceId e uuid são obrigatórios.'}, status=400)
+
+        try:
+            body_str = request.body.decode('utf-8')
+            # Corrige 'undefined' no JSON para null, se necessário
+            body_str = re.sub(r'"endpoint"\s*:\s*undefined', '"endpoint": null', body_str)
+            dados = json.loads(body_str) if body_str else {}
+        except json.JSONDecodeError:
+            return JsonResponse({'erro': 'Corpo da requisição não é um JSON válido.'}, status=400)
+
+        # Se houver erro no payload, logue e responda OK para evitar retry
+        if 'error' in dados:
+            print(f"Erro recebido do dispositivo: {dados['error']}")
+            return JsonResponse({'status': 'erro no payload do dispositivo'}, status=200)
+
+        response_data = dados.get('response')
+        error_data = dados.get('error')
+
+        ResultCommand.objects.create(
+            device_id=device_id,
+            uuid=uuid,
+            endpoint=endpoint_param,
+            response=response_data,
+            error=error_data
+        )
+
+        return JsonResponse({'status': 'ok'}, status=200)
+    else:
+        return JsonResponse({'erro': 'Método não permitido'}, status=405)
