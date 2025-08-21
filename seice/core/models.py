@@ -15,12 +15,18 @@ class Estagiario(models.Model):
     unidade = models.CharField(max_length=100)
     area = models.ForeignKey('Area', on_delete=models.CASCADE, related_name='estagiarios')
     # matricula = models.CharField(max_length=20, unique=True)
+    # Campos para integração com Control ID
+    control_id_user_id = models.CharField(max_length=50, blank=True, null=True, help_text="ID do usuário no Control ID")
+    presente = models.BooleanField(default=False, help_text="Indica se o estagiário está presente (True) ou ausente (False)")
     telefone = models.CharField(max_length=20)
     data_inicio = models.DateField()
     ativo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nome
+    
+    def tem_control_id(self):
+        return bool(self.control_id_user_id)
 
 class Area(models.Model):
     nome = models.CharField(max_length=100)
@@ -35,13 +41,12 @@ class Area(models.Model):
 class Presenca(models.Model):
     estagiario = models.ForeignKey(Estagiario, on_delete=models.CASCADE)
     data = models.DateField()
-    entrada = models.TimeField()
+    entrada = models.TimeField(null=True, blank=True)
     saida = models.TimeField(null=True, blank=True)
     horas = models.CharField(max_length=10, null=True, blank=True)
     observacao = models.TextField(null=True, blank=True)
-
     def __str__(self):
-        return f"{self.estagiario.nome} - {self.data}"
+        return f"{self.estagiario.nome} - {self.data} - {'Presente' if self.estagiario.presente else 'Ausente'}"
     
 
 class PushCommand(models.Model):

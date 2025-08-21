@@ -2,13 +2,35 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.dateparse import parse_time
+from django.utils.dateparse import parse_time, parse_datetime
 from .models import Estagiario, Presenca, Area, Usuario
 import json
+import requests
+import logging
+import threading
+import time
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+
+# Configurar logging
+logger = logging.getLogger(__name__)
+
+# Configurações do Control ID
+CONTROL_ID_BASE_URL = "http://192.168.3.40"
+CONTROL_ID_SESSION = ""  # Será preenchido dinamicamente
+
+# Controle da coleta de logs
+log_collector_active = False
+log_collector_thread = None
+log_collector_config = {
+    'interval': 30,  # segundos entre coletas
+    'control_id_ip': '192.168.3.40:81',
+    'session': '',
+    'last_collection': None,  # último timestamp de coleta
+    'total_collected': 0  # total de logs coletados
+}
 
 def usuario_logado_required(view_func):
     """Decorador para verificar se o usuário está logado usando o sistema customizado"""
@@ -416,7 +438,54 @@ def alterar_senha(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     
-    return JsonResponse({'error': 'Método não permitido'}, status=405)  
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+@csrf_exempt
+def adicionar_control_id_estagiario(request):
+    """Adicionar ID do Control ID a um estagiário"""
+    if not request.session.get('usuario_logado'):
+        return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            unidade_usuario = request.session.get('usuario_unidade')
+            
+            if not unidade_usuario:
+                return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
+            
+            # Só permite editar estagiários da mesma unidade
+            estagiario = Estagiario.objects.get(
+                id=data['estagiarioId'], 
+                unidade=unidade_usuario
+            )
+            estagiario.control_id_user_id = data['controlIdUserId']
+            estagiario.save()
+            
+            return JsonResponse({
+                'message': f'ID do Control ID ({data["controlIdUserId"]}) adicionado ao estagiário {estagiario.nome} com sucesso!'
+            }, status=200)
+        except Estagiario.DoesNotExist:
+            return JsonResponse({'error': 'Estagiário não encontrado ou sem permissão'}, status=404)
+        except KeyError as e:
+            return JsonResponse({'error': f'Campo obrigatório faltando: {str(e)}'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    elif request.method == 'GET':
+        # Retornar informações sobre como usar a API
+        return JsonResponse({
+            'message': 'Endpoint para adicionar ID do Control ID ao estagiário',
+            'usage': {
+                'method': 'POST',
+                'body': {
+                    'estagiarioId': 'ID do estagiário',
+                    'controlIdUserId': 'ID do usuário no Control ID'
+                }
+            }
+        })
+    
+    return JsonResponse({'error': 'Método não permitido. Use POST para adicionar ID do Control ID.'}, status=405)  
 
 @csrf_exempt
 def receber_evento(request):
@@ -529,7 +598,7 @@ def carregar_objetos_controlid(request):
         elif isinstance(resp, dict):
             session = resp.get('session')
         else:
-            session = None
+            session = "cTwub3uGBhYwcmuaRyfWxIhZ"
 
         if not session:
             return JsonResponse({'erro': 'Não foi possível obter o token de sessão.'}, status=400)
@@ -539,7 +608,500 @@ def carregar_objetos_controlid(request):
             response = requests.get(url, timeout=10)
             response.raise_for_status()
             dados = response.json()
+            
+            # Processar logs automaticamente se existirem
+            if 'access_logs' in dados:
+                logs_processados = processar_logs_control_id(dados, request.session.get('usuario_unidade'))
+                dados['logs_processados'] = logs_processados['processados']
+                dados['logs_ignorados'] = logs_processados['ignorados']
+                
             return JsonResponse({'dados': dados}, status=200)
         except Exception as e:
             return JsonResponse({'erro': str(e)}, status=500)
     return JsonResponse({'erro': 'Método não permitido'}, status=405)
+
+@csrf_exempt
+def processar_logs_control_id(logs_data, unidade_usuario):
+    """
+    Processa os logs recebidos do Control ID e cria presenças automaticamente
+    """
+    processados = 0
+    ignorados = 0
+    
+    if not unidade_usuario:
+        return {'processados': 0, 'ignorados': 0}
+    
+    try:
+        access_logs = logs_data.get('access_logs', [])
+        
+        for log in access_logs:
+            try:
+                # Extrair dados do log
+                user_id = str(log.get('user_id', ''))
+                timestamp = log.get('time')
+                event_type = str(log.get('event', 'unknown')).lower()
+                
+                if not user_id or not timestamp:
+                    ignorados += 1
+                    continue
+                
+                # Converter timestamp
+                if isinstance(timestamp, str):
+                    log_datetime = parse_datetime(timestamp)
+                    if not log_datetime:
+                        # Tentar outros formatos
+                        try:
+                            log_datetime = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                        except:
+                            try:
+                                # Formato DD/MM/YYYY HH:MM:SS
+                                log_datetime = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S')
+                            except:
+                                ignorados += 1
+                                continue
+                elif isinstance(timestamp, (int, float)):
+                    # Timestamp Unix
+                    log_datetime = datetime.fromtimestamp(timestamp)
+                else:
+                    ignorados += 1
+                    continue
+                
+                # Buscar estagiário pelo control_id_user_id na mesma unidade
+                try:
+                    estagiario = Estagiario.objects.get(
+                        control_id_user_id=user_id,
+                        unidade=unidade_usuario,
+                        ativo=True
+                    )
+                except Estagiario.DoesNotExist:
+                    # Estagiário não encontrado, ignorar este log
+                    ignorados += 1
+                    continue
+                
+                data_log = log_datetime.date()
+                hora_log = log_datetime.time()
+                
+                # Processar entrada
+                if event_type in ['in', 'entrada', 'face_in', 'entry', '1']:
+                    # Verificar se já existe presença para este dia
+                    presenca_existente = Presenca.objects.filter(
+                        estagiario=estagiario,
+                        data=data_log
+                    ).first()
+                    
+                    if not presenca_existente:
+                        # Criar nova presença
+                        Presenca.objects.create(
+                            estagiario=estagiario,
+                            data=data_log,
+                            entrada=hora_log,
+                            observacao=f'Entrada automática via Control ID - Log {log.get("id", "N/A")}'
+                        )
+                        processados += 1
+                        logger.info(f"Presença criada para {estagiario.nome} em {data_log} às {hora_log}")
+                    else:
+                        # Atualizar entrada se for mais cedo
+                        if hora_log < presenca_existente.entrada:
+                            presenca_existente.entrada = hora_log
+                            presenca_existente.observacao += f' | Entrada atualizada via Control ID'
+                            presenca_existente.save()
+                            processados += 1
+                            logger.info(f"Entrada atualizada para {estagiario.nome} em {data_log}")
+                        else:
+                            ignorados += 1
+                
+                # Processar saída
+                elif event_type in ['out', 'saida', 'face_out', 'exit', '0']:
+                    # Buscar presença aberta para este dia
+                    presenca = Presenca.objects.filter(
+                        estagiario=estagiario,
+                        data=data_log,
+                        saida__isnull=True
+                    ).first()
+                    
+                    if presenca:
+                        # Registrar saída
+                        presenca.saida = hora_log
+                        
+                        # Calcular horas trabalhadas
+                        entrada_datetime = datetime.combine(data_log, presenca.entrada)
+                        saida_datetime = datetime.combine(data_log, hora_log)
+                        horas_trabalhadas = saida_datetime - entrada_datetime
+                        
+                        # Formatar horas (HH:MM)
+                        total_seconds = int(horas_trabalhadas.total_seconds())
+                        hours = total_seconds // 3600
+                        minutes = (total_seconds % 3600) // 60
+                        presenca.horas = f"{hours:02d}:{minutes:02d}"
+                        
+                        if presenca.observacao:
+                            presenca.observacao += f' | Saída automática via Control ID'
+                        else:
+                            presenca.observacao = f'Saída automática via Control ID'
+                        
+                        presenca.save()
+                        processados += 1
+                        logger.info(f"Saída registrada para {estagiario.nome} em {data_log} às {hora_log}")
+                    else:
+                        ignorados += 1
+                else:
+                    ignorados += 1
+                    
+            except Exception as e:
+                logger.error(f"Erro ao processar log individual: {str(e)}")
+                ignorados += 1
+                continue
+    
+    except Exception as e:
+        logger.error(f"Erro geral no processamento de logs: {str(e)}")
+    
+    logger.info(f"Processamento concluído: {processados} processados, {ignorados} ignorados")
+    return {
+        'processados': processados,
+        'ignorados': ignorados
+    }
+
+@csrf_exempt
+def coletar_logs_control_id():
+    """
+    Função que roda em background para coletar logs do Control ID periodicamente
+    """
+    global log_collector_active
+    
+    while log_collector_active:
+        try:
+            logger.info("Iniciando coleta de logs do Control ID...")
+            
+            # Fazer login no Control ID para obter sessão
+            session_id = obter_sessao_control_id()
+            if not session_id:
+                logger.error("Não foi possível obter sessão do Control ID")
+                time.sleep(log_collector_config['interval'])
+                continue
+            
+            # Buscar logs do Control ID
+            url = f"http://{log_collector_config['control_id_ip']}/load_objects.fcgi"
+            params = {'session': session_id}
+            headers = {'Content-Type': 'application/json'}
+            payload = {"object": "access_logs"}
+            
+            response = requests.post(
+                url,
+                params=params,
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                logs_data = response.json()
+                
+                # Salvar logs coletados
+                if 'access_logs' in logs_data:
+                    logs_coletados = logs_data['access_logs']
+                    log_collector_config['total_collected'] += len(logs_coletados)
+                    log_collector_config['last_collection'] = datetime.now().isoformat()
+                    
+                    logger.info(f"Coletados {len(logs_coletados)} logs do Control ID")
+                    
+                    # Aqui você pode processar ou salvar os logs como quiser
+                    # Por exemplo, salvar em arquivo ou processar diretamente
+                    print(f"=== LOGS COLETADOS ({len(logs_coletados)}) ===")
+                    for log in logs_coletados[:5]:  # Mostrar apenas os 5 primeiros
+                        print(f"User ID: {log.get('user_id')}, Time: {log.get('time')}, Event: {log.get('event')}")
+                    if len(logs_coletados) > 5:
+                        print(f"... e mais {len(logs_coletados) - 5} logs")
+                    print("=== FIM DOS LOGS ===")
+                else:
+                    logger.info("Nenhum log encontrado na resposta")
+            else:
+                logger.error(f"Erro na coleta de logs: {response.status_code} - {response.text}")
+        
+        except Exception as e:
+            logger.error(f"Erro na coleta de logs: {str(e)}")
+        
+        # Aguardar o intervalo configurado
+        time.sleep(log_collector_config['interval'])
+
+@csrf_exempt
+def obter_sessao_control_id():
+    """
+    Faz login no Control ID e retorna o session ID
+    """
+    try:
+        url = "http://192.168.3.40:81/login.fcgi"
+        response = requests.post(
+            url,
+            data={'login': 'admin', 'password': 'admin'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            session_data = response.json()
+            return session_data.get('session')
+        else:
+            logger.error(f"Erro no login Control ID: {response.status_code}")
+            return None
+    except Exception as e:
+        logger.error(f"Erro ao fazer login no Control ID: {str(e)}")
+        return None
+
+
+@csrf_exempt
+def controlar_coleta_logs(request):
+    """
+    Controla a coleta periódica de logs do Control ID
+    """
+    global log_collector_active, log_collector_thread
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            action = data.get('action')
+            
+            if action == 'start':
+                if log_collector_active:
+                    return JsonResponse({'message': 'Coleta de logs já está ativa'}, status=200)
+                
+                # Configurar parâmetros
+                log_collector_config['interval'] = data.get('interval', 30)
+                log_collector_config['control_id_ip'] = data.get('control_id_ip', '192.168.3.40:81')
+                
+                # Iniciar thread
+                log_collector_active = True
+                log_collector_thread = threading.Thread(target=coletar_logs_control_id, daemon=True)
+                log_collector_thread.start()
+                
+                logger.info(f"Coleta de logs iniciada - Intervalo: {log_collector_config['interval']}s")
+                return JsonResponse({
+                    'message': 'Coleta de logs iniciada',
+                    'config': log_collector_config
+                }, status=200)
+            
+            elif action == 'stop':
+                if not log_collector_active:
+                    return JsonResponse({'message': 'Coleta de logs não está ativa'}, status=200)
+                
+                log_collector_active = False
+                logger.info("Coleta de logs parada")
+                return JsonResponse({'message': 'Coleta de logs parada'}, status=200)
+            
+            elif action == 'status':
+                return JsonResponse({
+                    'active': log_collector_active,
+                    'config': log_collector_config,
+                    'thread_alive': log_collector_thread.is_alive() if log_collector_thread else False
+                }, status=200)
+            
+            else:
+                return JsonResponse({'error': 'Ação inválida. Use: start, stop ou status'}, status=400)
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    elif request.method == 'GET':
+        # Retornar status atual
+        return JsonResponse({
+            'active': log_collector_active,
+            'config': log_collector_config,
+            'thread_alive': log_collector_thread.is_alive() if log_collector_thread else False,
+            'usage': {
+                'start': {
+                    'action': 'start',
+                    'interval': 30,
+                    'control_id_ip': '192.168.3.40:81'
+                },
+                'stop': {'action': 'stop'},
+                'status': {'action': 'status'}
+            }
+        })
+    
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+
+@csrf_exempt
+def coletar_logs_manual(request):
+    """
+    Executa uma coleta manual imediata dos logs
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body) if request.body else {}
+            control_id_ip = data.get('control_id_ip', '192.168.3.40:81')
+            
+            # Obter sessão
+            session_id = obter_sessao_control_id()
+            if not session_id:
+                return JsonResponse({'error': 'Não foi possível obter sessão do Control ID'}, status=500)
+            
+            # Fazer requisição aos logs
+            url = f"http://{control_id_ip}/load_objects.fcgi"
+            params = {'session': session_id}
+            headers = {'Content-Type': 'application/json'}
+            payload = {"object": "access_logs"}
+            
+            response = requests.post(
+                url,
+                params=params,
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                logs_data = response.json()
+                
+                if 'access_logs' in logs_data:
+                    logs = logs_data['access_logs']
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Logs coletados com sucesso',
+                        'total_logs': len(logs),
+                        'logs': logs,
+                        'timestamp': datetime.now().isoformat()
+                    }, status=200)
+                else:
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Nenhum log encontrado',
+                        'total_logs': 0,
+                        'logs': [],
+                        'timestamp': datetime.now().isoformat()
+                    }, status=200)
+            else:
+                return JsonResponse({
+                    'error': f'Erro na API Control ID: {response.status_code}',
+                    'details': response.text
+                }, status=response.status_code)
+        
+        except Exception as e:
+            return JsonResponse({
+                'error': 'Erro na coleta manual de logs',
+                'details': str(e)
+            }, status=500)
+    
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+
+def iniciar_coleta_automatica_startup():
+    """
+    Inicia a coleta automática de logs do Control ID durante o startup do Django
+    """
+    global log_collector_active, log_collector_thread
+    
+    try:
+        # Verificar se já está ativa
+        if log_collector_active and log_collector_thread and log_collector_thread.is_alive():
+            logger.info("🔄 Coleta automática já está ativa - ignorando startup")
+            return
+        
+        # Configurar parâmetros padrão
+        log_collector_config['interval'] = 30  # A cada 30 segundos
+        log_collector_config['control_id_ip'] = '192.168.3.40:81'
+        log_collector_config['session'] = ''
+        
+        # Iniciar thread de coleta
+        log_collector_active = True
+        log_collector_thread = threading.Thread(target=coletar_logs_control_id, daemon=True)
+        log_collector_thread.start()
+        
+        logger.info(f"🚀 STARTUP: Coleta automática de logs iniciada!")
+        logger.info(f"   ⏱️ Intervalo: {log_collector_config['interval']}s")
+        logger.info(f"   🌐 IP Control ID: {log_collector_config['control_id_ip']}")
+        
+        # Aguardar um pouco para verificar se a thread iniciou corretamente
+        time.sleep(1)
+        if log_collector_thread.is_alive():
+            logger.info("✅ Thread de coleta iniciada com sucesso!")
+        else:
+            logger.error("❌ Falha ao iniciar thread de coleta")
+    
+    except Exception as e:
+        logger.error(f"❌ Erro ao iniciar coleta automática no startup: {str(e)}")
+
+
+def parar_coleta_automatica_shutdown():
+    """
+    Para a coleta automática durante o shutdown do Django
+    """
+    global log_collector_active
+    
+    try:
+        if log_collector_active:
+            log_collector_active = False
+            logger.info("🛑 SHUTDOWN: Coleta automática de logs parada")
+        else:
+            logger.info("🔄 SHUTDOWN: Coleta automática já estava parada")
+    except Exception as e:
+        logger.error(f"❌ Erro ao parar coleta durante shutdown: {str(e)}")
+
+
+# ========================================
+# SISTEMA SIMPLES DE COLETA DE PRESENÇAS
+# ========================================
+
+@csrf_exempt
+def presencas_automaticas_status(request):
+    """Status do sistema SIMPLES de presenças automáticas"""
+    from .coleta_simples import status_coleta
+    
+    if request.method == 'GET':
+        status = status_coleta()
+        return JsonResponse({
+            'sistema': 'Presenças Automáticas SIMPLES v2.0',
+            'status': status,
+            'mensagem': 'Processa apenas LOGS NOVOS e registra presenças automaticamente',
+            'recursos': [
+                'Detecta logs novos automaticamente',
+                'Identifica entrada/saída corretamente', 
+                'Calcula horas trabalhadas',
+                'Evita reprocessamento'
+            ]
+        })
+    
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+@csrf_exempt
+def presencas_automaticas_manual(request):
+    """Executa coleta manual SIMPLES"""
+    from .coleta_simples import registrar_presencas_dos_logs
+    
+    if request.method == 'POST':
+        try:
+            registrar_presencas_dos_logs()
+            return JsonResponse({
+                'success': True,
+                'message': 'Coleta manual executada com sucesso!'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+    
+    return JsonResponse({'error': 'Use POST'}, status=405)
+
+@csrf_exempt
+def presencas_automaticas_controle(request):
+    """Controla o sistema SIMPLES (start/stop/reset)"""
+    from .coleta_simples import iniciar_coleta_automatica, parar_coleta_automatica, resetar_controle_logs
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            action = data.get('action')
+            
+            if action == 'start':
+                iniciar_coleta_automatica()
+                return JsonResponse({'message': 'Sistema iniciado!'})
+            elif action == 'stop':
+                parar_coleta_automatica()
+                return JsonResponse({'message': 'Sistema parado!'})
+            elif action == 'reset':
+                resetar_controle_logs()
+                return JsonResponse({'message': 'Controle de logs resetado!'})
+            else:
+                return JsonResponse({'error': 'Use action: start, stop ou reset'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Use POST'}, status=405)

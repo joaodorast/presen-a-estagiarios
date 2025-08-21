@@ -3,6 +3,7 @@
 from django.contrib import admin
 from django.urls import path
 from core import views
+from core.views import carregar_objetos_controlid
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,5 +31,14 @@ urlpatterns = [
     path('api/usuarios/', views.get_usuarios, name='get_usuarios'),
     path('api/usuarios/alterar-senha/', views.alterar_senha, name='alterar_senha'),
 
-    path('api/carregar-objetos/', views.carregar_objetos_controlid),
+    # URLs para integração Control ID
+    path('api/carregar-objetos/', views.carregar_objetos_controlid, name='carregar_objetos_controlid'),
+    path('api/control-id/adicionar/', views.adicionar_control_id_estagiario, name='adicionar_control_id'),
+    path('api/control-id/logs/coleta/', views.controlar_coleta_logs, name='controlar_coleta_logs'),
+    path('api/control-id/logs/manual/', views.coletar_logs_manual, name='coletar_logs_manual'),
+    
+    # Sistema SIMPLES de presenças automáticas
+    path('api/presencas-auto/status/', views.presencas_automaticas_status, name='presencas_auto_status'),
+    path('api/presencas-auto/manual/', views.presencas_automaticas_manual, name='presencas_auto_manual'),
+    path('api/presencas-auto/controle/', views.presencas_automaticas_controle, name='presencas_auto_controle'),
 ]
