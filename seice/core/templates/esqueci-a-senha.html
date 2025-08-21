@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <title>Recuperação de Senha | SEICE</title>
+    <style>
+        :root {
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --secondary-color: #e67e22;
+    --secondary-dark: #d35400;
+    --success-color: #2ecc71;
+    --success-dark: #27ae60;
+    --danger-color: #e74c3c;
+    --danger-dark: #c0392b;
+    --warning-color: #f39c12;
+    --warning-dark: #f1c40f;
+    --info-color: #3498db;
+    --info-dark: #2980b9;
+    --light-color: #ecf0f1;
+    --light-dark: #bdc3c7;
+    --dark-color: #34495e;
+    --dark-dark: #2c3e50;
+    --text-color: #333;
+    --text-light: #666;
+    --text-dark: #222;
+    --white: #ffffff;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --blue: #3498db;
+    --green: #2ecc71;
+    --orange: #f39c12;
+    --purple: #9b59b6;
+    --red: #e74c3c;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: #899198;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        overflow-x: hidden;
+    }
+
+
+    .main-container{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        min-width: 30vw;
+        max-width: 35vw;
+        max-width: 600px;
+        min-height: 70vh;
+        min-height: 75vh;
+        background-color: var(--gray-100);
+        border-radius: 8px;
+        padding: 30px 20px 30px 20px;
+        box-shadow: 20px 68px 112px rgba(0, 0, 0, 0.25);
+    }
+
+    .lock-container{
+        display: block;          
+        width: fit-content;      
+        margin: 0 auto; 
+        background-color: var(--text-light);
+        width: 70px;
+        height: 70px;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px black;
+        background: linear-gradient(135deg, #4b4b4b, #a0a5ab); 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 8px rgba(255, 255, 255, 0.142);
+        transition: all 0.3s ease-in-out;
+    }
+
+    #lock{
+        display: block;          
+        width: fit-content;      
+        margin: 0 auto;
+        padding-top: 16px;     
+        font-size: 40px;
+        color: #f1c40f; 
+        text-shadow: 0 0 6px rgba(4, 4, 4, 0.6);
+    }
+
+    .main-h1{
+        text-align: center;
+        font-size: 2.1em;
+        color: var(--warning-dark);
+        padding-top: 30px;
+    }
+
+    .main-p{
+        text-align: center;
+        font-size: 1em;
+        color: var(--text-color);
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-size: 1em;
+        font-weight: bold;
+        display: block;
+        width: 100%;
+        max-width: 385px;
+        margin: 10px auto 4px auto;
+        text-align: left;
+    }
+
+
+    input {
+        width: 100%;
+        max-width: 385px;
+        padding: 12px 10px;
+        border-radius: 3px;
+        border: 1px solid black;
+        margin: 10px 0;
+        box-sizing: border-box;
+        font-size: 1em;
+    }
+
+    input:placeholder-shown {
+        padding-left: 10px;
+        font-size: 1em;
+    }
+
+    button {
+        width: 100%;
+        max-width: 385px; 
+        padding: 12px 10px;
+        border-radius: 3px;
+        border: 1px solid var(--gray-600);
+        margin: 10px 0;
+        background-color: var(--text-light);
+        color: white;
+        font-size: 1.1em;
+        font-weight: 500;
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    button:hover {
+        background-color: var(--gray-700); 
+        transform: translateY(-1px); 
+    }
+
+    input, button {
+        display: block;          
+        margin: 2px auto;       
+    }
+
+    .second-box{
+        display: block;          
+        margin: 2px auto;
+        min-width: 15vw;
+        max-width: 25vw;
+        min-height: 15vh;
+        max-height: 25vh;
+        border: 1px solid rgba(207, 207, 207, 0.548);
+        padding: 10px;
+        background-color: rgba(211, 211, 211, 0.134);
+        margin-top: 50px;
+        border-radius: 3px;
+        transition: transform 0.3s ease;
+    }
+
+    .second-box:hover {
+        transform: translateY(-3px);
+    }   
+
+    .second-box-h1{
+        font-size: 1em;
+    }
+
+    li{
+        font-size: 1em;
+    }
+
+    .login-button{
+        color: var(--warning-dark);
+        text-decoration: none;
+        display: block;
+        margin-left: 9vw;
+        padding-top: 35px;
+        font-weight: 700;
+        transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .login-button:hover {
+        color: var(--warning-color); 
+        transform: translateX(-5px);
+    }
+
+        @media (max-width: 768px) {
+        .main-container {
+            min-width: 80vw;
+            max-width: 85vw;
+            min-height: auto;
+            padding: 20px 15px;
+            box-shadow: 10px 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-h1 {
+            font-size: 1.8em;
+            padding-top: 20px;
+        }
+
+        .main-p {
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 0.95em;
+            margin-left: 10px;
+        }
+
+        input, button {
+            width: 100%;
+            max-width: 100%;
+            padding: 12px 10px;
+            font-size: 1em;
+        }
+
+        .second-box {
+            min-width: 100%;
+            max-width: 100%;
+            margin-top: 30px;
+            padding: 10px;
+        }
+
+        .second-box-h1 {
+            font-size: 1em;
+        }
+
+        li {
+            font-size: 0.95em;
+        }
+
+        .login-button {
+            margin-left: 0;
+            text-align: center;
+            padding-top: 25px;
+            font-size: 1em;
+        }
+
+        .lock-container {
+            width: 60px;
+            height: 65px;
+        }
+
+        #lock {
+            font-size: 36px;
+            padding-top: 14px;
+        }
+    }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+        .main-container {
+            min-width: 50vw;
+            max-width: 55vw;
+            padding: 25px 20px;
+        }
+
+        input, button {
+            max-width: 100%;
+            font-size: 1em;
+        }
+
+        .second-box {
+            max-width: 90%;
+        }
+
+        .login-button {
+            margin-left: 0;
+            text-align: center;
+        }
+    }
+
+        @media (min-width: 1025px) {
+        .main-container {
+            min-width: 30vw;
+            max-width: 35vw;
+            padding: 30px 20px;
+        }
+
+        input, button {
+            max-width: 385px;
+        }
+
+        .second-box {
+            min-width: 15vw;
+            max-width: 25vw;
+        }
+
+        .login-button {
+            margin-left: 9vw;
+            text-align: left;
+        }
+    }
+
+    @media (min-width: 1540px){
+        .main-container {
+            width: 600px;
+            max-width: 600px;
+        }
+    }
+
+    </style>
+</head>
+<body>
+  
+    <main>
+        <div class="main-container">
+        <div class="lock-container">
+            <i class="fa-solid fa-lock" id="lock"></i>
+        </div>
+            <h1 class="main-h1">Recuperar Senha</h1>
+            <p class="main-p">Digite seu e-mail para receber as instruções de <br> recuperação</p>
+            <label for="email">E-mail</label>
+            <input type="email" minlength="5" maxlength="50" placeholder="seuemail@exemplo.com"><br>
+            <button type="submit">Enviar instruções</button>
+            <div class="second-box">
+                <h1 class="second-box-h1">Importante:</h1>
+                <li>Verifique sua caixa de entrada e spam</li>
+                <li>O link de recuperação expira em 24 horas</li>
+                <li>Use apenas o e-mail cadastrado em sua conta</li>
+            </div>
+            <a href="login.html" class="login-button"><i class="fa-solid fa-arrow-left-long"></i> Voltar ao Login</a>
+        </div>
+    </main>
+    
+</body>
+</html>
