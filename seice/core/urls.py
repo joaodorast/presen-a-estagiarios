@@ -30,8 +30,5 @@ urlpatterns = [
     path('api/usuarios/', views.get_usuarios, name='get_usuarios'),
     path('api/usuarios/alterar-senha/', views.alterar_senha, name='alterar_senha'),
 
-    # URLs para integração com Control ID
-    path('evento/push/', views.receber_evento, name='receber_evento'),
-    path('push', views.push, name='push'),
-    path('result', views.result, name='result'),
+    path('api/carregar-objetos/', views.carregar_objetos_controlid),
 ]
