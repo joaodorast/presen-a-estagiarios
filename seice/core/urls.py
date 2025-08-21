@@ -25,10 +25,13 @@ urlpatterns = [
     path('api/presencas/', views.get_presencas),
     path('api/presencas/saida/', views.registrar_saida),
 
-    path('api/add-digital/', views.add_digital, name='add_digital'),
-    path('api/bater-ponto/', views.bater_ponto, name='bater_ponto'),
+    # URLs para gerenciamento de usuários
+    path('api/usuarios/criar-admin/', views.criar_usuario_admin, name='criar_usuario_admin'),
+    path('api/usuarios/', views.get_usuarios, name='get_usuarios'),
+    path('api/usuarios/alterar-senha/', views.alterar_senha, name='alterar_senha'),
 
     # URLs para integração com Control ID
+    path('evento/push/', views.receber_evento, name='receber_evento'),
     path('push', views.push, name='push'),
     path('result', views.result, name='result'),
 ]

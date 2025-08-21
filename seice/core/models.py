@@ -1,11 +1,20 @@
 # filepath: core/models.py
 from django.db import models
 
+
+class Usuario(models.Model):
+    nome = models.CharField(max_length=100)
+    area = models.CharField(max_length=100)
+    unidade = models.CharField(max_length=100)
+    login = models.CharField(max_length=100, unique=True)
+    senha = models.CharField(max_length=100)
+
 class Estagiario(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    unidade = models.CharField(max_length=100)
     area = models.ForeignKey('Area', on_delete=models.CASCADE, related_name='estagiarios')
-    digital = models.CharField(max_length=500, default='')
+    # matricula = models.CharField(max_length=20, unique=True)
     telefone = models.CharField(max_length=20)
     data_inicio = models.DateField()
     ativo = models.BooleanField(default=True)
@@ -15,6 +24,7 @@ class Estagiario(models.Model):
 
 class Area(models.Model):
     nome = models.CharField(max_length=100)
+    unidade = models.CharField(max_length=100)
     descricao = models.TextField(null=True, blank=True)
 
     def __str__(self):
