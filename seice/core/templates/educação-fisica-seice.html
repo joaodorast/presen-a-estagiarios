@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEICE - Sistema de Estagiários</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #000000;
+            --primary-dark: #1e40af;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --danger-dark: #dc2626;
+            --info-color: #3b82f6;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+            --white: #ffffff;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --text-color: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--gray-100);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo i {
+            font-size: 48px;
+            color: var(--white);
+            margin-bottom: 10px;
+        }
+
+        .logo h2 {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 24px;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .sidebar nav li {
+            margin: 5px 0;
+        }
+
+        .sidebar nav li a,
+        .sidebar nav li {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar nav li:hover,
+        .sidebar nav li.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+        }
+
+        .sidebar nav li i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 20px;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        header {
+            background: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+        }
+
+        #menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .current-date {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .content-area {
+            padding: 30px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            gap: 8px;
+        }
+
+        .btn.primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn.primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn.secondary {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .btn.secondary:hover {
+            background-color: var(--gray-600);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn.success {
+            background-color: var(--success-color);
+            color: var(--white);
+        }
+
+        .btn.warning {
+            background-color: var(--warning-color);
+            color: var(--white);
+        }
+
+        .btn.danger {
+            background-color: var(--danger-color);
+            color: var(--white);
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+        }
+
+        .stat-icon.blue {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+        }
+
+        .stat-icon.green {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-icon.orange {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stat-icon.purple {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .stat-icon i {
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .table-container {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .table-container h3 {
+            padding: 20px 25px;
+            margin: 0;
+            background-color: var(--gray-50);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 25px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--gray-50);
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.presente {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.ausente {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-badge.ativo {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.inativo {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-badge.efetivado {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info-color);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .filters-container {
+            background: var(--white);
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .actions-column {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-icon.edit {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .btn-icon.edit:hover {
+            background-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-icon.delete {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .btn-icon.delete:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .close {
+            font-size: 24px;
+            color: var(--text-light);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: var(--text-color);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .report-filters {
+            background: var(--white);
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .report-container {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 25px;
+            background-color: var(--gray-50);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-card {
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .summary-card p {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+        }
+
+        .toast {
+            background: var(--white);
+            border-left: 4px solid var(--success-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            min-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        #modal-confirmar-exclusao .modal-content {
+            max-width: 450px;
+            border-top: 4px solid var(--danger-color);
+        }
+
+        #modal-confirmar-exclusao .modal-header {
+            background-color: #fdf2f2;
+            border-bottom: 1px solid #fecaca;
+        }
+
+        #modal-confirmar-exclusao .modal-header h3 {
+            color: var(--danger-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #modal-confirmar-exclusao .modal-body {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        #modal-confirmar-exclusao .warning-icon {
+            font-size: 48px;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+
+        #modal-confirmar-exclusao .warning-text {
+            font-size: 16px;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        #modal-confirmar-exclusao .area-name {
+            font-weight: 600;
+            color: var(--danger-color);
+            font-size: 18px;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fef2f2;
+            border-radius: 4px;
+            border: 1px solid #fecaca;
+        }
+
+        #modal-confirmar-exclusao .permanent-warning {
+            font-size: 14px;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        #modal-confirmar-exclusao .modal-footer {
+            background-color: #fdf2f2;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn.confirm-delete {
+            background-color: var(--danger-color);
+            color: var(--white);
+            font-weight: 600;
+            padding: 12px 24px;
+        }
+
+        .btn.confirm-delete:hover {
+            background-color: var(--danger-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn.cancel-delete {
+            background-color: var(--gray-500);
+            color: var(--white);
+            padding: 12px 24px;
+        }
+
+        .btn.cancel-delete:hover {
+            background-color: var(--gray-600);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            #menu-toggle {
+                display: block;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-container,
+            .report-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .dashboard-header,
+            .page-header {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-user-graduate"></i>
+            <h2>SEICE</h2>
+        </div>
+        <nav>
+            <ul>
+                <li class="active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li data-page="areas">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Áreas de Estágio</span>
+                </li>
+                <li data-page="estagiarios">
+                    <i class="fas fa-users"></i>
+                    <span>Estagiários</span>
+                </li>
+                <li data-page="presencas">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Presenças</span>
+                </li>
+                <li data-page="relatorios">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Relatórios</span>
+                </li>
+                <li data-page="calculadora">
+                    <i class="fas fa-calculator"></i>
+                    <span>Calculadora de Horas</span>
+                </li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <p>Sistema de Controle de Estágio</p>
+            <p>v1.0.0</p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <div class="header-content">
+                <button id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Sistema de Controle de Estagiários</h1>
+                </div>
+                <div class="current-date">
+                    <span id="today-date"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <!-- Dashboard -->
+            <div id="dashboard" class="page active">
+                <div class="dashboard-header">
+                    <h2>Dashboard</h2>
+                    <div class="quick-actions">
+                        <button id="btn-registrar-entrada" class="btn primary">
+                            <i class="fas fa-sign-in-alt"></i> Registrar Entrada
+                        </button>
+                        <button id="btn-registrar-saida" class="btn secondary">
+                            <i class="fas fa-sign-out-alt"></i> Registrar Saída
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total de Estagiários</h3>
+                            <p id="total-estagiarios">2</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Presentes Hoje</h3>
+                            <p id="presentes-hoje">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Presenças do Mês</h3>
+                            <p id="presencas-mes">45</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Horas Totais do Mês</h3>
+                            <p id="horas-mes">360h</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-tables">
+                    <div class="table-container">
+                        <h3>Presenças de Hoje</h3>
+                        <table id="presencas-hoje-tabela">
+                            <thead>
+                                <tr>
+                                    <th>Estagiário</th>
+                                    <th>Entrada</th>
+                                    <th>Saída</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-light); padding: 40px;">
+                                        Nenhuma presença registrada hoje
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Áreas -->
+            <div id="areas" class="page">
+                <div class="page-header">
+                    <h2>Gerenciar Áreas</h2>
+                    <button id="btn-nova-area" class="btn primary">
+                        <i class="fas fa-plus"></i> Nova Área
+                    </button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="search-area" placeholder="Buscar área de estágio...">
+                    <button class="btn secondary"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="table-container">
+                    <table id="areas-tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Descrição</th>
+                                <th>Carga Horária (h/semana)</th>
+                                <th>Nº Estagiários</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Educação Física</td>
+                                <td>Área voltada para atividades físicas, esportes e bem-estar</td>
+                                <td>20</td>
+                                <td>2</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" onclick="editarArea(1)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(1, 'Educação Física')" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Estagiários -->
+            <div id="estagiarios" class="page">
+                <div class="page-header">
+                    <h2>Gerenciar Estagiários</h2>
+                    <button id="btn-novo-estagiario" class="btn primary">
+                        <i class="fas fa-plus"></i> Novo Estagiário
+                    </button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="search-estagiario" placeholder="Buscar estagiário...">
+                    <button class="btn secondary"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="table-container">
+                    <table id="estagiarios-tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Área</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Data Início</th>
+                                <th>Status</th>
+                                <th>Situação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Marcos Gabriel Santos dos Anjos</td>
+                                <td>Educação Física</td>
+                                <td>marcos.gabriel@email.com</td>
+                                <td>(21) 98765-4321</td>
+                                <td>01/02/2024</td>
+                                <td><span class="status-badge ativo">Ativo</span></td>
+                                <td><span class="status-badge efetivado">Efetivado</span></td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" onclick="editarEstagiario(1)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="excluirEstagiario(1)" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Cauã Felipe da Silva Guimarães</td>
+                                <td>Educação Física</td>
+                                <td>caua.felipe@email.com</td>
+                                <td>(21) 91234-5678</td>
+                                <td>15/02/2024</td>
+                                <td><span class="status-badge ativo">Ativo</span></td>
+                                <td><span class="status-badge efetivado">Efetivado</span></td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" onclick="editarEstagiario(2)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="excluirEstagiario(2)" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Presenças -->
+            <div id="presencas" class="page">
+                <div class="page-header">
+                    <h2>Controle de Presenças</h2>
+                    <button id="btn-nova-presenca" class="btn primary">
+                        <i class="fas fa-plus"></i> Nova Presença
+                    </button>
+                </div>
+
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="filtro-estagiario">Estagiário:</label>
+                        <select id="filtro-estagiario">
+                            <option value="">Todos</option>
+                            <option value="1">Marcos Gabriel Santos dos Anjos</option>
+                            <option value="2">Cauã Felipe da Silva Guimarães</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-data-inicio">Data Início:</label>
+                        <input type="date" id="filtro-data-inicio">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filtro-data-fim">Data Fim:</label>
+                        <input type="date" id="filtro-data-fim">
+                    </div>
+                    <button id="btn-filtrar-presencas" class="btn secondary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="presencas-tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Estagiário</th>
+                                <th>Data</th>
+                                <th>Entrada</th>
+                                <th>Saída</th>
+                                <th>Horas</th>
+                                <th>Observação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Marcos Gabriel Santos dos Anjos</td>
+                                <td>25/08/2025</td>
+                                <td>08:00</td>
+                                <td>12:00</td>
+                                <td>4h</td>
+                                <td>Presença normal</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" onclick="editarPresenca(1)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="excluirPresenca(1)" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Cauã Felipe da Silva Guimarães</td>
+                                <td>25/08/2025</td>
+                                <td>14:00</td>
+                                <td>18:00</td>
+                                <td>4h</td>
+                                <td>Presença normal</td>
+                                <td class="actions-column">
+                                    <button class="btn-icon edit" onclick="editarPresenca(2)" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon delete" onclick="excluirPresenca(2)" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Relatórios -->
+            <div id="relatorios" class="page">
+                <div class="page-header">
+                    <h2>Relatórios</h2>
+                </div>
+
+                <div class="report-filters">
+                    <div class="filter-group">
+                        <label for="relatorio-mes">Mês:</label>
+                        <select id="relatorio-mes">
+                            <option value="1">Janeiro</option>
+                            <option value="2">Fevereiro</option>
+                            <option value="3">Março</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Maio</option>
+                            <option value="6">Junho</option>
+                            <option value="7">Julho</option>
+                            <option value="8" selected>Agosto</option>
+                            <option value="9">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="relatorio-ano">Ano:</label>
+                        <input type="number" id="relatorio-ano" min="2020" max="2030" value="2025">
+                    </div>
+                    <button id="btn-gerar-relatorio" class="btn primary">
+                        <i class="fas fa-file-alt"></i> Gerar Relatório
+                    </button>
+                    <button id="btn-exportar-relatorio" class="btn secondary">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+
+                <div class="report-container">
+                    <div class="report-summary">
+                        <div class="summary-card">
+                            <h3>Total de Presenças</h3>
+                            <p id="relatorio-total-presencas">45</p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Média de Horas por Dia</h3>
+                            <p id="relatorio-media-horas">4.2h</p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Total de Horas</h3>
+                            <p id="relatorio-total-horas">360h</p>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="relatorio-tabela">
+                            <thead>
+                                <tr>
+                                    <th>Estagiário</th>
+                                    <th>Situação</th>
+                                    <th>Total de Presenças</th>
+                                    <th>Total de Horas</th>
+                                    <th>Média Diária</th>
+                                    <th>Carga Horária Semanal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Marcos Gabriel Santos dos Anjos</td>
+                                    <td><span class="status-badge efetivado">Efetivado</span></td>
+                                    <td>22</td>
+                                    <td>176h</td>
+                                    <td>4.0h</td>
+                                    <td>20h</td>
+                                </tr>
+                                <tr>
+                                    <td>Cauã Felipe da Silva Guimarães</td>
+                                    <td><span class="status-badge efetivado">Efetivado</span></td>
+                                    <td>23</td>
+                                    <td>184h</td>
+                                    <td>4.3h</td>
+                                    <td>20h</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculadora de Horas -->
+            <div id="calculadora" class="page">
+                <div class="page-header">
+                    <h2>Calculadora de Horas</h2>
+                </div>
+
+                <div class="table-container" style="max-width: 600px; margin: 0 auto;">
+                    <h3>Calcular Horas Trabalhadas</h3>
+                    <div style="padding: 25px;">
+                        <div class="form-group">
+                            <label for="calc-estagiario">Estagiário:</label>
+                            <select id="calc-estagiario">
+                                <option value="">Selecione o estagiário</option>
+                                <option value="1">Marcos Gabriel Santos dos Anjos</option>
+                                <option value="2">Cauã Felipe da Silva Guimarães</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="calc-data-inicio">Data de Início:</label>
+                            <input type="date" id="calc-data-inicio">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="calc-data-fim">Data de Fim:</label>
+                            <input type="date" id="calc-data-fim">
+                        </div>
+
+                        <button id="btn-calcular-horas" class="btn primary" style="width: 100%;">
+                            <i class="fas fa-calculator"></i> Calcular Horas
+                        </button>
+
+                        <div id="resultado-calculo" style="margin-top: 30px; display: none;">
+                            <div class="report-summary" style="grid-template-columns: 1fr 1fr;">
+                                <div class="summary-card">
+                                    <h3>Total de Dias</h3>
+                                    <p id="total-dias">0</p>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Total de Horas</h3>
+                                    <p id="total-horas-calc">0h</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Exclusão -->
+    <div id="modal-confirmar-exclusao" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirmar Exclusão
+                </h3>
+                <span class="close" onclick="fecharModalConfirmacao()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="warning-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <div class="warning-text">
+                    Tem certeza que deseja excluir a área:
+                </div>
+                <div id="area-nome-exclusao" class="area-name">
+                    <!-- Nome da área será inserido aqui -->
+                </div>
+                <div class="permanent-warning">
+                    <strong>Atenção:</strong> Esta ação é permanente e não pode ser desfeita.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-exclusao" class="btn confirm-delete">
+                    <i class="fas fa-trash"></i>
+                    Sim, Excluir Permanentemente
+                </button>
+                <button class="btn cancel-delete" onclick="fecharModalConfirmacao()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registrar Entrada -->
+    <div id="modal-registrar-entrada" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Registrar Entrada de Estagiário</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="entrada-estagiario">Estagiário:</label>
+                    <select id="entrada-estagiario" required>
+                        <option value="">Selecione o estagiário</option>
+                        <option value="1">Marcos Gabriel Santos dos Anjos</option>
+                        <option value="2">Cauã Felipe da Silva Guimarães</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="entrada-observacao">Observação:</label>
+                    <textarea id="entrada-observacao" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-entrada" class="btn primary">Registrar Entrada</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Registrar Saída -->
+    <div id="modal-registrar-saida" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Registrar Saída de Estagiário</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="saida-estagiario">Estagiário:</label>
+                    <select id="saida-estagiario" required>
+                        <option value="">Selecione o estagiário</option>
+                        <option value="1">Marcos Gabriel Santos dos Anjos</option>
+                        <option value="2">Cauã Felipe da Silva Guimarães</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="saida-observacao">Observação:</label>
+                    <textarea id="saida-observacao" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-saida" class="btn primary">Registrar Saída</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Área -->
+    <div id="modal-area" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-area-titulo">Nova Área</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="area-id">
+                <div class="form-group">
+                    <label for="area-nome">Nome da Área:</label>
+                    <input type="text" id="area-nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="area-descricao">Descrição:</label>
+                    <textarea id="area-descricao" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="area-carga-horaria">Carga Horária Semanal (horas):</label>
+                    <input type="number" id="area-carga-horaria" min="1" max="40" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-salvar-area" class="btn primary">Salvar</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Estagiário -->
+    <div id="modal-estagiario" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-estagiario-titulo">Novo Estagiário</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="estagiario-id">
+                <div class="form-group">
+                    <label for="estagiario-nome">Nome:</label>
+                    <input type="text" id="estagiario-nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-email">Email:</label>
+                    <input type="email" id="estagiario-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-telefone">Telefone:</label>
+                    <input type="text" id="estagiario-telefone" required>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-data-inicio">Data de Início:</label>
+                    <input type="date" id="estagiario-data-inicio" required>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-area">Área de Estágio:</label>
+                    <select id="estagiario-area" required>
+                        <option value="">Selecione a área</option>
+                        <option value="1">Educação Física</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-ativo">Status:</label>
+                    <select id="estagiario-ativo">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="estagiario-situacao">Situação:</label>
+                    <select id="estagiario-situacao">
+                        <option value="estagiario">Estagiário</option>
+                        <option value="efetivado">Efetivado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-salvar-estagiario" class="btn primary">Salvar</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Presença -->
+    <div id="modal-presenca" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-presenca-titulo">Nova Presença</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="presenca-id">
+                <div class="form-group">
+                    <label for="presenca-estagiario">Estagiário:</label>
+                    <select id="presenca-estagiario" required>
+                        <option value="">Selecione o estagiário</option>
+                        <option value="1">Marcos Gabriel Santos dos Anjos</option>
+                        <option value="2">Cauã Felipe da Silva Guimarães</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="presenca-data">Data:</label>
+                    <input type="date" id="presenca-data" required>
+                </div>
+                <div class="form-group">
+                    <label for="presenca-entrada">Horário de Entrada:</label>
+                    <input type="time" id="presenca-entrada" required>
+                </div>
+                <div class="form-group">
+                    <label for="presenca-saida">Horário de Saída:</label>
+                    <input type="time" id="presenca-saida" required>
+                </div>
+                <div class="form-group">
+                    <label for="presenca-observacao">Observação:</label>
+                    <textarea id="presenca-observacao" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-salvar-presenca" class="btn primary">Salvar</button>
+                <button class="btn secondary modal-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // dados pré definido
+        let areas = [
+            { id: 1, nome: 'Educação Física', descricao: 'Área voltada para atividades físicas, esportes e bem-estar', cargaHoraria: 20, numeroEstagiarios: 2 }
+        ];
+
+        let estagiarios = [
+            { 
+                id: 1, 
+                nome: 'Marcos Gabriel Santos dos Anjos', 
+                area: 'Educação Física', 
+                areaId: 1,
+                email: 'marcos.gabriel@email.com', 
+                telefone: '(21) 98765-4321', 
+                dataInicio: '2024-02-01', 
+                ativo: true,
+                situacao: 'efetivado'
+            },
+            { 
+                id: 2, 
+                nome: 'Cauã Felipe da Silva Guimarães', 
+                area: 'Educação Física', 
+                areaId: 1,
+                email: 'caua.felipe@email.com', 
+                telefone: '(21) 91234-5678', 
+                dataInicio: '2024-02-15', 
+                ativo: true,
+                situacao: 'efetivado'
+            }
+        ];
+
+        let presencas = [
+            { 
+                id: 1, 
+                estagiarioId: 1, 
+                estagiarioNome: 'Marcos Gabriel Santos dos Anjos',
+                data: '2025-08-25', 
+                entrada: '08:00', 
+                saida: '12:00', 
+                horas: 4,
+                observacao: 'Presença normal'
+            },
+            { 
+                id: 2, 
+                estagiarioId: 2, 
+                estagiarioNome: 'Cauã Felipe da Silva Guimarães',
+                data: '2025-08-25', 
+                entrada: '14:00', 
+                saida: '18:00', 
+                horas: 4,
+                observacao: 'Presença normal'
+            }
+        ];
+
+      
+        function formatarData(data) {
+            return new Date(data).toLocaleDateString('pt-BR');
+        }
+
+        function calcularHoras(entrada, saida) {
+            const [horaEntrada, minutoEntrada] = entrada.split(':').map(Number);
+            const [horaSaida, minutoSaida] = saida.split(':').map(Number);
+            
+            const minutosEntrada = horaEntrada * 60 + minutoEntrada;
+            const minutosSaida = horaSaida * 60 + minutoSaida;
+            
+            const diferencaMinutos = minutosSaida - minutosEntrada;
+            const horas = Math.floor(diferencaMinutos / 60);
+            const minutos = diferencaMinutos % 60;
+            
+            return minutos === 0 ? `${horas}h` : `${horas}h${minutos}m`;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.getElementById('toast-container').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+       
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            document.getElementById('today-date').textContent = new Date().toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            
+            document.getElementById('menu-toggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+
+            
+            document.querySelectorAll('.sidebar nav li').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    if (page) {
+                        
+                        document.querySelectorAll('.sidebar nav li').forEach(li => li.classList.remove('active'));
+                        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                        
+                        
+                        this.classList.add('active');
+                        document.getElementById(page).classList.add('active');
+                    }
+                });
+            });
+
+            
+            setupModals();
+            
+            
+            setupActionButtons();
+            
+          
+            setupAreaManagement();
+            setupEstagiarioManagement();
+            setupPresencaManagement();
+            setupCalculadora();
+        });
+
+        function setupModals() {
+            
+            document.querySelectorAll('.modal .close, .modal-cancel').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').classList.remove('show');
+                });
+            });
+
+           
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('show');
+                    }
+                });
+            });
+        }
+
+        function setupActionButtons() {
+            
+            document.getElementById('btn-registrar-entrada').addEventListener('click', function() {
+                document.getElementById('modal-registrar-entrada').classList.add('show');
+            });
+
+          
+            document.getElementById('btn-registrar-saida').addEventListener('click', function() {
+                document.getElementById('modal-registrar-saida').classList.add('show');
+            });
+
+           
+            document.getElementById('btn-confirmar-entrada').addEventListener('click', function() {
+                const estagiarioId = document.getElementById('entrada-estagiario').value;
+                const observacao = document.getElementById('entrada-observacao').value;
+                
+                if (!estagiarioId) {
+                    showToast('Selecione um estagiário', 'error');
+                    return;
+                }
+                
+               
+                showToast('Entrada registrada com sucesso!');
+                document.getElementById('modal-registrar-entrada').classList.remove('show');
+                
+                
+                document.getElementById('entrada-estagiario').value = '';
+                document.getElementById('entrada-observacao').value = '';
+            });
+
+            
+            document.getElementById('btn-confirmar-saida').addEventListener('click', function() {
+                const estagiarioId = document.getElementById('saida-estagiario').value;
+                const observacao = document.getElementById('saida-observacao').value;
+                
+                if (!estagiarioId) {
+                    showToast('Selecione um estagiário', 'error');
+                    return;
+                }
+                
+                
+                showToast('Saída registrada com sucesso!');
+                document.getElementById('modal-registrar-saida').classList.remove('show');
+                
+              
+                document.getElementById('saida-estagiario').value = '';
+                document.getElementById('saida-observacao').value = '';
+            });
+        }
+
+        function setupAreaManagement() {
+            
+            document.getElementById('btn-nova-area').addEventListener('click', function() {
+                document.getElementById('modal-area-titulo').textContent = 'Nova Área';
+                document.getElementById('area-id').value = '';
+                document.getElementById('area-nome').value = '';
+                document.getElementById('area-descricao').value = '';
+                document.getElementById('area-carga-horaria').value = '';
+                document.getElementById('modal-area').classList.add('show');
+            });
+
+        
+            document.getElementById('btn-salvar-area').addEventListener('click', function() {
+                const id = document.getElementById('area-id').value;
+                const nome = document.getElementById('area-nome').value;
+                const descricao = document.getElementById('area-descricao').value;
+                const cargaHoraria = document.getElementById('area-carga-horaria').value;
+
+                if (!nome || !descricao || !cargaHoraria) {
+                    showToast('Preencha todos os campos obrigatórios', 'error');
+                    return;
+                }
+
+                if (id) {
+                    
+                    const area = areas.find(a => a.id == id);
+                    area.nome = nome;
+                    area.descricao = descricao;
+                    area.cargaHoraria = parseInt(cargaHoraria);
+                    showToast('Área atualizada com sucesso!');
+                } else {
+                   
+                    const novaArea = {
+                        id: Date.now(),
+                        nome,
+                        descricao,
+                        cargaHoraria: parseInt(cargaHoraria),
+                        numeroEstagiarios: 0
+                    };
+                    areas.push(novaArea);
+                    showToast('Área criada com sucesso!');
+                }
+
+                document.getElementById('modal-area').classList.remove('show');
+                renderizarAreas();
+            });
+        }
+
+        function setupEstagiarioManagement() {
+          
+            document.getElementById('btn-novo-estagiario').addEventListener('click', function() {
+                document.getElementById('modal-estagiario-titulo').textContent = 'Novo Estagiário';
+                document.getElementById('estagiario-id').value = '';
+                document.getElementById('estagiario-nome').value = '';
+                document.getElementById('estagiario-email').value = '';
+                document.getElementById('estagiario-telefone').value = '';
+                document.getElementById('estagiario-data-inicio').value = '';
+                document.getElementById('estagiario-area').value = '';
+                document.getElementById('estagiario-ativo').value = 'true';
+                document.getElementById('estagiario-situacao').value = 'estagiario';
+                document.getElementById('modal-estagiario').classList.add('show');
+            });
+
+           
+            document.getElementById('btn-salvar-estagiario').addEventListener('click', function() {
+                const id = document.getElementById('estagiario-id').value;
+                const nome = document.getElementById('estagiario-nome').value;
+                const email = document.getElementById('estagiario-email').value;
+                const telefone = document.getElementById('estagiario-telefone').value;
+                const dataInicio = document.getElementById('estagiario-data-inicio').value;
+                const areaId = document.getElementById('estagiario-area').value;
+                const ativo = document.getElementById('estagiario-ativo').value === 'true';
+                const situacao = document.getElementById('estagiario-situacao').value;
+
+                if (!nome || !email || !telefone || !dataInicio || !areaId) {
+                    showToast('Preencha todos os campos obrigatórios', 'error');
+                    return;
+                }
+
+                const area = areas.find(a => a.id == areaId);
+                
+                if (id) {
+                   
+                    const estagiario = estagiarios.find(e => e.id == id);
+                    estagiario.nome = nome;
+                    estagiario.email = email;
+                    estagiario.telefone = telefone;
+                    estagiario.dataInicio = dataInicio;
+                    estagiario.areaId = parseInt(areaId);
+                    estagiario.area = area.nome;
+                    estagiario.ativo = ativo;
+                    estagiario.situacao = situacao;
+                    showToast('Estagiário atualizado com sucesso!');
+                } else {
+                    
+                    const novoEstagiario = {
+                        id: Date.now(),
+                        nome,
+                        email,
+                        telefone,
+                        dataInicio,
+                        areaId: parseInt(areaId),
+                        area: area.nome,
+                        ativo,
+                        situacao
+                    };
+                    estagiarios.push(novoEstagiario);
+                    
+                   
+                    area.numeroEstagiarios++;
+                    
+                    showToast('Estagiário criado com sucesso!');
+                }
+
+                document.getElementById('modal-estagiario').classList.remove('show');
+                renderizarEstagiarios();
+                renderizarAreas();
+                atualizarStats();
+            });
+        }
+
+        function setupPresencaManagement() {
+            
+            document.getElementById('btn-nova-presenca').addEventListener('click', function() {
+                document.getElementById('modal-presenca-titulo').textContent = 'Nova Presença';
+                document.getElementById('presenca-id').value = '';
+                document.getElementById('presenca-estagiario').value = '';
+                document.getElementById('presenca-data').value = new Date().toISOString().split('T')[0];
+                document.getElementById('presenca-entrada').value = '';
+                document.getElementById('presenca-saida').value = '';
+                document.getElementById('presenca-observacao').value = '';
+                document.getElementById('modal-presenca').classList.add('show');
+            });
+
+       
+            document.getElementById('btn-salvar-presenca').addEventListener('click', function() {
+                const id = document.getElementById('presenca-id').value;
+                const estagiarioId = parseInt(document.getElementById('presenca-estagiario').value);
+                const data = document.getElementById('presenca-data').value;
+                const entrada = document.getElementById('presenca-entrada').value;
+                const saida = document.getElementById('presenca-saida').value;
+                const observacao = document.getElementById('presenca-observacao').value;
+
+                if (!estagiarioId || !data || !entrada || !saida) {
+                    showToast('Preencha todos os campos obrigatórios', 'error');
+                    return;
+                }
+
+                const estagiario = estagiarios.find(e => e.id === estagiarioId);
+                const horas = calcularHorasNumericas(entrada, saida);
+
+                if (id) {
+                   
+                    const presenca = presencas.find(p => p.id == id);
+                    presenca.estagiarioId = estagiarioId;
+                    presenca.estagiarioNome = estagiario.nome;
+                    presenca.data = data;
+                    presenca.entrada = entrada;
+                    presenca.saida = saida;
+                    presenca.horas = horas;
+                    presenca.observacao = observacao;
+                    showToast('Presença atualizada com sucesso!');
+                } else {
+                    
+                    const novaPresenca = {
+                        id: Date.now(),
+                        estagiarioId,
+                        estagiarioNome: estagiario.nome,
+                        data,
+                        entrada,
+                        saida,
+                        horas,
+                        observacao
+                    };
+                    presencas.push(novaPresenca);
+                    showToast('Presença registrada com sucesso!');
+                }
+
+                document.getElementById('modal-presenca').classList.remove('show');
+                renderizarPresencas();
+                atualizarStats();
+            });
+
+            
+            document.getElementById('btn-filtrar-presencas').addEventListener('click', function() {
+                renderizarPresencas();
+            });
+        }
+
+        function setupCalculadora() {
+            document.getElementById('btn-calcular-horas').addEventListener('click', function() {
+                const estagiarioId = parseInt(document.getElementById('calc-estagiario').value);
+                const dataInicio = document.getElementById('calc-data-inicio').value;
+                const dataFim = document.getElementById('calc-data-fim').value;
+
+                if (!estagiarioId || !dataInicio || !dataFim) {
+                    showToast('Preencha todos os campos', 'error');
+                    return;
+                }
+
+                const presencasFiltradas = presencas.filter(p => {
+                    return p.estagiarioId === estagiarioId &&
+                           p.data >= dataInicio &&
+                           p.data <= dataFim;
+                });
+
+                const totalDias = presencasFiltradas.length;
+                const totalHoras = presencasFiltradas.reduce((acc, p) => acc + p.horas, 0);
+
+                document.getElementById('total-dias').textContent = totalDias;
+                document.getElementById('total-horas-calc').textContent = `${totalHoras}h`;
+                document.getElementById('resultado-calculo').style.display = 'block';
+
+                showToast(`Cálculo realizado: ${totalDias} dias, ${totalHoras} horas`);
+            });
+        }
+
+        function calcularHorasNumericas(entrada, saida) {
+            const [horaEntrada, minutoEntrada] = entrada.split(':').map(Number);
+            const [horaSaida, minutoSaida] = saida.split(':').map(Number);
+            
+            const minutosEntrada = horaEntrada * 60 + minutoEntrada;
+            const minutosSaida = horaSaida * 60 + minutoSaida;
+            
+            const diferencaMinutos = minutosSaida - minutosEntrada;
+            return Math.round(diferencaMinutos / 60 * 100) / 100; 
+        }
+
+        
+        function renderizarAreas() {
+            const tbody = document.querySelector('#areas-tabela tbody');
+            tbody.innerHTML = '';
+
+            areas.forEach(area => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${area.id}</td>
+                    <td>${area.nome}</td>
+                    <td>${area.descricao}</td>
+                    <td>${area.cargaHoraria}</td>
+                    <td>${area.numeroEstagiarios}</td>
+                    <td class="actions-column">
+                        <button class="btn-icon edit" onclick="editarArea(${area.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete" onclick="confirmarExclusaoArea(${area.id}, '${area.nome}')" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderizarEstagiarios() {
+            const tbody = document.querySelector('#estagiarios-tabela tbody');
+            tbody.innerHTML = '';
+
+            estagiarios.forEach(estagiario => {
+                const tr = document.createElement('tr');
+                const statusBadge = estagiario.ativo ? 
+                    '<span class="status-badge ativo">Ativo</span>' : 
+                    '<span class="status-badge inativo">Inativo</span>';
+                
+                const situacaoBadge = estagiario.situacao === 'efetivado' ?
+                    '<span class="status-badge efetivado">Efetivado</span>' :
+                    '<span class="status-badge">Estagiário</span>';
+
+                tr.innerHTML = `
+                    <td>${estagiario.id}</td>
+                    <td>${estagiario.nome}</td>
+                    <td>${estagiario.area}</td>
+                    <td>${estagiario.email}</td>
+                    <td>${estagiario.telefone}</td>
+                    <td>${formatarData(estagiario.dataInicio)}</td>
+                    <td>${statusBadge}</td>
+                    <td>${situacaoBadge}</td>
+                    <td class="actions-column">
+                        <button class="btn-icon edit" onclick="editarEstagiario(${estagiario.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete" onclick="excluirEstagiario(${estagiario.id})" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderizarPresencas() {
+            const tbody = document.querySelector('#presencas-tabela tbody');
+            const estagiarioFiltro = document.getElementById('filtro-estagiario').value;
+            const dataInicio = document.getElementById('filtro-data-inicio').value;
+            const dataFim = document.getElementById('filtro-data-fim').value;
+
+            let presencasFiltradas = presencas;
+
+            if (estagiarioFiltro) {
+                presencasFiltradas = presencasFiltradas.filter(p => p.estagiarioId == estagiarioFiltro);
+            }
+
+            if (dataInicio) {
+                presencasFiltradas = presencasFiltradas.filter(p => p.data >= dataInicio);
+            }
+
+            if (dataFim) {
+                presencasFiltradas = presencasFiltradas.filter(p => p.data <= dataFim);
+            }
+
+            tbody.innerHTML = '';
+
+            presencasFiltradas.forEach(presenca => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${presenca.id}</td>
+                    <td>${presenca.estagiarioNome}</td>
+                    <td>${formatarData(presenca.data)}</td>
+                    <td>${presenca.entrada}</td>
+                    <td>${presenca.saida}</td>
+                    <td>${presenca.horas}h</td>
+                    <td>${presenca.observacao}</td>
+                    <td class="actions-column">
+                        <button class="btn-icon edit" onclick="editarPresenca(${presenca.id})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete" onclick="excluirPresenca(${presenca.id})" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarStats() {
+            document.getElementById('total-estagiarios').textContent = estagiarios.length;
+            
+          
+            const hoje = new Date().toISOString().split('T')[0];
+            const presencasHoje = presencas.filter(p => p.data === hoje);
+            document.getElementById('presentes-hoje').textContent = presencasHoje.length;
+            
+        
+            const mesAtual = new Date().getMonth() + 1;
+            const anoAtual = new Date().getFullYear();
+            const presencasMes = presencas.filter(p => {
+                const data = new Date(p.data);
+                return data.getMonth() + 1 === mesAtual && data.getFullYear() === anoAtual;
+            });
+            document.getElementById('presencas-mes').textContent = presencasMes.length;
+            
+            
+            const horasMes = presencasMes.reduce((acc, p) => acc + p.horas, 0);
+            document.getElementById('horas-mes').textContent = `${horasMes}h`;
+        }
+
+        
+        function editarArea(id) {
+            const area = areas.find(a => a.id === id);
+            if (area) {
+                document.getElementById('modal-area-titulo').textContent = 'Editar Área';
+                document.getElementById('area-id').value = area.id;
+                document.getElementById('area-nome').value = area.nome;
+                document.getElementById('area-descricao').value = area.descricao;
+                document.getElementById('area-carga-horaria').value = area.cargaHoraria;
+                document.getElementById('modal-area').classList.add('show');
+            }
+        }
+
+        function editarEstagiario(id) {
+            const estagiario = estagiarios.find(e => e.id === id);
+            if (estagiario) {
+                document.getElementById('modal-estagiario-titulo').textContent = 'Editar Estagiário';
+                document.getElementById('estagiario-id').value = estagiario.id;
+                document.getElementById('estagiario-nome').value = estagiario.nome;
+                document.getElementById('estagiario-email').value = estagiario.email;
+                document.getElementById('estagiario-telefone').value = estagiario.telefone;
+                document.getElementById('estagiario-data-inicio').value = estagiario.dataInicio;
+                document.getElementById('estagiario-area').value = estagiario.areaId;
+                document.getElementById('estagiario-ativo').value = estagiario.ativo.toString();
+                document.getElementById('estagiario-situacao').value = estagiario.situacao;
+                document.getElementById('modal-estagiario').classList.add('show');
+            }
+        }
+
+        function editarPresenca(id) {
+            const presenca = presencas.find(p => p.id === id);
+            if (presenca) {
+                document.getElementById('modal-presenca-titulo').textContent = 'Editar Presença';
+                document.getElementById('presenca-id').value = presenca.id;
+                document.getElementById('presenca-estagiario').value = presenca.estagiarioId;
+                document.getElementById('presenca-data').value = presenca.data;
+                document.getElementById('presenca-entrada').value = presenca.entrada;
+                document.getElementById('presenca-saida').value = presenca.saida;
+                document.getElementById('presenca-observacao').value = presenca.observacao;
+                document.getElementById('modal-presenca').classList.add('show');
+            }
+        }
+
+        function excluirEstagiario(id) {
+            if (confirm('Tem certeza que deseja excluir este estagiário?')) {
+                const index = estagiarios.findIndex(e => e.id === id);
+                if (index !== -1) {
+                    const estagiario = estagiarios[index];
+                    const area = areas.find(a => a.id === estagiario.areaId);
+                    if (area) {
+                        area.numeroEstagiarios--;
+                    }
+                    
+                    estagiarios.splice(index, 1);
+                    renderizarEstagiarios();
+                    renderizarAreas();
+                    atualizarStats();
+                    showToast('Estagiário excluído com sucesso!');
+                }
+            }
+        }
+
+        function excluirPresenca(id) {
+            if (confirm('Tem certeza que deseja excluir esta presença?')) {
+                const index = presencas.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    presencas.splice(index, 1);
+                    renderizarPresencas();
+                    atualizarStats();
+                    showToast('Presença excluída com sucesso!');
+                }
+            }
+        }
+
+        function confirmarExclusaoArea(id, nome) {
+            document.getElementById('area-nome-exclusao').textContent = nome;
+            document.getElementById('modal-confirmar-exclusao').classList.add('show');
+            
+            document.getElementById('btn-confirmar-exclusao').onclick = function() {
+                const index = areas.findIndex(a => a.id === id);
+                if (index !== -1) {
+                    areas.splice(index, 1);
+                    renderizarAreas();
+                    showToast('Área excluída com sucesso!');
+                }
+                fecharModalConfirmacao();
+            };
+        }
+
+        function fecharModalConfirmacao() {
+            document.getElementById('modal-confirmar-exclusao').classList.remove('show');
+        }
+
+        
+        document.getElementById('btn-gerar-relatorio').addEventListener('click', function() {
+            const mes = parseInt(document.getElementById('relatorio-mes').value);
+            const ano = parseInt(document.getElementById('relatorio-ano').value);
+            
+            const presencasRelatorio = presencas.filter(p => {
+                const data = new Date(p.data);
+                return data.getMonth() + 1 === mes && data.getFullYear() === ano;
+            });
+            
+            const relatorioData = {};
+            
+            estagiarios.forEach(est => {
+                const presencasEst = presencasRelatorio.filter(p => p.estagiarioId === est.id);
+                const totalHoras = presencasEst.reduce((acc, p) => acc + p.horas, 0);
+                const area = areas.find(a => a.id === est.areaId);
+                
+                relatorioData[est.id] = {
+                    nome: est.nome,
+                    situacao: est.situacao,
+                    totalPresencas: presencasEst.length,
+                    totalHoras: totalHoras,
+                    mediaDiaria: presencasEst.length > 0 ? (totalHoras / presencasEst.length).toFixed(1) : 0,
+                    cargaHorariaSemanal: area ? area.cargaHoraria : 0
+                };
+            });
+            
+          
+            const totalPresencasRel = presencasRelatorio.length;
+            const totalHorasRel = presencasRelatorio.reduce((acc, p) => acc + p.horas, 0);
+            const mediaHorasRel = totalPresencasRel > 0 ? (totalHorasRel / totalPresencasRel).toFixed(1) : 0;
+            
+            document.getElementById('relatorio-total-presencas').textContent = totalPresencasRel;
+            document.getElementById('relatorio-media-horas').textContent = `${mediaHorasRel}h`;
+            document.getElementById('relatorio-total-horas').textContent = `${totalHorasRel}h`;
+          
+            const tbody = document.querySelector('#relatorio-tabela tbody');
+            tbody.innerHTML = '';
+            
+            Object.values(relatorioData).forEach(data => {
+                const tr = document.createElement('tr');
+                const situacaoBadge = data.situacao === 'efetivado' ?
+                    '<span class="status-badge efetivado">Efetivado</span>' :
+                    '<span class="status-badge">Estagiário</span>';
+                    
+                tr.innerHTML = `
+                    <td>${data.nome}</td>
+                    <td>${situacaoBadge}</td>
+                    <td>${data.totalPresencas}</td>
+                    <td>${data.totalHoras}h</td>
+                    <td>${data.mediaDiaria}h</td>
+                    <td>${data.cargaHorariaSemanal}h</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            showToast('Relatório gerado com sucesso!');
+        });
+
+        
+        document.getElementById('btn-exportar-relatorio').addEventListener('click', function() {
+            showToast('Funcionalidade de exportação será implementada em breve', 'warning');
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderizarAreas();
+            renderizarEstagiarios();
+            renderizarPresencas();
+            atualizarStats();
+        });
+    </script>
+</body>
+</html>
