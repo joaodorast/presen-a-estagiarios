@@ -10,12 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-dark: #1e40af;
-            --secondary-color: #64748b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
+            --primary-color: #03588C;
+            --primary-dark: #0477BF;
+            --secondary-color: #048ABF;
+            --success-color: #1f8a51;
+            --warning-color: #dfa737;
+            --danger-color: #cc2626;
             --danger-dark: #dc2626;
             --info-color: #3b82f6;
             --light-color: #f8fafc;
@@ -54,7 +54,7 @@
         .sidebar {
             width: 250px;
             height: 100vh;
-            background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(180deg, var(--primary-dark) 35%, var(--primary-color) 100%);
             position: fixed;
             left: 0;
             top: 0;
@@ -487,6 +487,13 @@
             background-color: rgba(239, 68, 68, 0.2);
         }
 
+        .area-name{
+            color: var(--gray-100);
+            font-size: 15px;
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -785,6 +792,7 @@
         <div class="logo">
             <i class="fas fa-user-graduate"></i>
             <h2>SEICE</h2>
+            <p class="area-name">Educação Física</p>
         </div>
         <nav>
             <ul>
