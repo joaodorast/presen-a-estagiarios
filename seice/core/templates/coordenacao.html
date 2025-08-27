@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEICE | Sistema de Presença e Carga de Estagiários - Educação Física</title>
+    <title>SEICE | Sistema de Presença e Carga de Estagiários - Coordenação</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #113f37;
-            --primary-dark: #125C4F;
-            --secondary-color: #03A61C;
-            --secondary-button: red;
+            --primary-color: #5e0805;
+            --primary-dark: #8b1612;
+            --secondary-color: #048ABF;
             --success-color: #1f8a51;
             --warning-color: #dfa737;
             --danger-color: #cc2626;
@@ -55,7 +54,7 @@
         .sidebar {
             width: 250px;
             height: 100vh;
-            background: linear-gradient(180deg, var(--primary-dark) 5%, var(--primary-color) 100%);
+            background: linear-gradient(180deg, var(--primary-dark) 15%, var(--primary-color) 100%);
             position: fixed;
             left: 0;
             top: 0;
@@ -67,7 +66,7 @@
         .logo {
             padding: 20px;
             text-align: center;
-            border-bottom: 1px solid rgba(226, 226, 226, 0.397);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.562);
         }
 
         .logo i {
@@ -122,7 +121,7 @@
             right: 0;
             padding: 20px;
             text-align: center;
-            border-top: 1px solid rgba(226, 226, 226, 0.397);
+            border-top: 1px solid rgba(255, 255, 255, 0.562);
             color: rgba(255, 255, 255, 0.6);
         }
 
@@ -217,13 +216,13 @@
         }
 
         .btn.primary:hover {
-            background-color: var(--primary-dark);
+            background-color: var(--gray-600);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
 
         .btn.secondary {
-            background-color: var(--secondary-color);
+            background-color: #9E0000;
             color: var(--white);
         }
 
@@ -281,8 +280,8 @@
         }
 
         .stat-icon.blue {
-            background-color: rgba(128, 177, 95, 0.1);
-            color: rgb(62, 99, 44);
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
         }
 
         .stat-icon.green {
@@ -295,9 +294,9 @@
             color: var(--warning-color);
         }
 
-        .stat-icon.bluee {
-            background-color: rgba(92, 210, 246, 0.1);
-            color: #117dc5;
+        .stat-icon.purple {
+            background-color: rgba(92, 184, 246, 0.1);
+            color: #2ca9fd;
         }
 
         .stat-icon i {
@@ -793,7 +792,7 @@
         <div class="logo">
             <i class="fas fa-user-graduate"></i>
             <h2>SEICE</h2>
-            <p class="area-name">Educação Física</p>
+            <p class="area-name">Coordenação</p>
         </div>
         <nav>
             <ul>
@@ -891,7 +890,7 @@
                     </div>
 
                     <div class="stat-card">
-                        <div class="stat-icon bluee">
+                        <div class="stat-icon purple">
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-info">
@@ -954,15 +953,15 @@
                         <tbody>
                             <tr>
                                 <td>1</td>
-                                <td>Educação Física</td>
-                                <td>Área voltada para atividades físicas, esportes e bem-estar</td>
+                                <td>Coordenação</td>
+                                <td>Área voltada para a organização e consertos para manter a escola sempre em bom estado.</td>
                                 <td>20</td>
                                 <td>2</td>
                                 <td class="actions-column">
                                     <button class="btn-icon edit" onclick="editarArea(1)" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(1, 'Educação Física')" title="Excluir">
+                                    <button class="btn-icon delete" onclick="confirmarExclusaoArea(1, 'Coordenação')" title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
@@ -986,6 +985,7 @@
                     <button class="btn secondary"><i class="fas fa-search"></i></button>
                 </div>
 
+          
                 <div class="table-container">
                     <table id="estagiarios-tabela">
                         <thead>
@@ -1002,8 +1002,9 @@
                             </tr>
                         </thead>
                         <tbody>
+                                  <!--
                             <tr>
-                                <td>1</td>
+                                <td>1</td>  
                                 <td>Marcos Gabriel Santos dos Anjos</td>
                                 <td>Educação Física</td>
                                 <td>marcos.gabriel@email.com</td>
@@ -1011,6 +1012,7 @@
                                 <td>01/02/2024</td>
                                 <td><span class="status-badge ativo">Ativo</span></td>
                                 <td><span class="status-badge efetivado">Efetivado</span></td>
+                                -->
                                 <td class="actions-column">
                                     <button class="btn-icon edit" onclick="editarEstagiario(1)" title="Editar">
                                         <i class="fas fa-edit"></i>
@@ -1020,6 +1022,7 @@
                                     </button>
                                 </td>
                             </tr>
+                            <!--
                             <tr>
                                 <td>2</td>
                                 <td>Cauã Felipe da Silva Guimarães</td>
@@ -1029,6 +1032,7 @@
                                 <td>15/02/2024</td>
                                 <td><span class="status-badge ativo">Ativo</span></td>
                                 <td><span class="status-badge efetivado">Efetivado</span></td>
+                                -->
                                 <td class="actions-column">
                                     <button class="btn-icon edit" onclick="editarEstagiario(2)" title="Editar">
                                         <i class="fas fa-edit"></i>
@@ -1041,6 +1045,7 @@
                         </tbody>
                     </table>
                 </div>
+                
             </div>
 
             <!-- Presenças -->
@@ -1057,8 +1062,9 @@
                         <label for="filtro-estagiario">Estagiário:</label>
                         <select id="filtro-estagiario">
                             <option value="">Todos</option>
-                            <option value="1">Marcos Gabriel Santos dos Anjos</option>
-                            <option value="2">Cauã Felipe da Silva Guimarães</option>
+                            <option value="1">X</option>
+                            <option value="2">Y</option>
+
                         </select>
                     </div>
                     <div class="filter-group">
@@ -1090,6 +1096,7 @@
                         </thead>
                         <tbody>
                             <tr>
+                                <!--
                                 <td>1</td>
                                 <td>Marcos Gabriel Santos dos Anjos</td>
                                 <td>25/08/2025</td>
@@ -1127,7 +1134,7 @@
                     </table>
                 </div>
             </div>
-
+-->
             <!-- Relatórios -->
             <div id="relatorios" class="page">
                 <div class="page-header">
@@ -1179,7 +1186,6 @@
                             <p id="relatorio-total-horas">360h</p>
                         </div>
                     </div>
-
                     <div class="table-container">
                         <table id="relatorio-tabela">
                             <thead>
@@ -1193,6 +1199,7 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <!--
                                 <tr>
                                     <td>Marcos Gabriel Santos dos Anjos</td>
                                     <td><span class="status-badge efetivado">Efetivado</span></td>
@@ -1209,13 +1216,13 @@
                                     <td>4.3h</td>
                                     <td>20h</td>
                                 </tr>
+                                -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
-            <!-- Calculadora de Horas -->
+            <!-- Calculadora de Horas-->
             <div id="calculadora" class="page">
                 <div class="page-header">
                     <h2>Calculadora de Horas</h2>
@@ -1228,8 +1235,8 @@
                             <label for="calc-estagiario">Estagiário:</label>
                             <select id="calc-estagiario">
                                 <option value="">Selecione o estagiário</option>
-                                <option value="1">Marcos Gabriel Santos dos Anjos</option>
-                                <option value="2">Cauã Felipe da Silva Guimarães</option>
+                                <option value="1">X</option>
+                                <option value="2">Y</option>
                             </select>
                         </div>
 
@@ -1264,7 +1271,6 @@
             </div>
         </div>
     </div>
-
     <!-- Modal Confirmar Exclusão -->
     <div id="modal-confirmar-exclusao" class="modal">
         <div class="modal-content">
@@ -1302,7 +1308,7 @@
         </div>
     </div>
 
-    <!-- Modal Registrar Entrada -->
+    <!-- Modal Registrar Entrada 
     <div id="modal-registrar-entrada" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1329,8 +1335,8 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal Registrar Saída -->
+-->
+    <!-- Modal Registrar Saída 
     <div id="modal-registrar-saida" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1357,7 +1363,7 @@
             </div>
         </div>
     </div>
-
+-->
     <!-- Modal Área -->
     <div id="modal-area" class="modal">
         <div class="modal-content">
@@ -1416,7 +1422,7 @@
                     <label for="estagiario-area">Área de Estágio:</label>
                     <select id="estagiario-area" required>
                         <option value="">Selecione a área</option>
-                        <option value="1">Educação Física</option>
+                        <option value="1">Manutenção</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1448,6 +1454,7 @@
                 <h3 id="modal-presenca-titulo">Nova Presença</h3>
                 <span class="close">&times;</span>
             </div>
+            <!--
             <div class="modal-body">
                 <input type="hidden" id="presenca-id">
                 <div class="form-group">
@@ -1457,6 +1464,7 @@
                         <option value="1">Marcos Gabriel Santos dos Anjos</option>
                         <option value="2">Cauã Felipe da Silva Guimarães</option>
                     </select>
+                    -->
                 </div>
                 <div class="form-group">
                     <label for="presenca-data">Data:</label>
@@ -1487,56 +1495,56 @@
     <script>
         // dados pré definido
         let areas = [
-            { id: 1, nome: 'Educação Física', descricao: 'Área voltada para atividades físicas, esportes e bem-estar', cargaHoraria: 20, numeroEstagiarios: 2 }
+            //{ id: 1, nome: 'Manutenção', descricao: 'Área voltada para a organização e consertos para manter a escola sempre em bom estado', cargaHoraria: 20, numeroEstagiarios: 2 }
         ];
+// 
+        //let estagiarios = [
+            //{ 
+                //id: 1, 
+               //nome: 'Marcos Gabriel Santos dos Anjos', 
+                //area: 'Educação Física', 
+                //areaId: 1,
+                //email: 'marcos.gabriel@email.com', 
+                //telefone: '(21) 98765-4321', 
+                //dataInicio: '2024-02-01', 
+                //ativo: true,
+                //situacao: 'efetivado'
+            //},
+            //{ 
+                //id: 2, 
+                //nome: 'Cauã Felipe da Silva Guimarães', 
+                //area: 'Educação Física', 
+                //areaId: 1,
+                //email: 'caua.felipe@email.com', 
+                //telefone: '(21) 91234-5678', 
+                //dataInicio: '2024-02-15', 
+                //ativo: true,
+                //situacao: 'efetivado'
+            //}
+        //];
 
-        let estagiarios = [
-            { 
-                id: 1, 
-                nome: 'Marcos Gabriel Santos dos Anjos', 
-                area: 'Educação Física', 
-                areaId: 1,
-                email: 'marcos.gabriel@email.com', 
-                telefone: '(21) 98765-4321', 
-                dataInicio: '2024-02-01', 
-                ativo: true,
-                situacao: 'efetivado'
-            },
-            { 
-                id: 2, 
-                nome: 'Cauã Felipe da Silva Guimarães', 
-                area: 'Educação Física', 
-                areaId: 1,
-                email: 'caua.felipe@email.com', 
-                telefone: '(21) 91234-5678', 
-                dataInicio: '2024-02-15', 
-                ativo: true,
-                situacao: 'efetivado'
-            }
-        ];
-
-        let presencas = [
-            { 
-                id: 1, 
-                estagiarioId: 1, 
-                estagiarioNome: 'Marcos Gabriel Santos dos Anjos',
-                data: '2025-08-25', 
-                entrada: '08:00', 
-                saida: '12:00', 
-                horas: 4,
-                observacao: 'Presença normal'
-            },
-            { 
-                id: 2, 
-                estagiarioId: 2, 
-                estagiarioNome: 'Cauã Felipe da Silva Guimarães',
-                data: '2025-08-25', 
-                entrada: '14:00', 
-                saida: '18:00', 
-                horas: 4,
-                observacao: 'Presença normal'
-            }
-        ];
+        //let presencas = [
+            //{ 
+                //id: 1, 
+                //estagiarioId: 1, 
+                //estagiarioNome: 'Marcos Gabriel Santos dos Anjos',
+                //data: '2025-08-25', 
+                //entrada: '08:00', 
+                //saida: '12:00', 
+                //horas: 4,
+                //observacao: 'Presença normal'
+            //},
+            //{ 
+                //id: 2, 
+                //estagiarioId: 2, 
+                //estagiarioNome: 'Cauã Felipe da Silva Guimarães',
+                //data: '2025-08-25', 
+                //entrada: '14:00', 
+                //saida: '18:00', 
+                //horas: 4,
+                //observacao: 'Presença normal'
+            //}
+        //];
 
       
         function formatarData(data) {
