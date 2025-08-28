@@ -10,6 +10,8 @@ urlpatterns = [
     path('', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('home/', views.index, name='index'),
+    path('manutencao/', views.manutencao, name='manutencao'),
+    path('pedagogia/', views.pedagogia, name='pedagogia'),
 
     path('api/areas/', views.get_areas, name='get_areas'),
     path('api/areas/create/', views.create_area, name='create_area'),
