@@ -635,40 +635,33 @@ def processar_logs_control_id(logs_data, unidade_usuario):
     
     try:
         access_logs = logs_data.get('access_logs', [])
-        
         for log in access_logs:
             try:
-                # Extrair dados do log
                 user_id = str(log.get('user_id', ''))
                 timestamp = log.get('time')
                 event_type = str(log.get('event', 'unknown')).lower()
-                
+                log_unique_id = f"{user_id}-{timestamp}-{event_type}"
+                # Verificação extra: não processar se já existe presença com esse log
                 if not user_id or not timestamp:
                     ignorados += 1
                     continue
-                
                 # Converter timestamp
                 if isinstance(timestamp, str):
                     log_datetime = parse_datetime(timestamp)
                     if not log_datetime:
-                        # Tentar outros formatos
                         try:
                             log_datetime = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
                         except:
                             try:
-                                # Formato DD/MM/YYYY HH:MM:SS
                                 log_datetime = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S')
                             except:
                                 ignorados += 1
                                 continue
                 elif isinstance(timestamp, (int, float)):
-                    # Timestamp Unix
                     log_datetime = datetime.fromtimestamp(timestamp)
                 else:
                     ignorados += 1
                     continue
-                
-                # Buscar estagiário pelo control_id_user_id na mesma unidade
                 try:
                     estagiario = Estagiario.objects.get(
                         control_id_user_id=user_id,
@@ -676,23 +669,25 @@ def processar_logs_control_id(logs_data, unidade_usuario):
                         ativo=True
                     )
                 except Estagiario.DoesNotExist:
-                    # Estagiário não encontrado, ignorar este log
                     ignorados += 1
                     continue
-                
                 data_log = log_datetime.date()
                 hora_log = log_datetime.time()
-                
+                # DUPLICIDADE: Verificar se já existe presença com esse log
+                if Presenca.objects.filter(
+                    estagiario=estagiario,
+                    data=data_log,
+                    entrada=hora_log
+                ).exists():
+                    ignorados += 1
+                    continue
                 # Processar entrada
                 if event_type in ['in', 'entrada', 'face_in', 'entry', '1']:
-                    # Verificar se já existe presença para este dia
                     presenca_existente = Presenca.objects.filter(
                         estagiario=estagiario,
                         data=data_log
                     ).first()
-                    
                     if not presenca_existente:
-                        # Criar nova presença
                         Presenca.objects.create(
                             estagiario=estagiario,
                             data=data_log,
@@ -702,7 +697,6 @@ def processar_logs_control_id(logs_data, unidade_usuario):
                         processados += 1
                         logger.info(f"Presença criada para {estagiario.nome} em {data_log} às {hora_log}")
                     else:
-                        # Atualizar entrada se for mais cedo
                         if hora_log < presenca_existente.entrada:
                             presenca_existente.entrada = hora_log
                             presenca_existente.observacao += f' | Entrada atualizada via Control ID'
@@ -711,36 +705,30 @@ def processar_logs_control_id(logs_data, unidade_usuario):
                             logger.info(f"Entrada atualizada para {estagiario.nome} em {data_log}")
                         else:
                             ignorados += 1
-                
-                # Processar saída
                 elif event_type in ['out', 'saida', 'face_out', 'exit', '0']:
-                    # Buscar presença aberta para este dia
                     presenca = Presenca.objects.filter(
                         estagiario=estagiario,
                         data=data_log,
                         saida__isnull=True
                     ).first()
-                    
                     if presenca:
-                        # Registrar saída
+                        # Se a saída for no mesmo horário da entrada, ignora
+                        if hora_log == presenca.entrada:
+                            logger.info(f"Saída ignorada para {estagiario.nome} em {data_log} pois horário é igual à entrada ({hora_log})")
+                            ignorados += 1
+                            continue
                         presenca.saida = hora_log
-                        
-                        # Calcular horas trabalhadas
                         entrada_datetime = datetime.combine(data_log, presenca.entrada)
                         saida_datetime = datetime.combine(data_log, hora_log)
                         horas_trabalhadas = saida_datetime - entrada_datetime
-                        
-                        # Formatar horas (HH:MM)
                         total_seconds = int(horas_trabalhadas.total_seconds())
                         hours = total_seconds // 3600
                         minutes = (total_seconds % 3600) // 60
                         presenca.horas = f"{hours:02d}:{minutes:02d}"
-                        
                         if presenca.observacao:
                             presenca.observacao += f' | Saída automática via Control ID'
                         else:
                             presenca.observacao = f'Saída automática via Control ID'
-                        
                         presenca.save()
                         processados += 1
                         logger.info(f"Saída registrada para {estagiario.nome} em {data_log} às {hora_log}")
@@ -748,15 +736,12 @@ def processar_logs_control_id(logs_data, unidade_usuario):
                         ignorados += 1
                 else:
                     ignorados += 1
-                    
             except Exception as e:
                 logger.error(f"Erro ao processar log individual: {str(e)}")
                 ignorados += 1
                 continue
-    
     except Exception as e:
         logger.error(f"Erro geral no processamento de logs: {str(e)}")
-    
     logger.info(f"Processamento concluído: {processados} processados, {ignorados} ignorados")
     return {
         'processados': processados,

@@ -217,11 +217,14 @@ def processar_log_para_presenca(log):
         if log_id_unico in logs_processados_cache:
             logger.warning(f"⚠️ Log {log_id_unico} já foi processado - PULANDO")
             return False
+        # Adiciona no cache ANTES de processar para garantir unicidade
+        logs_processados_cache.add(log_id_unico)
         
         # Extrair dados do log
         user_id = str(log.get('user_id', ''))
         timestamp = log.get('time')
         event = str(log.get('event', '')).lower()
+    
         
         if not user_id or not timestamp:
             logger.warning(f"⚠️ Log incompleto: user_id={user_id}, timestamp={timestamp}")
@@ -233,6 +236,8 @@ def processar_log_para_presenca(log):
                 log_datetime = parse_datetime(timestamp)
                 if not log_datetime:
                     log_datetime = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S')
+                # Se veio como string ISO, aplicar ajuste de fuso horário
+                log_datetime = log_datetime + timedelta(hours=3)
                 logger.info(f"[DEBUG] Timestamp string bruto: {timestamp} | Convertido: {log_datetime}")
             else:
                 log_datetime = datetime.fromtimestamp(timestamp) + timedelta(hours=3)
@@ -261,56 +266,47 @@ def processar_log_para_presenca(log):
         
         sucesso = False
         
+        # Verificar se já existe entrada e saída para o dia
+        presenca_existente = Presenca.objects.filter(estagiario=estagiario, data=data_log).first()
+        if presenca_existente and presenca_existente.entrada and presenca_existente.saida:
+            logger.info(f"⏭️ {estagiario.nome} já tem entrada e saída para {data_log}, ignorando log.")
+            return False
+
         # SE ESTÁ AUSENTE (default=False) → REGISTRAR ENTRADA (começar a trabalhar)
         if not estagiario.presente:
             logger.info(f"🟢 {estagiario.nome} está AUSENTE → Registrando ENTRADA")
-            
-            # Criar ou atualizar presença APENAS COM ENTRADA
             presenca, criada = Presenca.objects.get_or_create(
                 estagiario=estagiario,
                 data=data_log,
                 defaults={
                     'entrada': hora_log,
-                    'saida': None,  # SEM saída
+                    'saida': None,
                     'observacao': f'Entrada automática Control ID (Event: {event}) [ID: {log_id_unico}]'
                 }
             )
-            
             if not criada:
-                # Atualizar presença existente APENAS com entrada
                 presenca.entrada = hora_log
-                presenca.saida = None  # Garantir que saída está limpa
-                presenca.horas = None  # Limpar horas calculadas
+                presenca.saida = None
+                presenca.horas = None
                 presenca.observacao = f'Entrada: {hora_log} (Event: {event}) [ID: {log_id_unico}]'
                 presenca.save()
                 logger.info(f"🔄 Presença atualizada - APENAS entrada")
             else:
                 logger.info(f"📝 Nova presença criada - APENAS entrada")
-            
-            # Marcar estagiário como presente (trabalhando)
             estagiario.presente = True
             estagiario.save()
             logger.info(f"✅ ENTRADA REGISTRADA: {estagiario.nome} às {hora_log} - Agora TRABALHANDO")
             sucesso = True
-        
         # SE ESTÁ PRESENTE (presente=True) → REGISTRAR SAÍDA (parar de trabalhar)
         else:
             logger.info(f"🔴 {estagiario.nome} está PRESENTE → Registrando SAÍDA")
-            
-            # Buscar presença para este dia
             try:
                 presenca = Presenca.objects.get(estagiario=estagiario, data=data_log)
-                
-                # APENAS atualizar com saída
                 presenca.saida = hora_log
-                
-                # Calcular horas trabalhadas se houver entrada válida
                 if presenca.entrada and presenca.entrada != hora_log:
                     entrada_dt = datetime.combine(data_log, presenca.entrada)
                     saida_dt = datetime.combine(data_log, hora_log)
                     horas_trabalhadas = saida_dt - entrada_dt
-                    
-                    # Verificar se a saída é depois da entrada
                     if horas_trabalhadas.total_seconds() > 0:
                         hours = int(horas_trabalhadas.total_seconds() // 3600)
                         minutes = int((horas_trabalhadas.total_seconds() % 3600) // 60)
@@ -320,26 +316,20 @@ def processar_log_para_presenca(log):
                         presenca.horas = "00:00"
                 else:
                     presenca.horas = "00:00"
-                
                 presenca.observacao = (presenca.observacao or "") + f' | Saída: {hora_log} (Event: {event}) [ID: {log_id_unico}]'
                 presenca.save()
-                
             except Presenca.DoesNotExist:
-                # Criar presença APENAS com saída (situação anômala)
                 presenca = Presenca.objects.create(
                     estagiario=estagiario,
                     data=data_log,
-                    entrada=None,  # SEM entrada
+                    entrada=None,
                     saida=hora_log,
                     horas="00:00",
                     observacao=f'Saída sem entrada detectada (Event: {event}) [ID: {log_id_unico}]'
                 )
                 logger.warning(f"⚠️ Criada presença APENAS com saída para {estagiario.nome}")
-            
-            # Marcar estagiário como ausente (não trabalhando)
             estagiario.presente = False
             estagiario.save()
-            
             horas_trabalhadas_str = presenca.horas if presenca.horas else "00:00"
             logger.info(f"✅ SAÍDA REGISTRADA: {estagiario.nome} às {hora_log} - Trabalhou {horas_trabalhadas_str}h - Agora AUSENTE")
             sucesso = True
