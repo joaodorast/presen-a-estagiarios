@@ -172,6 +172,8 @@ def coordenacao(request):
     }
     return render(request, 'pedagogia.html', context)
 
+
+
 def get_area(id):
     try:
         area = Area.objects.get(id=id)

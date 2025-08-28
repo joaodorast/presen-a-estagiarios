@@ -43,4 +43,5 @@ urlpatterns = [
     path('api/presencas-auto/status/', views.presencas_automaticas_status, name='presencas_auto_status'),
     path('api/presencas-auto/manual/', views.presencas_automaticas_manual, name='presencas_auto_manual'),
     path('api/presencas-auto/controle/', views.presencas_automaticas_controle, name='presencas_auto_controle'),
+    
 ]
