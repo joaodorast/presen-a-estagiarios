@@ -56,7 +56,18 @@ def login_view(request):
             request.session['usuario_logado'] = True
             
             print(f"Login realizado com sucesso: {usuario.nome}")
-            return redirect('index')  # Redireciona para a página inicial
+            if usuario.area == "tecnologia":
+                return redirect('index')
+            elif usuario.area == "educacao fisica":
+                return redirect('educacao_fisica')
+            elif usuario.area == "manutencao":
+                return redirect('manutencao')
+            elif usuario.area == "financeiro":
+                return redirect('financeiro')
+            elif usuario.area == "pedagogia":
+                return redirect('pedagogia')
+            elif usuario.area == "coordenacao":
+                return redirect('coordenacao')
         except Usuario.DoesNotExist:
             print(f"Tentativa de login falhada para: {username}")
             return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
@@ -99,7 +110,67 @@ def index(request):
         'usuario_area': request.session.get('usuario_area'),
         'usuario_unidade': request.session.get('usuario_unidade')
     }
-    return render(request, 'index.html', context)
+    return render(request, 'tecnologia.html', context)
+
+def educacao_fisica(request):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+    context = {
+        'usuario_nome': request.session.get('usuario_nome'),
+        'usuario_area': request.session.get('usuario_area'),
+        'usuario_unidade': request.session.get('usuario_unidade')
+    }
+    return render(request, 'educacao-fisica.html', context)
+
+def manutencao(request):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+    context = {
+        'usuario_nome': request.session.get('usuario_nome'),
+        'usuario_area': request.session.get('usuario_area'),
+        'usuario_unidade': request.session.get('usuario_unidade')
+    }
+    return render(request, 'manutencao.html', context)
+
+def tecnologia(request):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+    context = {
+        'usuario_nome': request.session.get('usuario_nome'),
+        'usuario_area': request.session.get('usuario_area'),
+        'usuario_unidade': request.session.get('usuario_unidade')
+    }
+    return render(request, 'tecnologia.html', context)
+
+def financeiro(request):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+    context = {
+        'usuario_nome': request.session.get('usuario_nome'),
+        'usuario_area': request.session.get('usuario_area'),
+        'usuario_unidade': request.session.get('usuario_unidade')
+    }
+    return render(request, 'financeiro.html', context)
+
+def pedagogia(request):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+    context = {
+        'usuario_nome': request.session.get('usuario_nome'),
+        'usuario_area': request.session.get('usuario_area'),
+        'usuario_unidade': request.session.get('usuario_unidade')
+    }
+    return render(request, 'pedagogia.html', context)
+
+def coordenacao(request):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+    context = {
+        'usuario_nome': request.session.get('usuario_nome'),
+        'usuario_area': request.session.get('usuario_area'),
+        'usuario_unidade': request.session.get('usuario_unidade')
+    }
+    return render(request, 'pedagogia.html', context)
 
 def get_area(id):
     try:
