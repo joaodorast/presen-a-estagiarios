@@ -90,7 +90,7 @@ def filtrar_logs_novos(logs):
                 except:
                     continue
             elif isinstance(log_timestamp, (int, float)):
-                log_dt = datetime.fromtimestamp(log_timestamp)
+                log_dt = datetime.fromtimestamp(log_timestamp) + timedelta(hours=3)
             else:
                 continue
             
@@ -233,8 +233,10 @@ def processar_log_para_presenca(log):
                 log_datetime = parse_datetime(timestamp)
                 if not log_datetime:
                     log_datetime = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S')
+                logger.info(f"[DEBUG] Timestamp string bruto: {timestamp} | Convertido: {log_datetime}")
             else:
-                log_datetime = datetime.fromtimestamp(timestamp)
+                log_datetime = datetime.fromtimestamp(timestamp) + timedelta(hours=3)
+                logger.info(f"[DEBUG] Timestamp epoch bruto: {timestamp} | Convertido: {log_datetime}")
         except Exception as e:
             logger.error(f"❌ Erro ao converter timestamp: {timestamp} - {e}")
             return False
@@ -319,7 +321,7 @@ def processar_log_para_presenca(log):
                 else:
                     presenca.horas = "00:00"
                 
-                presenca.observacao += f' | Saída: {hora_log} (Event: {event}) [ID: {log_id_unico}]'
+                presenca.observacao = (presenca.observacao or "") + f' | Saída: {hora_log} (Event: {event}) [ID: {log_id_unico}]'
                 presenca.save()
                 
             except Presenca.DoesNotExist:
@@ -370,86 +372,90 @@ def registrar_presencas_dos_logs():
     """Função principal: busca logs NOVOS e registra presenças - PROCESSAMENTO SEQUENCIAL ÚNICO"""
     global ultimo_log_processado
     
+    # Buscar todos os logs
     try:
-        # Buscar todos os logs
         logs = buscar_logs_recentes()
-        
-        if not logs:
-            logger.info("📭 Nenhum log encontrado")
-            return
-        
-        # Filtrar apenas logs NOVOS (com garantia de unicidade)
-        logs_novos = filtrar_logs_novos(logs)
-        
-        if not logs_novos:
-            logger.info("📭 Nenhum log NOVO encontrado")
-            return
-        
-        logger.info(f"🔄 Processando {len(logs_novos)} logs NOVOS ÚNICOS...")
-        
-        processados = 0
-        entradas = 0
-        saidas = 0
-        
-        # PROCESSAR UM LOG POR VEZ - SEQUENCIAL
-        for i, log in enumerate(logs_novos):
-            user_id = str(log.get('user_id', ''))
-            log_id = log.get('_log_id_unico', 'sem-id')
-            
-            logger.info(f"📋 Processando log {i+1}/{len(logs_novos)} [ID: {log_id}]...")
-            
-            # Verificar estado antes do processamento
-            estado_antes = None
-            nome_estagiario = "Desconhecido"
-            try:
-                if user_id:
-                    estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
-                    estado_antes = estagiario.presente
-                    nome_estagiario = estagiario.nome
-            except:
-                pass
-            
-            # Processar o log (função já tem proteção contra duplicatas)
-            if processar_log_para_presenca(log):
-                processados += 1
-                
-                # Verificar estado depois do processamento para contar corretamente
-                try:
-                    if user_id and estado_antes is not None:
-                        estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
-                        estado_depois = estagiario.presente
-                        
-                        # Se mudou de ausente para presente = entrada
-                        if not estado_antes and estado_depois:
-                            entradas += 1
-                            logger.info(f"   ✅ {nome_estagiario}: AUSENTE → PRESENTE (ENTRADA)")
-                        # Se mudou de presente para ausente = saída
-                        elif estado_antes and not estado_depois:
-                            saidas += 1
-                            logger.info(f"   ✅ {nome_estagiario}: PRESENTE → AUSENTE (SAÍDA)")
-                        else:
-                            logger.info(f"   ⚠️ {nome_estagiario}: Estado não mudou (possível duplicata evitada)")
-                except Exception as e:
-                    logger.error(f"   ❌ Erro ao verificar mudança de estado: {e}")
-                    entradas += 1  # Assumir entrada em caso de erro
-            else:
-                logger.info(f"   ⏭️ Log {log_id} não processado (duplicata ou erro)")
-        
-        # Atualizar contador total
-        ultimo_log_processado['total_processados'] += processados
-        
-        if processados > 0:
-            logger.info(f"🎉 RESUMO FINAL:")
-            logger.info(f"   📊 Logs únicos processados: {processados}")
-            logger.info(f"   📥 Entradas registradas: {entradas}")
-            logger.info(f"   📤 Saídas registradas: {saidas}")
-            logger.info(f"   � Total geral histórico: {ultimo_log_processado['total_processados']}")
-            logger.info(f"   🧹 Cache de logs processados: {len(logs_processados_cache)} itens")
-        else:
-            logger.info("📝 Logs novos encontrados, mas nenhuma presença registrada (possíveis duplicatas evitadas)")
-    
     except Exception as e:
-        logger.error(f"❌ Erro geral: {str(e)}")
+        logger.error(f"❌ Erro ao buscar logs: {str(e)}")
+        return
+
+    if not logs:
+        logger.info("📭 Nenhum log encontrado")
+        return
+
+    # Filtrar apenas logs NOVOS (com garantia de unicidade)
+    try:
+        logs_novos = filtrar_logs_novos(logs)
+    except Exception as e:
+        logger.error(f"❌ Erro ao filtrar logs novos: {str(e)}")
+        return
+
+    if not logs_novos:
+        logger.info("📭 Nenhum log NOVO encontrado")
+        return
+
+    logger.info(f"🔄 Processando {len(logs_novos)} logs NOVOS ÚNICOS...")
+
+    processados = 0
+    entradas = 0
+    saidas = 0
+
+    # PROCESSAR UM LOG POR VEZ - SEQUENCIAL
+    for i, log in enumerate(logs_novos):
+        user_id = str(log.get('user_id', ''))
+        log_id = log.get('_log_id_unico', 'sem-id')
+
+        logger.info(f"📋 Processando log {i+1}/{len(logs_novos)} [ID: {log_id}]...")
+
+        # Verificar estado antes do processamento
+        estado_antes = None
+        nome_estagiario = "Desconhecido"
+        try:
+            if user_id:
+                estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
+                estado_antes = estagiario.presente
+                nome_estagiario = estagiario.nome
+        except Exception:
+            pass
+
+        # Processar o log (função já tem proteção contra duplicatas)
+        if processar_log_para_presenca(log):
+            processados += 1
+
+            # Verificar estado depois do processamento para contar corretamente
+            try:
+                if user_id and estado_antes is not None:
+                    estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
+                    estado_depois = estagiario.presente
+
+                    # Se mudou de ausente para presente = entrada
+                    if not estado_antes and estado_depois:
+                        entradas += 1
+                        logger.info(f"   ✅ {nome_estagiario}: AUSENTE → PRESENTE (ENTRADA)")
+                    # Se mudou de presente para ausente = saída
+                    elif estado_antes and not estado_depois:
+                        saidas += 1
+                        logger.info(f"   ✅ {nome_estagiario}: PRESENTE → AUSENTE (SAÍDA)")
+                    else:
+                        logger.info(f"   ⚠️ {nome_estagiario}: Estado não mudou (possível duplicata evitada)")
+            except Exception as e:
+                logger.error(f"   ❌ Erro ao verificar mudança de estado: {e}")
+                # Não incrementa entradas/saidas em caso de erro para evitar inconsistência
+        else:
+            logger.info(f"   ⏭️ Log {log_id} não processado (duplicata ou erro)")
+
+    # Atualizar contador total
+    ultimo_log_processado['total_processados'] += processados
+
+    if processados > 0:
+        logger.info(f"🎉 RESUMO FINAL:")
+        logger.info(f"   📊 Logs únicos processados: {processados}")
+        logger.info(f"   📥 Entradas registradas: {entradas}")
+        logger.info(f"   📤 Saídas registradas: {saidas}")
+        logger.info(f"   � Total geral histórico: {ultimo_log_processado['total_processados']}")
+        logger.info(f"   🧹 Cache de logs processados: {len(logs_processados_cache)} itens")
+    else:
+        logger.info("📝 Logs novos encontrados, mas nenhuma presença registrada (possíveis duplicatas evitadas)")
 
 def loop_coleta_automatica():
     """Loop que roda em background coletando e registrando presenças"""

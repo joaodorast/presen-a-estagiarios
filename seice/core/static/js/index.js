@@ -71,15 +71,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigation();
     initMenuToggle();
     initModals();
-    initTodayPresences();
     fetchPresencas().then(() => {
-        initTodayPresences();
-        loadDashboardStats();
         loadPresencasTable();
+        initTodayPresences();
+        loadTodayPresencesTable();
+        loadDashboardStats();
     });
-    loadDashboardStats();
     loadEstagiarios();
-    loadPresencasTable();
     initEventListeners();
     setReportDefaultDate();
 });
