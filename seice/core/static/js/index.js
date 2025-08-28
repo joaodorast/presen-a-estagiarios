@@ -419,32 +419,86 @@ function loadTodayPresencesTable() {
     const tableBody = document.querySelector('#presencas-hoje-tabela tbody');
     tableBody.innerHTML = '';
     
-    if (presencasHoje.length === 0) {
+    // Buscar todos os estagiários ativos
+    const estagiarios_ativos = estagiarios.filter(e => e.ativo);
+    
+    if (estagiarios_ativos.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="4" class="text-center">Nenhuma presença registrada hoje.</td>`;
+        row.innerHTML = `<td colspan="4" class="text-center">Nenhum estagiário ativo encontrado.</td>`;
         tableBody.appendChild(row);
         return;
     }
     
-    presencasHoje.forEach(presenca => {
-        const estagiario = estagiarios.find(e => e.id === presenca.estagiario_id);
-        print // Use 'estagiario_id' aqui
-        if (!estagiario) return;
+    // Para cada estagiário ativo, verificar se tem presença hoje
+    estagiarios_ativos.forEach(estagiario => {
+        const presencaHoje = presencasHoje.find(p => p.estagiario_id === estagiario.id);
         
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${estagiario.nome}</td>
-            <td>${presenca.entrada}</td>
-            <td>${presenca.saida || '---'}</td>
-            <td>
-                <span class="badge ${presenca.saida ? 'inactive' : 'active'}">
-                    ${presenca.saida ? 'Finalizado' : 'Em andamento'}
-                </span>
-            </td>
-        `;
+        
+        if (presencaHoje) {
+            // Estagiário tem presença registrada hoje
+            row.innerHTML = `
+                <td>${estagiario.nome}</td>
+                <td>${presencaHoje.entrada}</td>
+                <td>${presencaHoje.saida || '---'}</td>
+                <td>
+                    <span class="badge ${presencaHoje.saida ? 'inactive' : 'active'}">
+                        ${presencaHoje.saida ? 'Finalizado' : 'Em andamento'}
+                    </span>
+                </td>
+            `;
+        } else {
+            // Estagiário não tem presença registrada hoje
+            row.innerHTML = `
+                <td>${estagiario.nome}</td>
+                <td>---</td>
+                <td>---</td>
+                <td>
+                    <span class="badge" style="background-color: #6c757d; color: white;">
+                        Não registrado
+                    </span>
+                </td>
+            `;
+        }
+        
         tableBody.appendChild(row);
     });
 }
+
+// Também corrija a função initTodayPresences para garantir que sempre carregue a tabela
+function initTodayPresences() {
+    presencasHoje = presencas.filter(p => {
+        const dataPresenca = new Date(p.data).toISOString().split('T')[0];
+        return dataPresenca === dataAtual;
+    });
+
+    console.log('Presenças de hoje:', presencasHoje);
+    // Sempre carrega a tabela, mesmo se não houver presenças
+    loadTodayPresencesTable();
+}
+
+// E modifique a inicialização no DOMContentLoaded:
+document.addEventListener('DOMContentLoaded', function() {
+    initNavigation();
+    initMenuToggle();
+    initModals();
+    
+    // Primeiro carrega estagiários, depois presenças
+    Promise.all([fetchEstagiarios(), fetchPresencas()])
+        .then(() => {
+            initTodayPresences();
+            loadDashboardStats();
+            loadPresencasTable();
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados iniciais:', error);
+            showToast('Erro ao carregar dados do sistema', 'error');
+        });
+        
+    loadEstagiarios();
+    initEventListeners();
+    setReportDefaultDate();
+});
 
 
 function loadEstagiarios() {
