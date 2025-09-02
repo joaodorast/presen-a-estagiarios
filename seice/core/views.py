@@ -763,7 +763,7 @@ def processar_logs_control_id(logs_data, unidade_usuario):
                             estagiario=estagiario,
                             data=data_log,
                             entrada=hora_log,
-                            observacao=f'Entrada automática via Control ID - Log {log.get("id", "N/A")}'
+                            observacao=''
                         )
                         processados += 1
                         logger.info(f"Presença criada para {estagiario.nome} em {data_log} às {hora_log}")

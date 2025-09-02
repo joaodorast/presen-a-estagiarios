@@ -281,14 +281,14 @@ def processar_log_para_presenca(log):
                 defaults={
                     'entrada': hora_log,
                     'saida': None,
-                    'observacao': f'Entrada automática Control ID (Event: {event}) [ID: {log_id_unico}]'
+                    'observacao': f'Entrada automática Control ID'
                 }
             )
             if not criada:
                 presenca.entrada = hora_log
                 presenca.saida = None
                 presenca.horas = None
-                presenca.observacao = f'Entrada: {hora_log} (Event: {event}) [ID: {log_id_unico}]'
+                presenca.observacao = ''
                 presenca.save()
                 logger.info(f"🔄 Presença atualizada - APENAS entrada")
             else:
@@ -316,7 +316,7 @@ def processar_log_para_presenca(log):
                         presenca.horas = "00:00"
                 else:
                     presenca.horas = "00:00"
-                presenca.observacao = (presenca.observacao or "") + f' | Saída: {hora_log} (Event: {event}) [ID: {log_id_unico}]'
+                presenca.observacao = ''
                 presenca.save()
             except Presenca.DoesNotExist:
                 presenca = Presenca.objects.create(
@@ -325,7 +325,7 @@ def processar_log_para_presenca(log):
                     entrada=None,
                     saida=hora_log,
                     horas="00:00",
-                    observacao=f'Saída sem entrada detectada (Event: {event}) [ID: {log_id_unico}]'
+                    observacao=''
                 )
                 logger.warning(f"⚠️ Criada presença APENAS com saída para {estagiario.nome}")
             estagiario.presente = False
