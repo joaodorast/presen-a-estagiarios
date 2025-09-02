@@ -66,6 +66,19 @@ class ResultCommand(models.Model):
     response = models.JSONField(blank=True, null=True)
     error = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class ControleColetaLogs(models.Model):
+    ultimo_timestamp = models.DateTimeField(null=True, blank=True, help_text="Timestamp do último log processado")
+    ultimo_log_id = models.CharField(max_length=32, null=True, blank=True, help_text="ID único do último log processado")
+    total_processados = models.IntegerField(default=0, help_text="Total de logs processados")
+    processed_log_ids = models.JSONField(default=list, help_text="Lista de IDs de logs já processados (cache)")
+
+    class Meta:
+        verbose_name = "Controle de Coleta de Logs"
+        verbose_name_plural = "Controles de Coleta de Logs"
+
+    def __str__(self):
+        return f"Controle Coleta Logs - Último: {self.ultimo_timestamp}"
     
 
     

@@ -2,7 +2,7 @@
 """
 SISTEMA SIMPLES DE COLETA E REGISTRO DE PRESENÇAS
 Coleta logs do Control ID e registra presenças automaticamente
-VERSÃO 2: Processa apenas LOGS NOVOS + Eventos expandidos
+VERSÃO 3.0: Baseado na existência de instância de Presença ao invés do campo 'presente'
 """
 
 import requests
@@ -12,9 +12,18 @@ import time
 import logging
 from datetime import datetime, date, timedelta
 from django.utils.dateparse import parse_datetime
-from .models import Estagiario, Presenca
+from django.utils import timezone
+from .models import Estagiario, Presenca, ControleColetaLogs
 
 logger = logging.getLogger(__name__)
+
+ultimas_acoes = {}  # {user_id: datetime}
+TIME_DELTA_IGNORAR = timedelta(seconds=5)
+
+def get_controle_coleta():
+    """Obtém ou cria a instância de ControleColetaLogs"""
+    controle, created = ControleColetaLogs.objects.get_or_create(pk=1, defaults={})
+    return controle
 
 # Configuração simples
 CONTROL_ID_IP = "192.168.3.40:81"
@@ -35,6 +44,9 @@ MAX_CACHE_SIZE = 1000  # Limitar tamanho do cache
 
 # NOVO: Cache de estagiários processados neste ciclo (evita entrada+saída na mesma coleta)
 estagiarios_processados_neste_ciclo = set()  # user_ids processados neste ciclo
+# NOVO: Timeout para o cache de processamento por ciclo (limpar a cada X minutos)
+TIMEOUT_CACHE_CICLO = 300  # 5 minutos
+ultimo_reset_cache_ciclo = datetime.now()
 
 def fazer_login_control_id():
     """Faz login no Control ID e retorna a sessão"""
@@ -59,57 +71,122 @@ def gerar_id_unico_log(log):
     log_id = hashlib.md5(dados_log.encode()).hexdigest()[:16]
     return log_id
 
+def resetar_cache_ciclo_se_necessario():
+    """Reseta o cache de processamento por ciclo após timeout"""
+    global ultimo_reset_cache_ciclo, estagiarios_processados_neste_ciclo
+    
+    agora = datetime.now()
+    if (agora - ultimo_reset_cache_ciclo).total_seconds() > TIMEOUT_CACHE_CICLO:
+        logger.info(f"🧹 Resetando cache de ciclo após {TIMEOUT_CACHE_CICLO}s")
+        estagiarios_processados_neste_ciclo.clear()
+        ultimo_reset_cache_ciclo = agora
+
+def verificar_status_estagiario_no_dia(estagiario, data_verificacao):
+    """
+    NOVA LÓGICA: Verifica o status do estagiário baseado na existência de presença no banco
+    Retorna: 'ausente', 'presente', 'completo'
+    """
+    try:
+        # Buscar presença do estagiário para o dia específico
+        presenca = Presenca.objects.filter(
+            estagiario=estagiario,
+            data=data_verificacao
+        ).first()
+        
+        if not presenca:
+            # Não tem registro de presença = AUSENTE
+            return 'ausente'
+        
+        if presenca.entrada and presenca.saida:
+            # Tem entrada E saída = COMPLETO (não processar mais)
+            return 'completo'
+        
+        if presenca.entrada and not presenca.saida:
+            # Tem entrada mas não tem saída = PRESENTE
+            return 'presente'
+        
+        if not presenca.entrada and presenca.saida:
+            # Caso anômalo: só tem saída = tratar como AUSENTE
+            logger.warning(f"⚠️ {estagiario.nome} tem apenas saída sem entrada em {data_verificacao}")
+            return 'ausente'
+        
+        # Registro existe mas sem entrada nem saída = tratar como AUSENTE
+        return 'ausente'
+        
+    except Exception as e:
+        logger.error(f"❌ Erro ao verificar status de {estagiario.nome}: {e}")
+        return 'ausente'
+
 def filtrar_logs_novos(logs):
     """Filtra apenas os logs que ainda não foram processados - COM GARANTIA DE UNICIDADE"""
-    global ultimo_log_processado, logs_processados_cache
-    
+    controle = get_controle_coleta()
+    logs_processados_cache = set(controle.processed_log_ids)
+
     if not logs:
         return []
-    
+
     logs_novos = []
-    ultimo_timestamp = ultimo_log_processado['timestamp']
-    
+    ultimo_timestamp = controle.ultimo_timestamp
+
     for log in logs:
         # Gerar ID único para este log
         log_id_unico = gerar_id_unico_log(log)
-        
+
         # VERIFICAÇÃO 1: Se já foi processado (cache), pular
         if log_id_unico in logs_processados_cache:
             continue
-        
+
         # Extrair timestamp do log
         log_timestamp = log.get('time')
-        
+
         try:
-            # Converter timestamp para comparação
+            # Converter timestamp para comparação - GARANTIR TIMEZONE CONSISTENCY
             if isinstance(log_timestamp, str):
                 try:
                     log_dt = parse_datetime(log_timestamp)
                     if not log_dt:
                         log_dt = datetime.strptime(log_timestamp, '%d/%m/%Y %H:%M:%S')
+                    # GARANTIR QUE SEMPRE SEJA TIMEZONE-NAIVE
+                    if timezone.is_aware(log_dt):
+                        log_dt = timezone.make_naive(log_dt)
+                    # Adicionar offset UTC+3 se ainda não foi adicionado
+                    log_dt = log_dt + timedelta(hours=3)
                 except:
                     continue
             elif isinstance(log_timestamp, (int, float)):
                 log_dt = datetime.fromtimestamp(log_timestamp) + timedelta(hours=3)
             else:
                 continue
-            
+
             # VERIFICAÇÃO 2: Se é o primeiro processamento, marcar e pular (não processar histórico)
             if ultimo_timestamp is None:
-                ultimo_log_processado['timestamp'] = log_dt
-                ultimo_log_processado['log_id'] = log_id_unico
+                controle.ultimo_timestamp = log_dt
+                controle.ultimo_log_id = log_id_unico
+                controle.save()
                 continue
-            
+
             # VERIFICAÇÃO 3: Se o log é mais recente que o último processado, é novo
-            if log_dt > ultimo_timestamp:
+            # GARANTIR QUE AMBOS SEJAM TIMEZONE-NAIVE PARA COMPARAÇÃO
+            if timezone.is_aware(ultimo_timestamp):
+                ultimo_timestamp_naive = timezone.make_naive(ultimo_timestamp)
+            else:
+                ultimo_timestamp_naive = ultimo_timestamp
+
+            # GARANTIR QUE log_dt TAMBÉM SEJA NAIVE ANTES DA COMPARAÇÃO
+            if timezone.is_aware(log_dt):
+                log_dt_naive = timezone.make_naive(log_dt)
+            else:
+                log_dt_naive = log_dt
+
+            if log_dt_naive > ultimo_timestamp_naive:
                 # Adicionar ID único do log
                 log['_log_id_unico'] = log_id_unico
                 logs_novos.append(log)
-        
+
         except Exception as e:
             logger.error(f"❌ Erro ao processar timestamp do log: {e}")
             continue
-    
+
     logger.info(f"🔍 Encontrados {len(logs_novos)} logs REALMENTE NOVOS de {len(logs)} totais")
     return logs_novos
 
@@ -145,103 +222,53 @@ def buscar_logs_recentes():
         logger.error(f"❌ Erro na coleta: {str(e)}")
         return []
 
-def analisar_eventos_control_id():
-    """Analisa os eventos encontrados nos logs para mapear padrões"""
-    try:
-        # Buscar logs
-        logs = buscar_logs_recentes()
-        
-        if not logs:
-            logger.info("📭 Nenhum log para analisar")
-            return
-        
-        # Contar eventos
-        eventos = {}
-        user_eventos = {}
-        
-        for log in logs:
-            event = str(log.get('event', 'unknown'))
-            user_id = str(log.get('user_id', 'unknown'))
-            timestamp = log.get('time', 'unknown')
-            
-            # Contar eventos gerais
-            if event not in eventos:
-                eventos[event] = 0
-            eventos[event] += 1
-            
-            # Mapear eventos por usuário
-            if user_id not in user_eventos:
-                user_eventos[user_id] = {}
-            if event not in user_eventos[user_id]:
-                user_eventos[user_id][event] = []
-            user_eventos[user_id][event].append(timestamp)
-        
-        # Mostrar análise
-        logger.info("🔍 ANÁLISE DE EVENTOS CONTROL ID:")
-        logger.info(f"📊 Total de logs analisados: {len(logs)}")
-        
-        logger.info("📋 Eventos encontrados:")
-        for event, count in sorted(eventos.items()):
-            logger.info(f"   Event '{event}': {count} ocorrências")
-        
-        # Tentar identificar padrões de entrada/saída por usuário
-        logger.info("👥 Padrões por usuário (primeiros 3):")
-        for i, (user_id, user_events) in enumerate(list(user_eventos.items())[:3]):
-            try:
-                estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
-                nome = estagiario.nome
-            except:
-                nome = f"User {user_id}"
-            
-            logger.info(f"   {nome}:")
-            for event, timestamps in user_events.items():
-                logger.info(f"     Event '{event}': {len(timestamps)} vezes")
-        
-        return eventos, user_eventos
-    
-    except Exception as e:
-        logger.error(f"❌ Erro na análise: {str(e)}")
-        return {}, {}
-
 def processar_log_para_presenca(log):
-    """Converte um log do Control ID em presença - PROCESSAMENTO ÚNICO GARANTIDO"""
-    global logs_processados_cache
-    
+    """Converte um log do Control ID em presença - NOVA LÓGICA BASEADA NA EXISTÊNCIA DE PRESENÇA"""
+    global estagiarios_processados_neste_ciclo
+
+    controle = get_controle_coleta()
+    logs_processados_cache = set(controle.processed_log_ids)
+
     try:
         # Verificar se o log tem ID único (deveria ter sido adicionado no filtro)
         log_id_unico = log.get('_log_id_unico')
         if not log_id_unico:
             log_id_unico = gerar_id_unico_log(log)
-        
+
         # GARANTIA FINAL: Verificar se já foi processado
         if log_id_unico in logs_processados_cache:
             logger.warning(f"⚠️ Log {log_id_unico} já foi processado - PULANDO")
             return False
-        # Adiciona no cache ANTES de processar para garantir unicidade
+
+        # MARCAR COMO PROCESSADO IMEDIATAMENTE para evitar reprocessamento
         logs_processados_cache.add(log_id_unico)
         
         # Extrair dados do log
         user_id = str(log.get('user_id', ''))
         timestamp = log.get('time')
         event = str(log.get('event', '')).lower()
-    
         
         if not user_id or not timestamp:
             logger.warning(f"⚠️ Log incompleto: user_id={user_id}, timestamp={timestamp}")
             return False
         
-        # Converter timestamp
+        # NOVA VERIFICAÇÃO: Se o estagiário já foi processado neste ciclo, aguardar próximo ciclo
+        if user_id in estagiarios_processados_neste_ciclo:
+            logger.info(f"⏳ {user_id} já processado neste ciclo - aguardando próximo ciclo para evitar redundância")
+            return False
+        
+        # Converter timestamp - GARANTIR TIMEZONE CONSISTENCY
         try:
             if isinstance(timestamp, str):
                 log_datetime = parse_datetime(timestamp)
                 if not log_datetime:
                     log_datetime = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S')
-                # Se veio como string ISO, aplicar ajuste de fuso horário
+                # Se o timestamp é timezone-aware, converter para naive antes de adicionar offset
+                if timezone.is_aware(log_datetime):
+                    log_datetime = timezone.make_naive(log_datetime)
                 log_datetime = log_datetime + timedelta(hours=3)
-                logger.info(f"[DEBUG] Timestamp string bruto: {timestamp} | Convertido: {log_datetime}")
             else:
                 log_datetime = datetime.fromtimestamp(timestamp) + timedelta(hours=3)
-                logger.info(f"[DEBUG] Timestamp epoch bruto: {timestamp} | Convertido: {log_datetime}")
         except Exception as e:
             logger.error(f"❌ Erro ao converter timestamp: {timestamp} - {e}")
             return False
@@ -251,29 +278,34 @@ def processar_log_para_presenca(log):
             estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
         except Estagiario.DoesNotExist:
             logger.warning(f"⚠️ Estagiário não encontrado para Control ID user_id: {user_id}")
-            # MARCAR COMO PROCESSADO mesmo se estagiário não encontrado
-            logs_processados_cache.add(log_id_unico)
             return False
         
         data_log = log_datetime.date()
         hora_log = log_datetime.time()
         
-        logger.info(f"🔄 Processando [{log_id_unico}]: {estagiario.nome} - Event: {event} - {data_log} {hora_log} - Estado atual: {'PRESENTE' if estagiario.presente else 'AUSENTE'}")
+        # NOVA LÓGICA: Verificar status baseado na existência de presença no banco
+        status_atual = verificar_status_estagiario_no_dia(estagiario, data_log)
+        
+        logger.info(f"🔄 Processando [{log_id_unico}]: {estagiario.nome} - Event: {event} - {data_log} {hora_log} - Status: {status_atual.upper()}")
+        
+        # Se já tem entrada e saída completas, ignorar
+        if status_atual == 'completo':
+            logger.info(f"⏭️ {estagiario.nome} já tem entrada e saída completas para {data_log}, ignorando log.")
+            return False
         
         # ==============================
-        # LÓGICA BASEADA NO CAMPO 'presente' DO ESTAGIÁRIO
+        # NOVA LÓGICA BASEADA NO STATUS DA PRESENÇA NO BANCO
         # ==============================
         
         sucesso = False
-        
-        # Verificar se já existe entrada e saída para o dia
-        presenca_existente = Presenca.objects.filter(estagiario=estagiario, data=data_log).first()
-        if presenca_existente and presenca_existente.entrada and presenca_existente.saida:
-            logger.info(f"⏭️ {estagiario.nome} já tem entrada e saída para {data_log}, ignorando log.")
-            return False
 
-        # SE ESTÁ AUSENTE (default=False) → REGISTRAR ENTRADA (começar a trabalhar)
-        if not estagiario.presente:
+        ultima_acao = ultimas_acoes.get(user_id)
+        if ultima_acao and abs((log_datetime - ultima_acao).total_seconds()) < 5:
+            logger.info(f"⚠️ Ignorado log duplicado para {estagiario.nome} no mesmo segundo ({log_datetime})")
+            return False
+        
+        # SE ESTÁ AUSENTE (não tem presença ou só tem saída) → REGISTRAR ENTRADA
+        if status_atual == 'ausente':
             logger.info(f"🟢 {estagiario.nome} está AUSENTE → Registrando ENTRADA")
             presenca, criada = Presenca.objects.get_or_create(
                 estagiario=estagiario,
@@ -285,82 +317,78 @@ def processar_log_para_presenca(log):
                 }
             )
             if not criada:
-                presenca.entrada = hora_log
+                # Atualizar entrada se não existe ainda
+                if not presenca.entrada:
+                    presenca.entrada = hora_log
                 presenca.saida = None
                 presenca.horas = None
-                presenca.observacao = ''
+                presenca.observacao = f'Entrada automática Control ID'
                 presenca.save()
-                logger.info(f"🔄 Presença atualizada - APENAS entrada")
+                logger.info(f"🔄 Presença atualizada - ENTRADA registrada")
             else:
-                logger.info(f"📝 Nova presença criada - APENAS entrada")
-            estagiario.presente = True
-            estagiario.save()
-            logger.info(f"✅ ENTRADA REGISTRADA: {estagiario.nome} às {hora_log} - Agora TRABALHANDO")
+                logger.info(f"📝 Nova presença criada - ENTRADA registrada")
+            
+            logger.info(f"✅ ENTRADA REGISTRADA: {estagiario.nome} às {hora_log}")
             sucesso = True
-        # SE ESTÁ PRESENTE (presente=True) → REGISTRAR SAÍDA (parar de trabalhar)
-        else:
+            
+        # SE ESTÁ PRESENTE (tem entrada sem saída) → REGISTRAR SAÍDA
+        elif status_atual == 'presente':
             logger.info(f"🔴 {estagiario.nome} está PRESENTE → Registrando SAÍDA")
             try:
                 presenca = Presenca.objects.get(estagiario=estagiario, data=data_log)
-                presenca.saida = hora_log
-                if presenca.entrada and presenca.entrada != hora_log:
-                    entrada_dt = datetime.combine(data_log, presenca.entrada)
-                    saida_dt = datetime.combine(data_log, hora_log)
-                    horas_trabalhadas = saida_dt - entrada_dt
-                    if horas_trabalhadas.total_seconds() > 0:
-                        hours = int(horas_trabalhadas.total_seconds() // 3600)
-                        minutes = int((horas_trabalhadas.total_seconds() % 3600) // 60)
-                        presenca.horas = f"{hours:02d}:{minutes:02d}"
+                if not presenca.saida:  # Só registrar saída se não tem ainda
+                    presenca.saida = hora_log
+                    # Calcular horas trabalhadas
+                    if presenca.entrada and presenca.entrada != hora_log:
+                        entrada_dt = datetime.combine(data_log, presenca.entrada)
+                        saida_dt = datetime.combine(data_log, hora_log)
+                        horas_trabalhadas = saida_dt - entrada_dt
+                        if horas_trabalhadas.total_seconds() > 0:
+                            hours = int(horas_trabalhadas.total_seconds() // 3600)
+                            minutes = int((horas_trabalhadas.total_seconds() % 3600) // 60)
+                            presenca.horas = f"{hours:02d}:{minutes:02d}"
+                        else:
+                            logger.warning(f"⚠️ Saída antes da entrada: {estagiario.nome}")
+                            presenca.horas = "00:00"
                     else:
-                        logger.warning(f"⚠️ Saída antes da entrada: {estagiario.nome}")
                         presenca.horas = "00:00"
+                    presenca.observacao = f'Saída automática Control ID'
+                    presenca.save()
+                    
+                    horas_trabalhadas_str = presenca.horas if presenca.horas else "00:00"
+                    logger.info(f"✅ SAÍDA REGISTRADA: {estagiario.nome} às {hora_log} - Trabalhou {horas_trabalhadas_str}h")
+                    sucesso = True
                 else:
-                    presenca.horas = "00:00"
-                presenca.observacao = ''
-                presenca.save()
+                    logger.info(f"⚠️ {estagiario.nome} já tem saída registrada para {data_log}")
+                    
             except Presenca.DoesNotExist:
-                presenca = Presenca.objects.create(
-                    estagiario=estagiario,
-                    data=data_log,
-                    entrada=None,
-                    saida=hora_log,
-                    horas="00:00",
-                    observacao=''
-                )
-                logger.warning(f"⚠️ Criada presença APENAS com saída para {estagiario.nome}")
-            estagiario.presente = False
-            estagiario.save()
-            horas_trabalhadas_str = presenca.horas if presenca.horas else "00:00"
-            logger.info(f"✅ SAÍDA REGISTRADA: {estagiario.nome} às {hora_log} - Trabalhou {horas_trabalhadas_str}h - Agora AUSENTE")
-            sucesso = True
+                # Caso anômalo: verificação disse que estava presente mas não tem registro
+                logger.error(f"❌ Inconsistência: {estagiario.nome} detectado como presente mas sem registro de presença")
+                return False
         
-        # MARCAR LOG COMO PROCESSADO - GARANTIA DE NÃO REPROCESSAMENTO
-        logs_processados_cache.add(log_id_unico)
-        
-        # Limitar tamanho do cache
-        if len(logs_processados_cache) > MAX_CACHE_SIZE:
-            # Remover os 100 mais antigos (aproximação)
-            logs_antigos = list(logs_processados_cache)[:100]
-            for log_antigo in logs_antigos:
-                logs_processados_cache.discard(log_antigo)
-        
-        # Atualizar timestamp do último log processado
-        global ultimo_log_processado
-        ultimo_log_processado['timestamp'] = log_datetime
-        ultimo_log_processado['log_id'] = log_id_unico
-        
+        # MARCAR ESTAGIÁRIO COMO PROCESSADO NESTE CICLO
+        estagiarios_processados_neste_ciclo.add(user_id)
+
+        # Atualizar controle
+        controle.ultimo_timestamp = log_datetime
+        controle.ultimo_log_id = log_id_unico
+        controle.processed_log_ids = list(logs_processados_cache)
+        controle.save()
+
+        ultimas_acoes[user_id] = log_datetime
+
         return sucesso
     
     except Exception as e:
         logger.error(f"❌ Erro ao processar log: {str(e)}")
-        # Marcar como processado mesmo em caso de erro para evitar loops
-        if 'log_id_unico' in locals():
-            logs_processados_cache.add(log_id_unico)
         return False
 
 def registrar_presencas_dos_logs():
     """Função principal: busca logs NOVOS e registra presenças - PROCESSAMENTO SEQUENCIAL ÚNICO"""
-    global ultimo_log_processado
+    global ultimo_log_processado, logs_processados_cache
+    
+    # Reset do cache de ciclo se necessário
+    resetar_cache_ciclo_se_necessario()
     
     # Buscar todos os logs
     try:
@@ -384,74 +412,98 @@ def registrar_presencas_dos_logs():
         logger.info("📭 Nenhum log NOVO encontrado")
         return
 
+    # Ordenar logs por timestamp para processar em ordem cronológica
+    try:
+        logs_novos.sort(key=lambda x: x.get('time', ''), reverse=False)
+    except:
+        logger.warning("⚠️ Não foi possível ordenar logs por timestamp")
+
     logger.info(f"🔄 Processando {len(logs_novos)} logs NOVOS ÚNICOS...")
 
     processados = 0
     entradas = 0
     saidas = 0
 
-    # PROCESSAR UM LOG POR VEZ - SEQUENCIAL
+    # PROCESSAR UM LOG POR VEZ - SEQUENCIAL E ORDENADO
     for i, log in enumerate(logs_novos):
         user_id = str(log.get('user_id', ''))
         log_id = log.get('_log_id_unico', 'sem-id')
 
         logger.info(f"📋 Processando log {i+1}/{len(logs_novos)} [ID: {log_id}]...")
 
-        # Verificar estado antes do processamento
-        estado_antes = None
+        # Verificar estado antes do processamento (baseado na presença no banco)
+        status_antes = None
         nome_estagiario = "Desconhecido"
         try:
             if user_id:
                 estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
-                estado_antes = estagiario.presente
+                timestamp = log.get('time')
+                if isinstance(timestamp, str):
+                    log_datetime = parse_datetime(timestamp)
+                    if not log_datetime:
+                        log_datetime = datetime.strptime(timestamp, '%d/%m/%Y %H:%M:%S')
+                    # Se o timestamp é timezone-aware, converter para naive
+                    if timezone.is_aware(log_datetime):
+                        log_datetime = timezone.make_naive(log_datetime)
+                else:
+                    log_datetime = datetime.fromtimestamp(timestamp)
+                data_log = log_datetime.date()
+                status_antes = verificar_status_estagiario_no_dia(estagiario, data_log)
                 nome_estagiario = estagiario.nome
         except Exception:
             pass
 
-        # Processar o log (função já tem proteção contra duplicatas)
+        # Processar o log
         if processar_log_para_presenca(log):
             processados += 1
 
             # Verificar estado depois do processamento para contar corretamente
             try:
-                if user_id and estado_antes is not None:
+                if user_id and status_antes:
                     estagiario = Estagiario.objects.get(control_id_user_id=user_id, ativo=True)
-                    estado_depois = estagiario.presente
+                    status_depois = verificar_status_estagiario_no_dia(estagiario, data_log)
 
                     # Se mudou de ausente para presente = entrada
-                    if not estado_antes and estado_depois:
+                    if status_antes == 'ausente' and status_depois == 'presente':
                         entradas += 1
                         logger.info(f"   ✅ {nome_estagiario}: AUSENTE → PRESENTE (ENTRADA)")
-                    # Se mudou de presente para ausente = saída
-                    elif estado_antes and not estado_depois:
+                    # Se mudou de presente para completo = saída
+                    elif status_antes == 'presente' and status_depois == 'completo':
                         saidas += 1
-                        logger.info(f"   ✅ {nome_estagiario}: PRESENTE → AUSENTE (SAÍDA)")
+                        logger.info(f"   ✅ {nome_estagiario}: PRESENTE → COMPLETO (SAÍDA)")
                     else:
-                        logger.info(f"   ⚠️ {nome_estagiario}: Estado não mudou (possível duplicata evitada)")
+                        logger.info(f"   ⚠️ {nome_estagiario}: Status não mudou conforme esperado ({status_antes} → {status_depois})")
             except Exception as e:
                 logger.error(f"   ❌ Erro ao verificar mudança de estado: {e}")
-                # Não incrementa entradas/saidas em caso de erro para evitar inconsistência
         else:
-            logger.info(f"   ⏭️ Log {log_id} não processado (duplicata ou erro)")
+            logger.info(f"   ⏭️ Log {log_id} não processado (duplicata, erro ou aguardando próximo ciclo)")
 
     # Atualizar contador total
-    ultimo_log_processado['total_processados'] += processados
+    controle = get_controle_coleta()
+    controle.total_processados += processados
+
+    # Limitar tamanho do cache após processamento
+    if len(controle.processed_log_ids) > MAX_CACHE_SIZE:
+        controle.processed_log_ids = controle.processed_log_ids[100:]  # Remove os primeiros 100
+
+    controle.save()
 
     if processados > 0:
         logger.info(f"🎉 RESUMO FINAL:")
         logger.info(f"   📊 Logs únicos processados: {processados}")
         logger.info(f"   📥 Entradas registradas: {entradas}")
         logger.info(f"   📤 Saídas registradas: {saidas}")
-        logger.info(f"   � Total geral histórico: {ultimo_log_processado['total_processados']}")
+        logger.info(f"   📈 Total geral histórico: {ultimo_log_processado['total_processados']}")
         logger.info(f"   🧹 Cache de logs processados: {len(logs_processados_cache)} itens")
+        logger.info(f"   👥 Estagiários processados neste ciclo: {len(estagiarios_processados_neste_ciclo)}")
     else:
-        logger.info("📝 Logs novos encontrados, mas nenhuma presença registrada (possíveis duplicatas evitadas)")
+        logger.info("📝 Logs novos encontrados, mas nenhuma presença registrada (duplicatas evitadas ou aguardando próximo ciclo)")
 
 def loop_coleta_automatica():
     """Loop que roda em background coletando e registrando presenças"""
     global coleta_ativa
     
-    logger.info("🚀 Iniciando coleta automática de presenças...")
+    logger.info("🚀 Iniciando coleta automática de presenças (NOVA VERSÃO - baseada na existência de presença)...")
     
     while coleta_ativa:
         try:
@@ -476,7 +528,7 @@ def iniciar_coleta_automatica():
     thread_coleta = threading.Thread(target=loop_coleta_automatica, daemon=True)
     thread_coleta.start()
     
-    logger.info(f"✅ Coleta automática iniciada! (a cada {INTERVALO_COLETA}s)")
+    logger.info(f"✅ Coleta automática iniciada! (a cada {INTERVALO_COLETA}s) - VERSÃO 3.0")
 
 def parar_coleta_automatica():
     """Para a coleta automática"""
@@ -486,31 +538,41 @@ def parar_coleta_automatica():
 
 def status_coleta():
     """Retorna o status da coleta"""
-    global ultimo_log_processado, logs_processados_cache
-    
+    global estagiarios_processados_neste_ciclo
+
+    controle = get_controle_coleta()
+
     return {
         'ativa': coleta_ativa,
         'thread_viva': thread_coleta.is_alive() if thread_coleta else False,
         'intervalo': INTERVALO_COLETA,
         'control_id_ip': CONTROL_ID_IP,
+        'versao': '3.0 - Baseada na existência de presença',
         'ultimo_processamento': {
-            'timestamp': ultimo_log_processado['timestamp'].isoformat() if ultimo_log_processado['timestamp'] else None,
-            'total_processados': ultimo_log_processado['total_processados']
+            'timestamp': controle.ultimo_timestamp.isoformat() if controle.ultimo_timestamp else None,
+            'total_processados': controle.total_processados
         },
         'cache_logs': {
-            'total_logs_cache': len(logs_processados_cache),
+            'total_logs_cache': len(controle.processed_log_ids),
             'max_cache_size': MAX_CACHE_SIZE
+        },
+        'cache_ciclo': {
+            'estagiarios_processados_neste_ciclo': len(estagiarios_processados_neste_ciclo),
+            'timeout_cache_ciclo': TIMEOUT_CACHE_CICLO,
+            'ultimo_reset': ultimo_reset_cache_ciclo.isoformat() if ultimo_reset_cache_ciclo else None
         }
     }
 
 def resetar_controle_logs():
     """Reseta o controle de logs processados (para testes)"""
-    global ultimo_log_processado, logs_processados_cache
-    ultimo_log_processado = {
-        'timestamp': None,
-        'log_id': None,
-        'total_processados': 0
-    }
-    logs_processados_cache.clear()
-    logger.info("🔄 Controle de logs resetado - cache limpo - próxima execução processará tudo como novo")
+    global estagiarios_processados_neste_ciclo
 
+    controle = get_controle_coleta()
+    controle.ultimo_timestamp = None
+    controle.ultimo_log_id = None
+    controle.total_processados = 0
+    controle.processed_log_ids = []
+    controle.save()
+
+    estagiarios_processados_neste_ciclo.clear()
+    logger.info("🔄 Controle de logs resetado - cache limpo - próxima execução processará tudo como novo")
