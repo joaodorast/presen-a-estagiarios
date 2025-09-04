@@ -563,20 +563,16 @@
     </div>
 
     <div class="units-container">
-        <div class="unit-card" onclick="openModal('campos-elisios')">
-            <h2 class="unit-title">Campos Elísios</h2>
-            <p class="unit-subtitle"></p>
-            <button class="access-button">Acessar Login</button>
+        {% for usuario_unidade in unidades %}
+        <div class="unit-card" onclick="window.location.href='/unidade/{{ usuario_unidade.unidade.id }}/'">
+            <h2 class="unit-title">{{ usuario_unidade.unidade.nome }}</h2>
+            <p class="unit-subtitle">Unidade {{ usuario_unidade.unidade.nome }}</p>
+            <button class="access-button">Acessar Unidade</button>
         </div>
-
-        <div class="unit-card" onclick="openModal('jardim-primavera')">
-            <h2 class="unit-title">Jardim Primavera</h2>
-            <p class="unit-subtitle"></p>
-            <button class="access-button">Acessar Login</button>
-        </div>
+        {% endfor %}
     </div>
 
-    <!-- Modal Campos Elísios -->
+    <!-- Modal Campos Elísios
     <div id="modal-campos-elisios" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('campos-elisios')">&times;</span>
@@ -618,7 +614,7 @@
         </div>
     </div>
 
-    <!-- Modal Jardim Primavera -->
+    Modal Jardim Primavera
     <div id="modal-jardim-primavera" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('jardim-primavera')">&times;</span>
@@ -658,7 +654,7 @@
                 </button>
             </form>
         </div>
-    </div>
+    </div> -->
 
    <script>
        // Função para obter o CSRF token

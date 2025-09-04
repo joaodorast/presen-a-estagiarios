@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time, parse_datetime
-from .models import Estagiario, Presenca, Area, Usuario
+from .models import Estagiario, Presenca, Area, Usuario, Unidade, UsuarioUnidade
 import json
 import requests
 import logging
@@ -48,26 +48,20 @@ def login_view(request):
         # Verificar usando o modelo Usuario customizado
         try:
             usuario = Usuario.objects.get(login=username, senha=password)
+            # Obter unidade do usuário
+            usuario_unidade = UsuarioUnidade.objects.filter(usuario=usuario).first()
+            if not usuario_unidade:
+                print(f"Usuário {username} não tem unidade associada")
+                return render(request, 'login.html', {'error': 'Usuário não tem unidade associada'})
             # Armazenar informações do usuário na sessão
             request.session['usuario_id'] = usuario.id
             request.session['usuario_nome'] = usuario.nome
             request.session['usuario_area'] = usuario.area
-            request.session['usuario_unidade'] = usuario.unidade
+            request.session['usuario_unidade'] = usuario_unidade.unidade.id
             request.session['usuario_logado'] = True
-            
+
             print(f"Login realizado com sucesso: {usuario.nome}")
-            if usuario.area == "tecnologia":
-                return redirect('index')
-            elif usuario.area == "educacao fisica":
-                return redirect('educacao_fisica')
-            elif usuario.area == "manutencao":
-                return redirect('manutencao')
-            elif usuario.area == "financeiro":
-                return redirect('financeiro')
-            elif usuario.area == "pedagogia":
-                return redirect('pedagogia')
-            elif usuario.area == "coordenacao":
-                return redirect('coordenacao')
+            return redirect('index')
         except Usuario.DoesNotExist:
             print(f"Tentativa de login falhada para: {username}")
             return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
@@ -102,15 +96,43 @@ def logout_view(request):
 
 def index(request):
     if not request.session.get('usuario_logado'):
-        return redirect('login')  # Redireciona para a página de login se não estiver autenticado
+        return redirect('login')
     
-    # Passar dados do usuário para o template
+    unidades = UsuarioUnidade.objects.filter(
+        usuario_id=request.session.get('usuario_id')
+    ).select_related('unidade')
+    
+    context = {
+        'area_usuario': request.session.get('usuario_area'),
+        'nome_usuario': request.session.get('usuario_nome'),
+        'unidades': unidades  # passa a lista inteira
+    }
+
+    return render(request, 'welcome.html', context)
+
+def unit_panel(request, unit_id):
+    if not request.session.get('usuario_logado'):
+        return redirect('login')
+
+    try:
+        unidade = Unidade.objects.get(id=unit_id)
+    except Unidade.DoesNotExist:
+        return redirect('index')
+
+# Atualizar unidade do usuário na sessão para filtrar dados
+    request.session['usuario_unidade'] = unidade.id
+
     context = {
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
-        'usuario_unidade': request.session.get('usuario_unidade')
+        'usuario_unidade': request.session.get('usuario_unidade'),
+        'usuario_unidade_nome': unidade.nome
     }
-    return render(request, 'tecnologia.html', context)
+    # Renderizar o template baseado na área do usuário
+    area_usuario = request.session.get('usuario_area', '').lower()
+    template_name = f"{area_usuario}.html"
+    return render(request, template_name, context)
+
 
 def educacao_fisica(request):
     if not request.session.get('usuario_logado'):
@@ -118,7 +140,8 @@ def educacao_fisica(request):
     context = {
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
-        'usuario_unidade': request.session.get('usuario_unidade')
+        'usuario_unidade': request.session.get('usuario_unidade'),
+
     }
     return render(request, 'educacao-fisica.html', context)
 
@@ -128,7 +151,8 @@ def manutencao(request):
     context = {
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
-        'usuario_unidade': request.session.get('usuario_unidade')
+        'usuario_unidade': request.session.get('usuario_unidade'),
+
     }
     return render(request, 'manutencao.html', context)
 
@@ -138,9 +162,10 @@ def tecnologia(request):
     context = {
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
-        'usuario_unidade': request.session.get('usuario_unidade')
+        'usuario_unidade': request.session.get('usuario_unidade'),
     }
     return render(request, 'tecnologia.html', context)
+
 
 def financeiro(request):
     if not request.session.get('usuario_logado'):
@@ -158,7 +183,8 @@ def pedagogia(request):
     context = {
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
-        'usuario_unidade': request.session.get('usuario_unidade')
+        'usuario_unidade': request.session.get('usuario_unidade'),
+
     }
     return render(request, 'pedagogia.html', context)
 
@@ -168,7 +194,8 @@ def coordenacao(request):
     context = {
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
-        'usuario_unidade': request.session.get('usuario_unidade')
+        'usuario_unidade': request.session.get('usuario_unidade'),
+  
     }
     return render(request, 'pedagogia.html', context)
 
@@ -181,69 +208,89 @@ def get_area(id):
     except Area.DoesNotExist:
         return None
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Estagiario, Area, Unidade
+
+
+def get_area(id):
+    try:
+        return Area.objects.get(id=id)
+    except Area.DoesNotExist:
+        return None
+
+
 @csrf_exempt
 def get_estagiarios(request):
     if request.method == 'GET':
-        # Verificar se o usuário está logado
         if not request.session.get('usuario_logado'):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
-        
-        # Obter a unidade do usuário logado
-        unidade_usuario = request.session.get('usuario_unidade')
-        print(f"Unidade do usuário logado: {unidade_usuario}")
-        
-        if not unidade_usuario:
+
+        unidade_id = request.session.get('usuario_unidade')  # agora deve ser ID
+        if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
-        
-        # Filtrar estagiários apenas da mesma unidade
-        print(Estagiario.objects.filter(unidade = "Campos Eliseos"))
-        estagiarios = list(Estagiario.objects.filter(unidade=unidade_usuario).values())
-        
-        
-        for estagiario in estagiarios:
-            area = get_area(estagiario['area_id'])
-            estagiario['area'] = area.nome if area else 'Área não encontrada'
-            estagiario['temControlId'] = bool(estagiario.get('control_id_user_id'))
-            print(f"Estagiário {estagiario['nome']} da unidade {estagiario['unidade']}")
-        
+
+        # Query otimizada: busca estagiários da unidade com unidade e área já carregados
+        estagiarios_qs = Estagiario.objects.filter(unidade_id=unidade_id).select_related("area", "unidade")
+
+        estagiarios = []
+        for e in estagiarios_qs:
+            estagiarios.append({
+                "id": e.id,
+                "nome": e.nome,
+                "area": e.area.nome if e.area else "Área não encontrada",
+                "unidade": e.unidade.nome if e.unidade else "Unidade não encontrada",
+                "email": e.email,
+                "telefone": e.telefone,
+                "data_inicio": e.data_inicio,
+                "ativo": e.ativo,
+                "temControlId": bool(e.control_id_user_id),
+            })
+
+
+
         return JsonResponse({
-            'estagiarios': estagiarios, 
-            'unidade_filtro': unidade_usuario,
+            'estagiarios': estagiarios,
+            'unidade_filtro': unidade_id,
             'total': len(estagiarios)
-        }, safe=False)
-    
-def total_estagiarios_area(area_id, unidade=None):
+        })
+
+
+def total_estagiarios_area(area_id, unidade_id=None):
     """Conta estagiários por área, opcionalmente filtrados por unidade"""
-    if unidade:
-        return Estagiario.objects.filter(area_id=area_id, unidade=unidade).count()
-    return Estagiario.objects.filter(area_id=area_id).count()
-    
+    qs = Estagiario.objects.filter(area_id=area_id)
+    if unidade_id:
+        qs = qs.filter(unidade_id=unidade_id)
+    return qs.count()
+
+
 @csrf_exempt
 def get_areas(request):
     if request.method == 'GET':
-        # Verificar se o usuário está logado
         if not request.session.get('usuario_logado'):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
-        
-        # Obter a unidade do usuário logado
-        unidade_usuario = request.session.get('usuario_unidade')
-        
-        if not unidade_usuario:
+
+        unidade_id = request.session.get('usuario_unidade')  # agora deve ser ID
+        if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
-        
-        # Filtrar áreas apenas da mesma unidade
-        areas = list(Area.objects.filter(unidade=unidade_usuario).values())
-        
-        for area in areas:
-            # Contar estagiários da área na mesma unidade
-            area['total_estagiarios'] = total_estagiarios_area(area['id'], unidade_usuario)
-        
+
+        # Pega as áreas dessa unidade
+        areas_qs = Area.objects.filter(unidade_id=unidade_id)
+
+        areas = []
+        for a in areas_qs:
+            areas.append({
+                "id": a.id,
+                "nome": a.nome,
+                "unidade": a.unidade.nome if a.unidade else "Unidade não encontrada",
+                "total_estagiarios": total_estagiarios_area(a.id, unidade_id)
+            })
+
         return JsonResponse({
-            'areas': areas, 
-            'unidade_filtro': unidade_usuario,
+            'areas': areas,
+            'unidade_filtro': unidade_id,
             'total': len(areas)
-        }, safe=False)
-    
+        })
 
 @csrf_exempt
 def create_area(request):

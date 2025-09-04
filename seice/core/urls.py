@@ -32,6 +32,9 @@ urlpatterns = [
     path('api/usuarios/', views.get_usuarios, name='get_usuarios'),
     path('api/usuarios/alterar-senha/', views.alterar_senha, name='alterar_senha'),
 
+    # Unit panel
+    path('unidade/<int:unit_id>/', views.unit_panel, name='unit_panel'),
+
     # # URLs para integração Control ID
     # path('api/carregar-objetos/', views.carregar_objetos_controlid, name='carregar_objetos_controlid'),
     # path('api/control-id/adicionar/', views.adicionar_control_id_estagiario, name='adicionar_control_id'),

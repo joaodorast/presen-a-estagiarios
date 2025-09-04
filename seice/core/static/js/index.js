@@ -53,7 +53,7 @@ async function fetchAreas() {
 let presencasHoje = [];
 
 const hoje = new Date();
-const dataAtual = hoje.toISOString().split('T')[0];
+const dataAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
 const dataHojeFormatada = formatarData(dataAtual);
 
 const dataHojeEl = document.getElementById('today-date');
@@ -374,8 +374,7 @@ function renderAreasTable(areasToShow) {
 // CORREÇÃO PRINCIPAL - Função que sempre mostra todos os estagiários ativos
 function initTodayPresences() {
     presencasHoje = presencas.filter(p => {
-        const dataPresenca = new Date(p.data).toISOString().split('T')[0];
-        return dataPresenca === dataAtual;
+        return p.data === dataAtual;
     });
 
     console.log('Presenças de hoje:', presencasHoje);
@@ -391,8 +390,8 @@ function loadDashboardStats() {
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
     const presencasMes = presencas.filter(p => {
-        const presencaData = new Date(p.data);
-        return presencaData.getMonth() + 1 === mesAtual && presencaData.getFullYear() === anoAtual;
+        const [year, month, day] = p.data.split('-').map(Number);
+        return month === mesAtual && year === anoAtual;
     });
     document.getElementById('presencas-mes').textContent = presencasMes.length;
 
@@ -459,46 +458,65 @@ function loadTodayPresencesTable() {
 
 function loadEstagiarios() {
     fetchEstagiarios().then(() => {
-        const tableBody = document.querySelector('#estagiarios-tabela tbody');
-        tableBody.innerHTML = '';
+        const cardsContainer = document.getElementById('estagiarios-cards');
+        cardsContainer.innerHTML = '';
+
+        if (estagiarios.length === 0) {
+            cardsContainer.innerHTML = '<p>Nenhum estagiário encontrado.</p>';
+            return;
+        }
 
         estagiarios.forEach(estagiario => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                        <td>${estagiario.id}</td>
-                        <td>${estagiario.nome}</td>
-                        <td>${estagiario.area || 'N/A'}</td>
-                        <td>${estagiario.email}</td>
-                        <td>${estagiario.telefone}</td>
-                        <td>${formatarData(estagiario.data_inicio)}</td>
-                        <td>
-                            <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
-                                ${estagiario.ativo ? 'Ativo' : 'Inativo'}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="actions-column">
-                                <button class="btn-icon edit" data-id="${estagiario.id}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-icon delete" data-id="${estagiario.id}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-            tableBody.appendChild(row);
-        });
+            const card = document.createElement('div');
+            card.className = 'card-estagiario';
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3>${estagiario.nome}</h3>
+                    <div class="card-status">
+                        <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
+                            ${estagiario.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-info">
+                        <i class="fas fa-briefcase"></i>
+                        <strong>Área:</strong> ${estagiario.area || 'N/A'}
+                    </div>
+                    <div class="card-info">
+                        <i class="fas fa-envelope"></i>
+                        <strong>Email:</strong> ${estagiario.email}
+                    </div>
+                    <div class="card-info">
+                        <i class="fas fa-phone"></i>
+                        <strong>Telefone:</strong> ${estagiario.telefone}
+                    </div>
+                    <div class="card-info">
+                        <i class="fas fa-calendar-alt"></i>
+                        <strong>Data de Início:</strong> ${formatarData(estagiario.data_inicio)}
+                    </div>
+                    <div class="card-info">
+                        <i class="fas fa-id-card"></i>
+                        <strong>ID:</strong> ${estagiario.id}
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-icon edit" data-id="${estagiario.id}" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon delete" data-id="${estagiario.id}" title="Excluir">
+                        <i class="fas fa-trash-alt"></i>
 
         // Adicionar eventos para edição e exclusão
-        document.querySelectorAll('.btn-icon.edit').forEach(btn => {
+        cardsContainer.querySelectorAll('.btn-icon.edit').forEach(btn => {
             btn.addEventListener('click', function () {
                 const id = parseInt(this.getAttribute('data-id'));
                 editEstagiario(id);
             });
         });
 
-        document.querySelectorAll('.btn-icon.delete').forEach(btn => {
+        cardsContainer.querySelectorAll('.btn-icon.delete').forEach(btn => {
             btn.addEventListener('click', function () {
                 const id = parseInt(this.getAttribute('data-id'));
                 if (confirm('Tem certeza que deseja excluir este estagiário?')) {
@@ -762,10 +780,10 @@ function editEstagiario(id) {
     document.getElementById('estagiario-nome').value = estagiario.nome;
     document.getElementById('estagiario-email').value = estagiario.email;
     document.getElementById('estagiario-telefone').value = estagiario.telefone;
+
     
-    // Formatar a data para o formato YYYY-MM-DD
-    const dataInicioFormatada = new Date(estagiario.data_inicio).toISOString().split('T')[0];
-    document.getElementById('estagiario-data-inicio').value = dataInicioFormatada;
+    // Assuming estagiario.data_inicio is already "YYYY-MM-DD"
+    document.getElementById('estagiario-data-inicio').value = estagiario.data_inicio;
     
     document.getElementById('estagiario-ativo').value = estagiario.ativo.toString();
     loadAreaSelect('estagiario-area');
@@ -881,7 +899,7 @@ function deleteEstagiario(id) {
             });
             
         loadEstagiarios();
-        loadDashboardStats();
+        loadDashboardJs();
     }
 }
 
@@ -917,8 +935,8 @@ function gerarRelatorio() {
     }
 
     const presencasFiltradas = presencas.filter(p => {
-        const presencaData = new Date(p.data);
-        return presencaData.getMonth() + 1 === mes && presencaData.getFullYear() === ano;
+        const [year, month, day] = p.data.split('-').map(Number);
+        return month === mes && year === ano;
     });
     
     if (presencasFiltradas.length === 0) {
