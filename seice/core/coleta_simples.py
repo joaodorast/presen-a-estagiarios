@@ -22,7 +22,10 @@ TIME_DELTA_IGNORAR = timedelta(seconds=5)
 
 def get_controle_coleta():
     """Obtém ou cria a instância de ControleColetaLogs"""
-    controle, created = ControleColetaLogs.objects.get_or_create(pk=1, defaults={})
+    try:
+        controle = ControleColetaLogs.objects.get(pk=1)
+    except ControleColetaLogs.DoesNotExist:
+        controle = ControleColetaLogs.objects.create(pk=1)
     return controle
 
 # Configuração simples
@@ -291,6 +294,11 @@ def processar_log_para_presenca(log):
         # Se já tem entrada e saída completas, ignorar
         if status_atual == 'completo':
             logger.info(f"⏭️ {estagiario.nome} já tem entrada e saída completas para {data_log}, ignorando log.")
+            # Marcar o log como processado para evitar reprocessamento
+            logs_processados_cache.add(log_id_unico)
+            # Atualizar controle imediatamente para logs ignorados
+            controle.processed_log_ids = list(logs_processados_cache)
+            controle.save()
             return False
         
         # ==============================

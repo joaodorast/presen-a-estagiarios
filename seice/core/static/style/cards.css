@@ -1,0 +1,105 @@
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.card-estagiario {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.2s ease;
+}
+
+.card-estagiario:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.card-info {
+    font-size: 14px;
+    color: var(--gray-600);
+    margin-bottom: 5px;
+}
+
+.card-info strong {
+    color: var(--dark-color);
+}
+
+.card-status {
+    margin-top: 10px;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.badge.active {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: var(--warning-dark);
+    border: 1px solid var(--primary-color);
+}
+
+.badge.inactive {
+    background-color: rgba(108, 117, 125, 0.2);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-500);
+}
+
+.card-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-icon.edit {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: var(--primary-color);
+}
+
+.btn-icon.edit:hover {
+    background-color: var(--primary-color);
+    color: var(--dark-color);
+}
+
+.btn-icon.delete {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color);
+}
+
+.btn-icon.delete:hover {
+    background-color: var(--danger-color);
+    color: var(--white);
+}
