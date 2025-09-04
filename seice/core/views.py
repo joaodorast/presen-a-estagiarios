@@ -44,7 +44,7 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        
+
         # Verificar usando o modelo Usuario customizado
         try:
             usuario = Usuario.objects.get(login=username, senha=password)
@@ -65,7 +65,7 @@ def login_view(request):
         except Usuario.DoesNotExist:
             print(f"Tentativa de login falhada para: {username}")
             return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
-    
+
     return render(request, 'login.html')
 
 @csrf_exempt
@@ -97,11 +97,11 @@ def logout_view(request):
 def index(request):
     if not request.session.get('usuario_logado'):
         return redirect('login')
-    
+
     unidades = UsuarioUnidade.objects.filter(
         usuario_id=request.session.get('usuario_id')
     ).select_related('unidade')
-    
+
     context = {
         'area_usuario': request.session.get('usuario_area'),
         'nome_usuario': request.session.get('usuario_nome'),
@@ -195,7 +195,7 @@ def coordenacao(request):
         'usuario_nome': request.session.get('usuario_nome'),
         'usuario_area': request.session.get('usuario_area'),
         'usuario_unidade': request.session.get('usuario_unidade'),
-  
+
     }
     return render(request, 'pedagogia.html', context)
 
@@ -205,17 +205,6 @@ def get_area(id):
     try:
         area = Area.objects.get(id=id)
         return area
-    except Area.DoesNotExist:
-        return None
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import Estagiario, Area, Unidade
-
-
-def get_area(id):
-    try:
-        return Area.objects.get(id=id)
     except Area.DoesNotExist:
         return None
 
@@ -307,9 +296,14 @@ def create_area(request):
         
         # Criar uma nova área
         data = json.loads(request.body)
+        try:
+            unidade = Unidade.objects.get(id=unidade_usuario)
+        except Unidade.DoesNotExist:
+            return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
+
         area = Area.objects.create(
             nome=data['nome'],
-            unidade=unidade_usuario,  # Automaticamente define a unidade do usuário
+            unidade=unidade,  # Passa a instância da Unidade
             descricao=data.get('descricao', '')
         )
         return JsonResponse({
@@ -321,14 +315,22 @@ def create_area(request):
         # Verificar se o usuário está logado
         if not request.session.get('usuario_logado'):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
-        
+
         unidade_usuario = request.session.get('usuario_unidade')
-        
+
+        if not unidade_usuario:
+            return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
+
         # Editar uma área existente
         data = json.loads(request.body)
         try:
+            unidade = Unidade.objects.get(id=unidade_usuario)
+        except Unidade.DoesNotExist:
+            return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
+
+        try:
             # Só permite editar áreas da mesma unidade
-            area = Area.objects.get(id=data['id'], unidade=unidade_usuario)
+            area = Area.objects.get(id=data['id'], unidade=unidade)
             area.nome = data['nome']
             area.descricao = data.get('descricao', '')
             area.save()
@@ -372,20 +374,25 @@ def create_estagiario(request):
         
         # Criar um novo estagiário
         data = json.loads(request.body)
-        
+
         # Verificar se a área pertence à mesma unidade
         try:
             area = Area.objects.get(id=data['area'], unidade=unidade_usuario)
         except Area.DoesNotExist:
             return JsonResponse({'error': 'Área não encontrada ou sem permissão'}, status=404)
-        
+
+        try:
+            unidade = Unidade.objects.get(id=unidade_usuario)
+        except Unidade.DoesNotExist:
+            return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
+
         estagiario = Estagiario.objects.create(
             nome=data['nome'],
             email=data['email'],
-            unidade=unidade_usuario,  # Automaticamente define a unidade do usuário
+            unidade=unidade,  # Passa a instância da Unidade
             telefone=data['telefone'],
             data_inicio=data['dataInicio'],
-            area=area,  
+            area=area,
             ativo=data['ativo']
         )
         return JsonResponse({
