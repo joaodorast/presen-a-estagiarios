@@ -93,6 +93,279 @@
         .btn.cancel-delete:hover {
             background-color: var(--gray-600);
         }
+
+        /* CSS ADICIONAL PARA A SEÇÃO DE CÓDIGO FACIAL */
+        .facial-recognition-section {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .facial-recognition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .facial-recognition-header h3 {
+            font-size: 20px;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .facial-recognition-header i {
+            color: var(--primary-color);
+            font-size: 22px;
+        }
+
+        .generate-codes-btn {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary-color);
+        }
+
+        .generate-codes-btn:hover {
+            background-color: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+
+        .facial-codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .facial-code-card {
+            background-color: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .facial-code-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+
+        .facial-code-card.inactive {
+            opacity: 0.6;
+            background-color: var(--gray-100);
+        }
+
+        .estagiario-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .estagiario-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 20px;
+            font-weight: 600;
+            border: 2px solid var(--primary-color);
+        }
+
+        .estagiario-details h4 {
+            font-size: 16px;
+            color: var(--dark-color);
+            margin-bottom: 2px;
+        }
+
+        .estagiario-details p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .facial-code-display {
+            background-color: var(--white);
+            border: 2px dashed var(--gray-300);
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .facial-code-display.has-code {
+            border-color: var(--primary-color);
+            border-style: solid;
+            background-color: rgba(255, 193, 7, 0.05);
+        }
+
+        .facial-code-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary-color);
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .facial-code-number.generated {
+            color: var(--primary-color);
+        }
+
+        .code-placeholder {
+            font-size: 14px;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .facial-code-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .code-action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-generate {
+            background-color: var(--primary-color);
+            color: var(--dark-color);
+        }
+
+        .btn-generate:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-copy {
+            background-color: var(--secondary-color);
+            color: var(--white);
+        }
+
+        .btn-copy:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .btn-regenerate {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn-regenerate:hover {
+            background-color: var(--primary-color);
+            color: var(--secondary-dark);
+        }
+
+        .btn-delete {
+            background-color: var(--danger-color);
+            color: var(--white);
+        }
+
+        .btn-delete:hover {
+            background-color: var(--danger-dark);
+        }
+
+        .facial-recognition-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .facial-stat {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--gray-50);
+            border-radius: 6px;
+        }
+
+        .facial-stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .facial-stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success-dark);
+            border: 1px solid var(--success-color);
+        }
+
+        .status-badge.inactive {
+            background-color: rgba(108, 117, 125, 0.2);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-500);
+        }
+
+        /* Responsividade para seção facial */
+        @media (max-width: 768px) {
+            .facial-recognition-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .facial-codes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .facial-recognition-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -225,6 +498,108 @@
                         </table>
                     </div>
                 </div>
+
+                
+                <div class="facial-recognition-section">
+                    <div class="facial-recognition-header">
+                        <h3>
+                            <i class="fas fa-face-smile"></i>
+                            Códigos para Reconhecimento Facial
+                        </h3>
+                        <button class="generate-codes-btn" onclick="generateAllCodes()">
+                            <i class="fas fa-magic"></i>
+                            Gerar Todos os Códigos
+                        </button>
+                    </div>
+
+                    <div class="facial-codes-grid" id="facial-codes-container">
+                        
+                        <div class="facial-code-card">
+                            <div class="status-badge active">Ativo</div>
+                            <div class="estagiario-info">
+                                <div class="estagiario-avatar">JO</div>
+                                <div class="estagiario-details">
+                                    <h4>João da Silva</h4>
+                                    <p>Desenvolvimento Web</p>
+                                </div>
+                            </div>
+                            <div class="facial-code-display has-code">
+                                <div class="facial-code-number generated">FC-2024-001</div>
+                            </div>
+                            <div class="facial-code-actions">
+                                <button class="code-action-btn btn-copy" onclick="copyCode('FC-2024-001')">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                                <button class="code-action-btn btn-regenerate" onclick="regenerateCode(1)">
+                                    <i class="fas fa-refresh"></i> Renovar
+                                </button>
+                                <button class="code-action-btn btn-delete" onclick="deleteCode(1)">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </button>
+                            </div>
+                        </div>
+
+                     
+                        <div class="facial-code-card">
+                            <div class="status-badge active">Ativo</div>
+                            <div class="estagiario-info">
+                                <div class="estagiario-avatar">MA</div>
+                                <div class="estagiario-details">
+                                    <h4>Maria Santos</h4>
+                                    <p>Design Gráfico</p>
+                                </div>
+                            </div>
+                            <div class="facial-code-display">
+                                <div class="code-placeholder">Nenhum código gerado</div>
+                            </div>
+                            <div class="facial-code-actions">
+                                <button class="code-action-btn btn-generate" onclick="generateCode(2)">
+                                    <i class="fas fa-plus"></i> Gerar Código
+                                </button>
+                            </div>
+                        </div>
+
+                      
+                        <div class="facial-code-card inactive">
+                            <div class="status-badge inactive">Inativo</div>
+                            <div class="estagiario-info">
+                                <div class="estagiario-avatar">PE</div>
+                                <div class="estagiario-details">
+                                    <h4>Pedro Lima</h4>
+                                    <p>Marketing Digital</p>
+                                </div>
+                            </div>
+                            <div class="facial-code-display">
+                                <div class="code-placeholder">Estagiário inativo</div>
+                            </div>
+                            <div class="facial-code-actions">
+                                <button class="code-action-btn btn-generate" disabled>
+                                    <i class="fas fa-lock"></i> Bloqueado
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="facial-recognition-stats">
+                        <div class="facial-stat">
+                            <div class="facial-stat-number" id="total-codes">1</div>
+                            <div class="facial-stat-label">Códigos Ativos</div>
+                        </div>
+                        <div class="facial-stat">
+                            <div class="facial-stat-number" id="pending-codes">1</div>
+                            <div class="facial-stat-label">Pendentes</div>
+                        </div>
+                        <div class="facial-stat">
+                            <div class="facial-stat-number" id="inactive-users">1</div>
+                            <div class="facial-stat-label">Usuários Inativos</div>
+                        </div>
+                        <div class="facial-stat">
+                            <div class="facial-stat-number" id="total-users">3</div>
+                            <div class="facial-stat-label">Total de Usuários</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="areas" class="page">
@@ -250,7 +625,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Exemplo de área para demonstrar a funcionalidade  -->
+                          
                             <tr>
                                 <td>1</td>
                                 <td>Desenvolvimento Web</td>
@@ -468,7 +843,7 @@
         </div>
     </div>
 
-  
+    <!-- Modal para Registrar Entrada -->
     <div id="modal-registrar-entrada" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -495,7 +870,7 @@
         </div>
     </div>
 
-   
+    <!-- Modal para Registrar Saída -->
     <div id="modal-registrar-saida" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -522,7 +897,7 @@
         </div>
     </div>
 
-    
+    <!-- Modal para Estagiário (ATUALIZADO COM CAMPO CONTROL ID) -->
     <div id="modal-estagiario" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -535,7 +910,14 @@
                     <label for="estagiario-nome">Nome:</label>
                     <input type="text" id="estagiario-nome" required>
                 </div>
-              
+                <div class="form-group">
+                    <label for="estagiario-control-id">Control ID (Reconhecimento Facial):</label>
+                    <input type="text" id="estagiario-control-id" placeholder="Ex: FC-2024-001" maxlength="20">
+                    <small style="color: var(--text-light); font-size: 12px; margin-top: 5px; display: block;">
+                        <i class="fas fa-info-circle"></i> 
+                        Código único para identificação por reconhecimento facial
+                    </small>
+                </div>
                 <div class="form-group">
                     <label for="estagiario-email">Email:</label>
                     <input type="email" id="estagiario-email" required>
@@ -570,9 +952,225 @@
         </div>
     </div>
 
-    
+    <!-- Modal para Editar Código Facial -->
+    <div id="modal-edit-facial-code" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-edit"></i>
+                    Editar Código Facial
+                </h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-estagiario-name">Estagiário:</label>
+                    <input type="text" id="edit-estagiario-name" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="edit-facial-code">Código Facial:</label>
+                    <input type="text" id="edit-facial-code" placeholder="Ex: FC-2024-001">
+                </div>
+                <div class="form-group">
+                    <label for="edit-code-status">Status:</label>
+                    <select id="edit-code-status">
+                        <option value="active">Ativo</option>
+                        <option value="inactive">Inativo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn primary" onclick="saveFacialCode()">
+                    <i class="fas fa-save"></i>
+                    Salvar
+                </button>
+                <button class="btn secondary" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container de Toast -->
     <div id="toast-container"></div>
+
 <script src="{% static 'js/index.js' %}"></script>
+
+<script>
+
+function generateUniqueCode() {
+    const year = new Date().getFullYear();
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `FC-${year}-${random}`;
+}
+
+
+function generateCode(estagiarioId) {
+    const code = generateUniqueCode();
+    const card = document.querySelector(`.facial-code-card:nth-child(${estagiarioId})`);
+    const codeDisplay = card.querySelector('.facial-code-display');
+    const codeNumber = card.querySelector('.facial-code-number, .code-placeholder');
+    const actions = card.querySelector('.facial-code-actions');
+    
+    codeDisplay.classList.add('has-code');
+    codeNumber.className = 'facial-code-number generated';
+    codeNumber.textContent = code;
+    
+    actions.innerHTML = `
+        <button class="code-action-btn btn-copy" onclick="copyCode('${code}')">
+            <i class="fas fa-copy"></i> Copiar
+        </button>
+        <button class="code-action-btn btn-regenerate" onclick="regenerateCode(${estagiarioId})">
+            <i class="fas fa-refresh"></i> Renovar
+        </button>
+        <button class="code-action-btn btn-delete" onclick="deleteCode(${estagiarioId})">
+            <i class="fas fa-trash"></i> Excluir
+        </button>
+    `;
+    
+    updateFacialStats();
+    showToast('success', 'Código facial gerado com sucesso!');
+}
+
+
+function regenerateCode(estagiarioId) {
+    if (confirm('Tem certeza que deseja renovar este código? O código anterior será invalidado.')) {
+        generateCode(estagiarioId);
+        showToast('warning', 'Código facial renovado!');
+    }
+}
+
+
+function deleteCode(estagiarioId) {
+    if (confirm('Tem certeza que deseja excluir este código facial?')) {
+        const card = document.querySelector(`.facial-code-card:nth-child(${estagiarioId})`);
+        const codeDisplay = card.querySelector('.facial-code-display');
+        const codeNumber = card.querySelector('.facial-code-number');
+        const actions = card.querySelector('.facial-code-actions');
+        
+        codeDisplay.classList.remove('has-code');
+        codeNumber.className = 'code-placeholder';
+        codeNumber.textContent = 'Nenhum código gerado';
+        
+        actions.innerHTML = `
+            <button class="code-action-btn btn-generate" onclick="generateCode(${estagiarioId})">
+                <i class="fas fa-plus"></i> Gerar Código
+            </button>
+        `;
+        
+        updateFacialStats();
+        showToast('error', 'Código facial excluído!');
+    }
+}
+
+
+function copyCode(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        showToast('success', 'Código copiado para a área de transferência!');
+    });
+}
+
+
+function generateAllCodes() {
+    const activeCards = document.querySelectorAll('.facial-code-card:not(.inactive)');
+    let generated = 0;
+    
+    activeCards.forEach((card, index) => {
+        const hasCode = card.querySelector('.facial-code-display').classList.contains('has-code');
+        if (!hasCode) {
+            setTimeout(() => {
+                generateCode(index + 1);
+                generated++;
+            }, index * 200);
+        }
+    });
+    
+    if (generated === 0) {
+        showToast('info', 'Todos os estagiários ativos já possuem códigos!');
+    }
+}
+
+
+function updateFacialStats() {
+    const activeCodes = document.querySelectorAll('.facial-code-display.has-code').length;
+    const pendingCodes = document.querySelectorAll('.facial-code-card:not(.inactive) .code-placeholder').length;
+    const inactiveUsers = document.querySelectorAll('.facial-code-card.inactive').length;
+    const totalUsers = document.querySelectorAll('.facial-code-card').length;
+    
+    if (document.getElementById('total-codes')) {
+        document.getElementById('total-codes').textContent = activeCodes;
+        document.getElementById('pending-codes').textContent = pendingCodes;
+        document.getElementById('inactive-users').textContent = inactiveUsers;
+        document.getElementById('total-users').textContent = totalUsers;
+    }
+}
+
+
+function closeEditModal() {
+    document.getElementById('modal-edit-facial-code').classList.remove('active');
+}
+
+
+function saveFacialCode() {
+    showToast('success', 'Código facial salvo com sucesso!');
+    closeEditModal();
+}
+
+
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        `;
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+
+function generateControlIdForEstagiario() {
+    const controlIdField = document.getElementById('estagiario-control-id');
+    if (controlIdField && !controlIdField.value) {
+        controlIdField.value = generateUniqueCode();
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelector('.facial-recognition-section')) {
+        updateFacialStats();
+    }
+    
+    
+    const btnNovoEstagiario = document.getElementById('btn-novo-estagiario');
+    if (btnNovoEstagiario) {
+        btnNovoEstagiario.addEventListener('click', function() {
+            setTimeout(() => {
+                generateControlIdForEstagiario();
+            }, 100);
+        });
+    }
+});
+</script>
 
 </body>
 </html>
