@@ -456,7 +456,7 @@ function loadTodayPresencesTable() {
     });
 }
 
-function loadEstagiarios() {
+function loadEstagiarios() { 
     fetchEstagiarios().then(() => {
         const cardsContainer = document.getElementById('estagiarios-cards');
         cardsContainer.innerHTML = '';
@@ -507,6 +507,11 @@ function loadEstagiarios() {
                     </button>
                     <button class="btn-icon delete" data-id="${estagiario.id}" title="Excluir">
                         <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            cardsContainer.appendChild(card);
+        });
 
         // Adicionar eventos para edição e exclusão
         cardsContainer.querySelectorAll('.btn-icon.edit').forEach(btn => {
