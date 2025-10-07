@@ -26,6 +26,8 @@ urlpatterns = [
     path('api/presencas/entrada/', views.registrar_entrada),
     path('api/presencas/', views.get_presencas),
     path('api/presencas/saida/', views.registrar_saida),
+    path('api/presencas/<int:presenca_id>/edit/', views.editar_presenca, name='editar_presenca'),
+    path('api/presencas/<int:presenca_id>/delete/', views.deletar_presenca, name='deletar_presenca'),
 
     # URLs para gerenciamento de usuários
     path('api/usuarios/criar-admin/', views.criar_usuario_admin, name='criar_usuario_admin'),

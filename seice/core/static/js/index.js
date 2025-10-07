@@ -98,9 +98,25 @@ function initNavigation() {
              if (pageId === 'areas') {
                 loadAreas();
                 initAreaSearch();
+            } else if (pageId === 'estagiarios') {
+                loadEstagiarios();
             }
         });
     });
+}
+
+document.getElementById('btn-calculadora-horas').addEventListener('click', function() {
+    window.location.href = '/home/calculadora-horas/';
+});
+
+document.getElementById('btn-voltar-unidades').addEventListener('click', function() {
+    window.location.href = '/home/'; // ajuste para a rota da seleção de unidades
+});
+
+function formatarHorasMinutos(valor) {
+    const horas = Math.floor(valor);
+    const minutos = Math.round((valor - horas) * 60);
+    return `${horas}h ${minutos}m`;
 }
 
 function initMenuToggle() {
@@ -118,15 +134,15 @@ function initModals() {
     const modals = document.querySelectorAll('.modal');
     const closeBtns = document.querySelectorAll('.close, .modal-cancel');
     
-    document.getElementById('btn-registrar-entrada').addEventListener('click', function() {
-        openModal('modal-registrar-entrada');
-        loadEstagiarioSelect('entrada-estagiario', true);
-    });
+    // document.getElementById('btn-registrar-entrada').addEventListener('click', function() {
+    //     openModal('modal-registrar-entrada');
+    //     loadEstagiarioSelect('entrada-estagiario', true);
+    // });
     
-    document.getElementById('btn-registrar-saida').addEventListener('click', function() {
-        openModal('modal-registrar-saida');
-        loadEstagiarioSelectWithPresence('saida-estagiario');
-    });
+    // document.getElementById('btn-registrar-saida').addEventListener('click', function() {
+    //     openModal('modal-registrar-saida');
+    //     loadEstagiarioSelectWithPresence('saida-estagiario');
+    // });
     
     document.getElementById('btn-novo-estagiario').addEventListener('click', function() {
         document.getElementById('modal-estagiario-titulo').textContent = 'Novo Estagiário';
@@ -134,9 +150,9 @@ function initModals() {
         document.getElementById('estagiario-nome').value = '';
         document.getElementById('estagiario-area').value = '';
         document.getElementById('estagiario-email').value = '';
-        document.getElementById('estagiario-telefone').value = '';
         document.getElementById('estagiario-data-inicio').value = dataAtual;
         document.getElementById('estagiario-ativo').value = 'true';
+        document.getElementById('estagiario-control-id').value = '';
         loadAreaSelect('estagiario-area');
         openModal('modal-estagiario');
     });
@@ -182,9 +198,7 @@ function loadAreas() {
         areas.forEach(area => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${area.id}</td>
                 <td>${area.nome}</td>
-                <td>${area.descricao || '-'}</td>
                 <td>${area.total_estagiarios || 0}</td>
                 <td>
                     <div class="actions-column">
@@ -231,10 +245,6 @@ function openAreaModal(area = null) {
                         <label for="area-nome">Nome:</label>
                         <input type="text" id="area-nome" required>
                     </div>
-                    <div class="form-group">
-                        <label for="area-descricao">Descrição:</label>
-                        <input type="text" id="area-descricao">
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button id="btn-salvar-area" class="btn primary">Salvar</button>
@@ -251,7 +261,6 @@ function openAreaModal(area = null) {
     document.getElementById('modal-area-titulo').textContent = area ? 'Editar Área' : 'Nova Área';
     document.getElementById('area-id').value = area ? area.id : '';
     document.getElementById('area-nome').value = area ? area.nome : '';
-    document.getElementById('area-descricao').value = area ? area.descricao : '';
 
     document.getElementById('btn-salvar-area').onclick = salvarArea;
 
@@ -261,14 +270,13 @@ function openAreaModal(area = null) {
 function salvarArea() {
     const id = document.getElementById('area-id').value;
     const nome = document.getElementById('area-nome').value.trim();
-    const descricao = document.getElementById('area-descricao').value.trim();
 
     if (!nome) {
         showToast('O nome da área é obrigatório', 'error');
         return;
     }
 
-    const area = { nome, descricao };
+    const area = { nome };
 
     let url = '/api/areas/create/';
     let method = 'POST';
@@ -321,8 +329,7 @@ function initAreaSearch() {
     searchInput.addEventListener('input', function () {
         const searchTerm = this.value.toLowerCase();
         const filtered = areas.filter(area =>
-            area.nome.toLowerCase().includes(searchTerm) ||
-            (area.descricao && area.descricao.toLowerCase().includes(searchTerm))
+            area.nome.toLowerCase().includes(searchTerm) 
         );
         renderAreasTable(filtered);
     });
@@ -341,9 +348,7 @@ function renderAreasTable(areasToShow) {
     areasToShow.forEach(area => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${area.id}</td>
             <td>${area.nome}</td>
-            <td>${area.descricao || '-'}</td>
             <td>${area.total_estagiarios || 0}</td>
             <td>
                 <div class="actions-column">
@@ -402,7 +407,7 @@ function loadDashboardStats() {
             horasTotais += horas + (minutos / 60);
         }
     });
-    document.getElementById('horas-mes').textContent = horasTotais.toFixed(1) + 'h';
+    document.getElementById('horas-mes').textContent = formatarHorasMinutos(horasTotais);
 }
 
 // CORREÇÃO PRINCIPAL - Mostra todos os estagiários ativos
@@ -456,72 +461,53 @@ function loadTodayPresencesTable() {
     });
 }
 
-function loadEstagiarios() { 
+function loadEstagiarios() {
     fetchEstagiarios().then(() => {
-        const cardsContainer = document.getElementById('estagiarios-cards');
-        cardsContainer.innerHTML = '';
+        const tableBody = document.querySelector('#estagiarios-tabela tbody');
+        tableBody.innerHTML = '';
 
         if (estagiarios.length === 0) {
-            cardsContainer.innerHTML = '<p>Nenhum estagiário encontrado.</p>';
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="8" class="text-center">Nenhum estagiário encontrado.</td>`;
+            tableBody.appendChild(row);
             return;
         }
 
         estagiarios.forEach(estagiario => {
-            const card = document.createElement('div');
-            card.className = 'card-estagiario';
-
-            card.innerHTML = `
-                <div class="card-header">
-                    <h3>${estagiario.nome}</h3>
-                    <div class="card-status">
-                        <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
-                            ${estagiario.ativo ? 'Ativo' : 'Inativo'}
-                        </span>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${estagiario.nome}</td>
+                <td>${estagiario.area_nome || estagiario.area || 'N/A'}</td>
+                <td>${estagiario.email}</td>
+                <td>${formatarData(estagiario.data_inicio)}</td>
+                <td>
+                    <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
+                        ${estagiario.ativo ? 'Ativo' : 'Inativo'}
+                    </span>
+                </td>
+                <td>
+                    <div class="actions-column">
+                        <button class="btn-icon edit" data-id="${estagiario.id}" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon delete" data-id="${estagiario.id}" title="Excluir">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="card-info">
-                        <i class="fas fa-briefcase"></i>
-                        <strong>Área:</strong> ${estagiario.area || 'N/A'}
-                    </div>
-                    <div class="card-info">
-                        <i class="fas fa-envelope"></i>
-                        <strong>Email:</strong> ${estagiario.email}
-                    </div>
-                    <div class="card-info">
-                        <i class="fas fa-phone"></i>
-                        <strong>Telefone:</strong> ${estagiario.telefone}
-                    </div>
-                    <div class="card-info">
-                        <i class="fas fa-calendar-alt"></i>
-                        <strong>Data de Início:</strong> ${formatarData(estagiario.data_inicio)}
-                    </div>
-                    <div class="card-info">
-                        <i class="fas fa-id-card"></i>
-                        <strong>ID:</strong> ${estagiario.id}
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-icon edit" data-id="${estagiario.id}" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete" data-id="${estagiario.id}" title="Excluir">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
+                </td>
             `;
-            cardsContainer.appendChild(card);
+            tableBody.appendChild(row);
         });
 
         // Adicionar eventos para edição e exclusão
-        cardsContainer.querySelectorAll('.btn-icon.edit').forEach(btn => {
+        tableBody.querySelectorAll('.btn-icon.edit').forEach(btn => {
             btn.addEventListener('click', function () {
                 const id = parseInt(this.getAttribute('data-id'));
                 editEstagiario(id);
             });
         });
 
-        cardsContainer.querySelectorAll('.btn-icon.delete').forEach(btn => {
+        tableBody.querySelectorAll('.btn-icon.delete').forEach(btn => {
             btn.addEventListener('click', function () {
                 const id = parseInt(this.getAttribute('data-id'));
                 if (confirm('Tem certeza que deseja excluir este estagiário?')) {
@@ -533,7 +519,7 @@ function loadEstagiarios() {
 }
 
 function loadAreaSelect(selectId) {
-    fetchAreas().then(() => {
+    return fetchAreas().then(() => {
         const select = document.getElementById(selectId);
         select.innerHTML = '<option value="">Selecione a área</option>';
         areas.forEach(area => {
@@ -552,8 +538,6 @@ function loadPresencasTable(filteredPresencas = null) {
 
     const presencasToShow = filteredPresencas || presencas;
 
-    console.log('Presenças a serem exibidas:', presencasToShow); // Depuração
-
     if (presencasToShow.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = `<td colspan="8" class="text-center">Nenhuma presença encontrada.</td>`;
@@ -562,17 +546,47 @@ function loadPresencasTable(filteredPresencas = null) {
     }
 
     presencasToShow.forEach(presenca => {
+        let horasFormatadas = '---';
+        if (presenca.horas) {
+            if (presenca.horas.includes(':')) {
+                const [h, m] = presenca.horas.split(':').map(Number);
+                horasFormatadas = formatarHorasMinutos(h + m / 60);
+            } else {
+                horasFormatadas = formatarHorasMinutos(parseFloat(presenca.horas));
+            }
+        }
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${presenca.id}</td>
             <td>${presenca.estagiario__nome}</td>
             <td>${formatarData(presenca.data)}</td>
             <td>${presenca.entrada}</td>
             <td>${presenca.saida || '---'}</td>
-            <td>${presenca.horas || '---'}</td>
+            <td>${horasFormatadas}</td>
             <td>${presenca.observacao || '---'}</td>
+            <td>
+                <button class="btn-icon edit-presenca" data-id="${presenca.id}" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon delete-presenca" data-id="${presenca.id}" title="Excluir">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
         `;
         tableBody.appendChild(row);
+    });
+
+    // Adicionar eventos
+    tableBody.querySelectorAll('.edit-presenca').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = parseInt(this.getAttribute('data-id'));
+            abrirModalEditarPresenca(id);
+        });
+    });
+    tableBody.querySelectorAll('.delete-presenca').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const id = parseInt(this.getAttribute('data-id'));
+            deletarPresenca(id);
+        });
     });
 }
 
@@ -784,40 +798,40 @@ function editEstagiario(id) {
     document.getElementById('estagiario-id').value = estagiario.id;
     document.getElementById('estagiario-nome').value = estagiario.nome;
     document.getElementById('estagiario-email').value = estagiario.email;
-    document.getElementById('estagiario-telefone').value = estagiario.telefone;
-
-    
-    // Assuming estagiario.data_inicio is already "YYYY-MM-DD"
     document.getElementById('estagiario-data-inicio').value = estagiario.data_inicio;
-    
     document.getElementById('estagiario-ativo').value = estagiario.ativo.toString();
-    loadAreaSelect('estagiario-area');
-    setTimeout(() => {
-        document.getElementById('estagiario-area').value = estagiario.area || estagiario.area_id || '';
-    }, 100);
+    document.getElementById('estagiario-control-id').value = estagiario.control_id_user_id || '';
+
+    // Carrega as áreas e só depois seleciona a área do estagiário
+   loadAreaSelect('estagiario-area').then(() => {
+    console.log('Valor de area_id:', estagiario.area_id); // Depuração
+    document.getElementById('estagiario-area').value = estagiario.area_id || '';
+});
+
     openModal('modal-estagiario');
 }
-
 // Salvar estagiário (novo ou editado)
 function salvarEstagiario() {
     const id = document.getElementById('estagiario-id').value;
     const nome = document.getElementById('estagiario-nome').value;
     const area = document.getElementById('estagiario-area').value;
     const email = document.getElementById('estagiario-email').value;
-    const telefone = document.getElementById('estagiario-telefone').value;
     const dataInicio = document.getElementById('estagiario-data-inicio').value;
     const ativo = document.getElementById('estagiario-ativo').value === 'true';
+    const controlIdUserId = document.getElementById('estagiario-control-id').value;
+
     const estagiario = {
         id: id ? parseInt(id) : null,
-        nome,   
-        area,
+        nome,
+        area: area ? parseInt(area) : null, // <-- sempre número!
         email,
-        telefone,
         dataInicio,
-        ativo
+        ativo,
+        control_id_user_id: controlIdUserId,
+        
     };
     
-    if (!nome || !email || !telefone || !dataInicio) {
+    if (!nome || !email || !dataInicio) {
         showToast('Por favor, preencha todos os campos obrigatórios', 'error');
         return;
     }
@@ -830,9 +844,9 @@ function salvarEstagiario() {
                 nome,
                 area,
                 email,
-                telefone,
                 dataInicio,
-                ativo
+                ativo,
+                control_id_user_id: controlIdUserId
             };
         }
     } else {
@@ -843,11 +857,13 @@ function salvarEstagiario() {
             nome,
             area,
             email,
-            telefone,
             dataInicio,
-            ativo
+            ativo,
+            control_id_user_id: controlIdUserId
         });
     }
+
+   
     
     fetch('/api/estagiarios/create/', {
         method: id ? 'PUT' : 'POST', // PUT para edição, POST para criação
@@ -962,8 +978,9 @@ function gerarRelatorio() {
     const mediaHoras = totalHoras / totalPresencas;
     
     document.getElementById('relatorio-total-presencas').textContent = totalPresencas;
-    document.getElementById('relatorio-media-horas').textContent = mediaHoras.toFixed(2) + 'h';
-    document.getElementById('relatorio-total-horas').textContent = totalHoras.toFixed(2) + 'h';
+    document.getElementById('relatorio-media-horas').textContent = formatarHorasMinutos(mediaHoras);
+    document.getElementById('relatorio-total-horas').textContent = formatarHorasMinutos(totalHoras);
+
     
     const relatorioEstagiarios = [];
     
@@ -982,8 +999,8 @@ function gerarRelatorio() {
             relatorioEstagiarios.push({
                 nome: estagiario.nome,
                 totalPresencas: presencasEstagiario.length,
-                totalHoras: horasEstagiario.toFixed(2),
-                mediaDiaria: (horasEstagiario / presencasEstagiario.length).toFixed(2)
+                totalHoras: formatarHorasMinutos(horasEstagiario),
+                mediaDiaria: formatarHorasMinutos(horasEstagiario / presencasEstagiario.length)
             });
         }
     });
@@ -996,8 +1013,8 @@ function gerarRelatorio() {
         row.innerHTML = `
             <td>${rel.nome}</td>
             <td>${rel.totalPresencas}</td>
-            <td>${rel.totalHoras}h</td>
-            <td>${rel.mediaDiaria}h</td>
+            <td>${rel.totalHoras}</td>
+            <td>${rel.mediaDiaria}</td>
         `;
         tableBody.appendChild(row);
     });
@@ -1150,4 +1167,75 @@ function executarExclusao() {
         showToast('Área excluída com sucesso!', 'success');
         fecharModalConfirmacao();
     }
+}
+
+function abrirModalEditarPresenca(id) {
+    const presenca = presencas.find(p => p.id === id);
+    if (!presenca) return;
+    document.getElementById('presenca-edit-id').value = presenca.id;
+    document.getElementById('presenca-edit-entrada').value = presenca.entrada ? presenca.entrada.slice(0,5) : '';
+    document.getElementById('presenca-edit-saida').value = presenca.saida ? presenca.saida.slice(0,5) : '';
+    document.getElementById('presenca-edit-observacao').value = presenca.observacao || '';
+    document.getElementById('modal-editar-presenca').classList.add('active');
+}
+
+function salvarEdicaoPresenca() {
+    const id = document.getElementById('presenca-edit-id').value;
+    const entrada = document.getElementById('presenca-edit-entrada').value;
+    const saida = document.getElementById('presenca-edit-saida').value;
+    const observacao = document.getElementById('presenca-edit-observacao').value;
+
+    if (!entrada) {
+        showToast('Preencha o horário de entrada', 'error');
+        return;
+    }
+
+    // Calcula horas se saída preenchida
+    let horas = '';
+    if (entrada && saida) {
+        horas = calcularHoras(entrada, saida);
+    }
+
+    fetch(`/api/presencas/${id}/edit/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            entrada,
+            saida,
+            horas,
+            observacao
+        })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Erro ao editar presença');
+        return response.json();
+    })
+    .then(() => {
+        showToast('Presença editada com sucesso!', 'success');
+        document.getElementById('modal-editar-presenca').classList.remove('active');
+        fetchPresencas().then(loadPresencasTable);
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Erro ao editar presença', 'error');
+    });
+}
+
+function deletarPresenca(id) {
+    if (!confirm('Tem certeza que deseja excluir esta presença?')) return;
+    fetch(`/api/presencas/${id}/delete/`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Erro ao excluir presença');
+        return response.json();
+    })
+    .then(() => {
+        showToast('Presença excluída com sucesso!', 'success');
+        fetchPresencas().then(loadPresencasTable);
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Erro ao excluir presença', 'error');
+    });
 }

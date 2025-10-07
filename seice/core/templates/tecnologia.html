@@ -93,6 +93,8 @@
         .btn.cancel-delete:hover {
             background-color: var(--gray-600);
         }
+
+        
     </style>
 </head>
 <body>
@@ -125,12 +127,6 @@
                     <span>Relatórios</span>
                 </li>
               
-       <li data-page="">
-       <a href="{% url 'calculadora_horas' %}">
-        <i class="fas fa-calculator"></i>
-         <span>Calculadora de Horas</span>
-            </a>
-            </li>
             </ul>
         </nav>
         <div class="sidebar-footer">
@@ -160,8 +156,12 @@
                 <div class="dashboard-header">
                     <h2>Dashboard</h2>
                     <div class="quick-actions">
-                        <button id="btn-registrar-entrada" class="btn primary"><i class="fas fa-sign-in-alt"></i> Registrar Entrada</button>
-                        <button id="btn-registrar-saida" class="btn secondary"><i class="fas fa-sign-out-alt"></i> Registrar Saída</button>
+                        <button id="btn-calculadora-horas" class="btn secondary">
+                            <i class="fas fa-calculator"></i> Calculadora de Horas
+                        </button>
+                        <button id="btn-voltar-unidades" class="btn secondary">
+                            <i class="fas fa-arrow-left"></i> Selecionar Unidade
+                        </button>
                     </div>
                 </div>
 
@@ -242,9 +242,7 @@
                     <table id="areas-tabela">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Nome</th>
-                                <th>Descrição</th>
                                 <th>Número de Estágiarios</th>
                                 <th>Ações</th>
                             </tr>
@@ -300,11 +298,9 @@
                     <table id="estagiarios-tabela">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Nome</th>
                                 <th>Área</th>
-                                <th>Email</th>
-                                <th>Telefone</th>
+                                <th>Email</th> 
                                 <th>Data Início</th>
                                 <th>Status</th>
                                 <th>Ações</th>
@@ -345,7 +341,6 @@
                     <table id="presencas-tabela">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Estagiário</th>
                                 <th>Data</th>
                                 <th>Entrada</th>
@@ -540,10 +535,6 @@
                     <input type="email" id="estagiario-email" required>
                 </div>
                 <div class="form-group">
-                    <label for="estagiario-telefone">Telefone:</label>
-                    <input type="text" id="estagiario-telefone" required>
-                </div>
-                <div class="form-group">
                     <label for="estagiario-data-inicio">Data de Início:</label>
                     <input type="date" id="estagiario-data-inicio" required>
                 </div>  
@@ -561,6 +552,10 @@
                         <option value="false">Inativo</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="estagiario-control-id">Código do Control ID:</label>
+                    <input type="text" id="estagiario-control-id" required>
+                </div>
             </div>
             <div class="modal-footer">
                 <button id="btn-salvar-estagiario" class="btn primary">Salvar</button>
@@ -569,13 +564,40 @@
         </div>
     </div>
 
+    <div id="modal-editar-presenca" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Presença</h3>
+                <span class="close" onclick="document.getElementById('modal-editar-presenca').classList.remove('active')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="presenca-edit-id">
+                <div class="form-group">
+                    <label for="presenca-edit-entrada">Entrada:</label>
+                    <input type="time" id="presenca-edit-entrada">
+                </div>
+                <div class="form-group">
+                    <label for="presenca-edit-saida">Saída:</label>
+                    <input type="time" id="presenca-edit-saida">
+                </div>
+                <div class="form-group">
+                    <label for="presenca-edit-observacao">Observação:</label>
+                    <textarea id="presenca-edit-observacao" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn primary" onclick="salvarEdicaoPresenca()">Salvar</button>
+                <button class="btn secondary" onclick="document.getElementById('modal-editar-presenca').classList.remove('active')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     
     <div id="toast-container"></div>
 <script src="{% static 'js/index.js' %}">
-    
 </script>
 
-<script>
+<!-- <script>
 
     // Sistema de Controle de Estagiários (SEICE)
 // Versão 1.0.0
@@ -1732,7 +1754,7 @@ function executarExclusao() {
     }
 }
 
-</script>
+</script>-->
 
 </body>
-</html>
+</html> 

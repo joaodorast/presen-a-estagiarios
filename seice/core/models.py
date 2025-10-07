@@ -29,8 +29,8 @@ class Estagiario(models.Model):
     # Campos para integração com Control ID
     control_id_user_id = models.CharField(max_length=50, blank=True, null=True, help_text="ID do usuário no Control ID")
     presente = models.BooleanField(default=False, help_text="Indica se o estagiário está presente (True) ou ausente (False)")
-    telefone = models.CharField(max_length=20)
     data_inicio = models.DateField()
+    efetivado = models.BooleanField(default=False)
     ativo = models.BooleanField(default=True)
 
     def __str__(self):
@@ -42,7 +42,6 @@ class Estagiario(models.Model):
 class Area(models.Model):
     nome = models.CharField(max_length=100)
     unidade = models.ForeignKey(Unidade, on_delete=models.CASCADE, related_name='areas')
-    descricao = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.nome

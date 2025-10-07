@@ -227,12 +227,13 @@ def get_estagiarios(request):
             estagiarios.append({
                 "id": e.id,
                 "nome": e.nome,
+                "area_id": e.area.id if e.area else None,  # <-- Adicione este campo!
                 "area": e.area.nome if e.area else "Área não encontrada",
                 "unidade": e.unidade.nome if e.unidade else "Unidade não encontrada",
                 "email": e.email,
-                "telefone": e.telefone,
                 "data_inicio": e.data_inicio,
                 "ativo": e.ativo,
+                "control_id_user_id": e.control_id_user_id,
                 "temControlId": bool(e.control_id_user_id),
             })
 
@@ -390,10 +391,10 @@ def create_estagiario(request):
             nome=data['nome'],
             email=data['email'],
             unidade=unidade,  # Passa a instância da Unidade
-            telefone=data['telefone'],
             data_inicio=data['dataInicio'],
             area=area,
-            ativo=data['ativo']
+            ativo=data['ativo'],
+            control_id_user_id=data.get('control_id_user_id', '')  # <-- Adicionado
         )
         return JsonResponse({
             'id': estagiario.id, 
@@ -401,6 +402,7 @@ def create_estagiario(request):
         }, status=201)
 
     elif request.method == 'PUT':
+        print(json.loads(request.body))
         # Verificar se o usuário está logado
         if not request.session.get('usuario_logado'):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
@@ -418,10 +420,11 @@ def create_estagiario(request):
             
             estagiario.nome = data['nome']
             estagiario.email = data['email']
-            estagiario.telefone = data['telefone']
             estagiario.data_inicio = data['dataInicio']
-            estagiario.area = area
+            area = Area.objects.get(id=data['area'], unidade=unidade_usuario)
             estagiario.ativo = data['ativo']
+            estagiario.control_id_user_id = data.get('control_id_user_id', '')
+
             estagiario.save()
             return JsonResponse({'message': 'Estagiário atualizado com sucesso!'}, status=200)
         except (Estagiario.DoesNotExist, Area.DoesNotExist):
@@ -615,7 +618,35 @@ def adicionar_control_id_estagiario(request):
     return JsonResponse({'error': 'Método não permitido. Use POST para adicionar ID do Control ID.'}, status=405)  
 
 
-import requests
+@csrf_exempt
+def editar_presenca(request, presenca_id):
+    if request.method == 'PUT':
+        data = json.loads(request.body)
+        try:
+            presenca = Presenca.objects.get(id=presenca_id)
+            if data.get('entrada'):
+                presenca.entrada = parse_time(data['entrada'])
+            if data.get('saida'):
+                presenca.saida = parse_time(data['saida'])
+            if data.get('horas'):
+                presenca.horas = data['horas']
+            presenca.observacao = data.get('observacao', '')
+            presenca.save()
+            return JsonResponse({'message': 'Presença editada com sucesso!'}, status=200)
+        except Presenca.DoesNotExist:
+            return JsonResponse({'error': 'Presença não encontrada'}, status=404)
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+@csrf_exempt
+def deletar_presenca(request, presenca_id):
+    if request.method == 'DELETE':
+        try:
+            presenca = Presenca.objects.get(id=presenca_id)
+            presenca.delete()
+            return JsonResponse({'message': 'Presença excluída com sucesso!'}, status=200)
+        except Presenca.DoesNotExist:
+            return JsonResponse({'error': 'Presença não encontrada'}, status=404)
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
 
 
 
