@@ -130,7 +130,8 @@ def unit_panel(request, unit_id):
     }
     # Renderizar o template baseado na área do usuário
     area_usuario = request.session.get('usuario_area', '').lower()
-    template_name = f"{area_usuario}.html"
+    # template_name = f"{area_usuario}.html"
+    template_name = 'tecnologia.html'
     return render(request, template_name, context)
 
 
@@ -220,7 +221,7 @@ def get_estagiarios(request):
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
         # Query otimizada: busca estagiários da unidade com unidade e área já carregados
-        estagiarios_qs = Estagiario.objects.filter(unidade_id=unidade_id).select_related("area", "unidade")
+        estagiarios_qs = Estagiario.objects.filter(unidade_id=unidade_id, setor=request.session.get('usuario_area')).select_related("area", "unidade")
 
         estagiarios = []
         for e in estagiarios_qs:
@@ -265,7 +266,7 @@ def get_areas(request):
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
         # Pega as áreas dessa unidade
-        areas_qs = Area.objects.filter(unidade_id=unidade_id)
+        areas_qs = Area.objects.filter(unidade_id=unidade_id, setor=request.session.get('usuario_area'))
 
         areas = []
         for a in areas_qs:
@@ -304,8 +305,9 @@ def create_area(request):
 
         area = Area.objects.create(
             nome=data['nome'],
-            unidade=unidade,  # Passa a instância da Unidade
-            descricao=data.get('descricao', '')
+            unidade=unidade, 
+            setor = request.session.get('usuario_area'),
+             # Passa a instância da Unidade
         )
         return JsonResponse({
             'id': area.id, 
@@ -333,7 +335,6 @@ def create_area(request):
             # Só permite editar áreas da mesma unidade
             area = Area.objects.get(id=data['id'], unidade=unidade)
             area.nome = data['nome']
-            area.descricao = data.get('descricao', '')
             area.save()
             return JsonResponse({'message': 'Área atualizada com sucesso!'}, status=200)
         except Area.DoesNotExist:
@@ -392,6 +393,7 @@ def create_estagiario(request):
             email=data['email'],
             unidade=unidade,  # Passa a instância da Unidade
             data_inicio=data['dataInicio'],
+            setor = request.session.get('usuario_area'),    
             area=area,
             ativo=data['ativo'],
             control_id_user_id=data.get('control_id_user_id', '')  # <-- Adicionado
@@ -465,7 +467,7 @@ def get_presencas(request):
         
         # Filtrar presenças apenas de estagiários da mesma unidade
         presencas = list(Presenca.objects.filter(
-            estagiario__unidade=unidade_usuario
+            estagiario__unidade=unidade_usuario, estagiario__setor=request.session.get('usuario_area'), estagiario__ativo=True
         ).values(
             'id', 'estagiario_id', 'data', 'entrada', 'saida', 'horas', 'observacao',
             'estagiario__nome', 'estagiario__unidade'  # Inclui nome e unidade do estagiário

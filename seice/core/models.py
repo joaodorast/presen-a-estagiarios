@@ -23,6 +23,7 @@ class UsuarioUnidade(models.Model):
 class Estagiario(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    setor = models.CharField(max_length=100, choices=[('tecnologia', 'Tecnologia'), ('financeiro', 'Financeiro'), ('pedagogia', 'Pedagogia'), ('educação física', 'Educação Física')])
     area = models.ForeignKey('Area', on_delete=models.CASCADE, related_name='estagiarios')
     unidade = models.ForeignKey(Unidade, on_delete=models.CASCADE, related_name='estagiarios')
     # matricula = models.CharField(max_length=20, unique=True)
@@ -41,6 +42,7 @@ class Estagiario(models.Model):
 
 class Area(models.Model):
     nome = models.CharField(max_length=100)
+    setor = models.CharField(max_length=100, choices=[('tecnologia', 'Tecnologia'), ('financeiro', 'Financeiro'), ('pedagogia', 'Pedagogia'), ('educação física', 'Educação Física')])
     unidade = models.ForeignKey(Unidade, on_delete=models.CASCADE, related_name='areas')
 
     def __str__(self):
