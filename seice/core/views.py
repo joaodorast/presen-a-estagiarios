@@ -265,6 +265,7 @@ def get_areas(request):
         if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
+        print(request.session.get('usuario_area'))
         # Pega as áreas dessa unidade
         areas_qs = Area.objects.filter(unidade_id=unidade_id, setor=request.session.get('usuario_area'))
 
@@ -276,6 +277,7 @@ def get_areas(request):
                 "unidade": a.unidade.nome if a.unidade else "Unidade não encontrada",
                 "total_estagiarios": total_estagiarios_area(a.id, unidade_id)
             })
+
 
         return JsonResponse({
             'areas': areas,

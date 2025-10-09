@@ -11,6 +11,64 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Color scheme based on area
+        - Pedagogia: Roxo
+        - Tecnologia: Azul
+        - Eduacação Física: verde 
+        - RH: amarelo
+        */
+
+        :root {
+            --primary-color: 
+            {% if usuario_area == "coordenação" %}#007bff
+            {% elif usuario_area == "educação física" %}#28a745 /* Verde */
+            {% elif usuario_area == "manutenção" %}#fd7e14
+            {% elif usuario_area == "pedagogia" %}#6f42c1 /* Roxo */
+            {% elif usuario_area == "tecnologia" %}#007bff /* Azul */
+            {% elif usuario_area == "financeiro" %}#20c997
+            {% else %}#007bff /* Azul */
+            {% endif %};
+
+            --primary-dark: {% if usuario_area == "coordenação" %}#0056b3
+            {% elif usuario_area == "educação física" %}#1e7e34
+            {% elif usuario_area == "manutenção" %}#e8680f
+            {% elif usuario_area == "pedagogia" %}#5a359a
+            {% elif usuario_area == "tecnologia" %}#0056b3
+            {% elif usuario_area == "financeiro" %}#17a2b8
+            {% else %}#0056b3
+            {% endif %};
+
+            --accent-color: {% if usuario_area == "coordenação" %}#007bff
+            {% elif usuario_area == "educação física" %}#28a745
+            {% elif usuario_area == "manutenção" %}#fd7e14
+            {% elif usuario_area == "pedagogia" %}#6f42c1
+            {% elif usuario_area == "tecnologia" %}#007bff
+            {% elif usuario_area == "financeiro" %}#20c997
+            {% else %}#007bff
+            {% endif %};
+
+            --accent-dark: {% if usuario_area == "coordenação" %}#0056b3
+            {% elif usuario_area == "educação física" %}#1e7e34
+            {% elif usuario_area == "manutenção" %}#e8680f
+            {% elif usuario_area == "pedagogia" %}#5a359a
+            {% elif usuario_area == "tecnologia" %}#0056b3
+            {% elif usuario_area == "financeiro" %}#17a2b8
+            {% else %}#0056b3
+            {% endif %};
+
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --text-color: #333;
+            --text-light: #666;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --gray-500: #6c757d;
+            --gray-600: #495057;
+        }
        
         #modal-confirmar-exclusao .modal-content {
             max-width: 450px;
@@ -94,6 +152,21 @@
             background-color: var(--gray-600);
         }
 
+         .current-area {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 5px auto 30px auto;
+            width: 20vw;
+        }
+
+
         
     </style>
 </head>
@@ -101,7 +174,7 @@
     <div class="sidebar">
         <div class="logo">  
             <i class="fas fa-user-graduate"></i>
-            <h2>SEICE - {{usuario_unidade_nome}}</h2>
+            <h2>SEICE</h2>
         </div>
         <nav>
             <ul>
@@ -143,16 +216,20 @@
                 </button>
                 <div class="header-title">
                     <h1>Sistema de Controle de Estagiários</h1>
-                    <h2 style="font-size: 16pt; font-weight: 600; text-align: center; color: var(--accent-dark)">Seja bem vindo {{usuario_nome}}</h2>
+                    <h2 style="font-size: 16pt; font-weight: 600; text-align: center; color: var(--accent-dark);">Seja bem vindo, {{ usuario_nome }}!</h2>
                 </div>
                 <div class="current-date">
                     <span id="today-date"></span>
                 </div>
+               
             </div>
         </header>
 
         <div class="content-area">
-            
+             <div class="header-info">
+                    <div class="current-area">{{usuario_area}}</div>
+
+
             <div id="dashboard" class="page active">
                 <div class="dashboard-header">
                     <h2>Dashboard</h2>
