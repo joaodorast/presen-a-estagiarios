@@ -17,7 +17,7 @@ class Unidade(models.Model):
 class UsuarioUnidade(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     unidade = models.ForeignKey(Unidade, on_delete=models.CASCADE)
-    nivel_acesso = models.CharField(max_length=50, choices=[('leitura', 'Leitura'), ('escrita', 'Escrita'), ('admin', 'Admin')])
+    nivel_acesso = models.CharField(max_length=50, choices=[('leitura', 'Leitura'), ('admin', 'Admin')])
 
 
 class Estagiario(models.Model):
