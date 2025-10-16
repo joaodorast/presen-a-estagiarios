@@ -26,6 +26,7 @@
             {% elif usuario_area == "pedagogia" %}#6f42c1 /* Roxo */
             {% elif usuario_area == "tecnologia" %}#007bff /* Azul */
             {% elif usuario_area == "financeiro" %}#20c997
+            {% elif usuario_area == "recursos humanos" %}#ffc505
             {% else %}#007bff /* Azul */
             {% endif %};
 
@@ -35,6 +36,7 @@
             {% elif usuario_area == "pedagogia" %}#5a359a
             {% elif usuario_area == "tecnologia" %}#0056b3
             {% elif usuario_area == "financeiro" %}#17a2b8
+            {% elif usuario_area == "recursos humanos" %}#ffb300
             {% else %}#0056b3
             {% endif %};
 
@@ -44,15 +46,17 @@
             {% elif usuario_area == "pedagogia" %}#6f42c1
             {% elif usuario_area == "tecnologia" %}#007bff
             {% elif usuario_area == "financeiro" %}#20c997
+            {% elif usuario_area == "recursos humanos" %}#ffd54f
             {% else %}#007bff
             {% endif %};
 
-            --accent-dark: {% if usuario_area == "coordenação" %}#0056b3
+            --accent-dark: {% if usuario_area == "recursos" %}#0056b3
             {% elif usuario_area == "educação física" %}#1e7e34
             {% elif usuario_area == "manutenção" %}#e8680f
             {% elif usuario_area == "pedagogia" %}#5a359a
             {% elif usuario_area == "tecnologia" %}#0056b3
             {% elif usuario_area == "financeiro" %}#17a2b8
+            {% elif usuario_area == "recursos humanos" %}#ffb300
             {% else %}#0056b3
             {% endif %};
 
@@ -69,7 +73,33 @@
             --gray-500: #6c757d;
             --gray-600: #495057;
         }
+
+        #sideb{
+            background: linear-gradient(145deg, #000203e1 80%);
+        }
        
+        #sidebar-footer{
+            background: linear-gradient(145deg, #00020321 80%);
+            border-color: rgb(2, 81, 155);
+        }
+
+        nav ul li.active {
+            background-color: rgba(255, 255, 255, 0.897); 
+            border-left-color: var(--primary-color); 
+            position: relative;
+            color: black;
+        }
+        
+        nav ul li:hover {
+            background-color: rgba(255, 255, 255, 0.171); 
+            border-left-color: var(--primary-color);
+        }
+
+        #logo{
+            background: linear-gradient(145deg, #00020310 80%);
+            border-color: rgb(2, 81, 155);
+        }
+
         #modal-confirmar-exclusao .modal-content {
             max-width: 450px;
             border-top: 4px solid var(--danger-color);
@@ -162,7 +192,7 @@
             font-size: 16px;
             text-transform: uppercase;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 5px auto 30px auto;
+            margin: 5px auto 30px 1vw;
             width: 20vw;
         }
 
@@ -171,8 +201,8 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">  
+    <div class="sidebar" id="sideb">
+        <div class="logo" id="logo">  
             <i class="fas fa-user-graduate"></i>
             <h2>SEICE</h2>
         </div>
@@ -202,9 +232,9 @@
               
             </ul>
         </nav>
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" id="sidebar-footer">
             <p>Sistema de Controle de Estágio</p>
-            <p>v1.0.0</p>
+            <p>v1.0.1</p>
         </div>
     </div>
               
@@ -227,7 +257,7 @@
 
         <div class="content-area">
              <div class="header-info">
-                    <div class="current-area">{{usuario_area}}</div>
+                        <div class="current-area">{{ usuario_area }} fffff    </div>
 
 
             <div id="dashboard" class="page active">

@@ -103,7 +103,7 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    border-bottom: 1px solid rgba(255, 193, 7, 0.3); 
+    border-bottom: 1px solid var(--primary-dark); 
     background-color: var(--gray-850);
 }
 
@@ -143,12 +143,12 @@ nav ul li {
 }
 
 nav ul li:hover {
-    background-color: rgba(255, 193, 7, 0.1); 
+    background-color: var(--primary-dark);
     border-left-color: var(--primary-color);
 }
 
 nav ul li.active {
-    background-color: rgba(255, 193, 7, 0.2); 
+    background-color: var(--primary-dark); 
     border-left-color: var(--primary-color); 
     position: relative;
 }
@@ -170,7 +170,7 @@ nav ul li.active i {
 
 .sidebar-footer {
     padding: 15px 20px;
-    border-top: 1px solid rgba(255, 193, 7, 0.3);
+    border-top: 1px solid var(--primary-dark);
     font-size: 12px;
     background-color: var(--gray-850);
     color: var(--gray-400);

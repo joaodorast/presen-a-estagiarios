@@ -216,29 +216,32 @@ def get_estagiarios(request):
         if not request.session.get('usuario_logado'):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
 
-        unidade_id = request.session.get('usuario_unidade')  # agora deve ser ID
+        unidade_id = request.session.get('usuario_unidade')
+        usuario_area = str(request.session.get('usuario_area', '')).strip().lower()
         if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
-        # Query otimizada: busca estagiários da unidade com unidade e área já carregados
-        estagiarios_qs = Estagiario.objects.filter(unidade_id=unidade_id, setor=request.session.get('usuario_area')).select_related("area", "unidade")
+        # RH pode ver todos os estagiários de todas as unidades e setores
+        if usuario_area == 'rh' or usuario_area == 'recursos humanos':
+            estagiarios_qs = Estagiario.objects.select_related("area", "unidade")
+        else:
+            estagiarios_qs = Estagiario.objects.filter(unidade_id=unidade_id, setor=usuario_area).select_related("area", "unidade")
 
         estagiarios = []
         for e in estagiarios_qs:
             estagiarios.append({
                 "id": e.id,
                 "nome": e.nome,
-                "area_id": e.area.id if e.area else None,  # <-- Adicione este campo!
+                "area_id": e.area.id if e.area else None,
                 "area": e.area.nome if e.area else "Área não encontrada",
                 "unidade": e.unidade.nome if e.unidade else "Unidade não encontrada",
+                "setor": getattr(e, 'setor', ''),
                 "email": e.email,
                 "data_inicio": e.data_inicio,
                 "ativo": e.ativo,
                 "control_id_user_id": e.control_id_user_id,
                 "temControlId": bool(e.control_id_user_id),
             })
-
-
 
         return JsonResponse({
             'estagiarios': estagiarios,
@@ -261,13 +264,16 @@ def get_areas(request):
         if not request.session.get('usuario_logado'):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
 
-        unidade_id = request.session.get('usuario_unidade')  # agora deve ser ID
+        unidade_id = request.session.get('usuario_unidade')
+        usuario_area = str(request.session.get('usuario_area', '')).strip().lower()
         if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
-        print(request.session.get('usuario_area'))
-        # Pega as áreas dessa unidade
-        areas_qs = Area.objects.filter(unidade_id=unidade_id, setor=request.session.get('usuario_area'))
+        # RH pode ver todas as áreas de todas as unidades e setores
+        if usuario_area == 'rh' or usuario_area == 'recursos humanos':
+            areas_qs = Area.objects.select_related('unidade')
+        else:
+            areas_qs = Area.objects.filter(unidade_id=unidade_id, setor=usuario_area).select_related('unidade')
 
         areas = []
         for a in areas_qs:
@@ -275,9 +281,9 @@ def get_areas(request):
                 "id": a.id,
                 "nome": a.nome,
                 "unidade": a.unidade.nome if a.unidade else "Unidade não encontrada",
+                "setor": getattr(a, 'setor', ''),
                 "total_estagiarios": total_estagiarios_area(a.id, unidade_id)
             })
-
 
         return JsonResponse({
             'areas': areas,
@@ -463,21 +469,29 @@ def get_presencas(request):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
         
         unidade_usuario = request.session.get('usuario_unidade')
-        
+        usuario_area = str(request.session.get('usuario_area', '')).strip().lower()
         if not unidade_usuario:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
-        
-        # Filtrar presenças apenas de estagiários da mesma unidade
-        presencas = list(Presenca.objects.filter(
-            estagiario__unidade=unidade_usuario, estagiario__setor=request.session.get('usuario_area'), estagiario__ativo=True
-        ).values(
-            'id', 'estagiario_id', 'data', 'entrada', 'saida', 'horas', 'observacao',
-            'estagiario__nome', 'estagiario__unidade'  # Inclui nome e unidade do estagiário
-        ))
-        
+
+        # RH pode ver todas as presenças de todos os setores
+        if usuario_area == 'rh' or usuario_area == 'recursos humanos':
+            presencas = list(Presenca.objects.filter(
+                estagiario__ativo=True
+            ).values(
+                'id', 'estagiario_id', 'data', 'entrada', 'saida', 'horas', 'observacao',
+                'estagiario__nome', 'estagiario__unidade', 'estagiario__setor'
+            ))
+        else:
+            presencas = list(Presenca.objects.filter(
+                estagiario__unidade=unidade_usuario, estagiario__setor=usuario_area, estagiario__ativo=True
+            ).values(
+                'id', 'estagiario_id', 'data', 'entrada', 'saida', 'horas', 'observacao',
+                'estagiario__nome', 'estagiario__unidade', 'estagiario__setor'
+            ))
+
         print(f"Presenças filtradas para unidade {unidade_usuario}: {len(presencas)}")
         return JsonResponse({
-            'presencas': presencas, 
+            'presencas': presencas,
             'unidade_filtro': unidade_usuario,
             'total': len(presencas)
         }, safe=False)
