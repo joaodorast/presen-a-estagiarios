@@ -126,3 +126,68 @@ pedagogia:
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
+
+
+
+
+
+
+
+
+
+
+         :root {
+            --primary-color: 
+            {% if usuario_area == "coordenação" %}#007bff
+            {% elif usuario_area == "educação física" %}#28a745 /* Verde */
+            {% elif usuario_area == "manutenção" %}#fd7e14
+            {% elif usuario_area == "pedagogia" %}#6f42c1 /* Roxo */
+            {% elif usuario_area == "tecnologia" %}#007bff /* Azul */
+            {% elif usuario_area == "financeiro" %}#20c997
+            {% elif usuario_area == "recursos humanos" %}#ffc505
+            {% else %}#007bff /* Azul */
+            {% endif %};
+
+            --primary-dark: {% if usuario_area == "coordenação" %}#0056b3
+            {% elif usuario_area == "educação física" %}#1e7e34
+            {% elif usuario_area == "manutenção" %}#e8680f
+            {% elif usuario_area == "pedagogia" %}#5a359a
+            {% elif usuario_area == "tecnologia" %}#0056b3
+            {% elif usuario_area == "financeiro" %}#17a2b8
+            {% elif usuario_area == "recursos humanos" %}#ffb300
+            {% else %}#0056b3
+            {% endif %};
+
+            --accent-color: {% if usuario_area == "coordenação" %}#007bff
+            {% elif usuario_area == "educação física" %}#28a745
+            {% elif usuario_area == "manutenção" %}#fd7e14
+            {% elif usuario_area == "pedagogia" %}#6f42c1
+            {% elif usuario_area == "tecnologia" %}#007bff
+            {% elif usuario_area == "financeiro" %}#20c997
+            {% elif usuario_area == "recursos humanos" %}#ffd54f
+            {% else %}#007bff
+            {% endif %};
+
+            --accent-dark: {% if usuario_area == "recursos" %}#0056b3
+            {% elif usuario_area == "educação física" %}#1e7e34
+            {% elif usuario_area == "manutenção" %}#e8680f
+            {% elif usuario_area == "pedagogia" %}#5a359a
+            {% elif usuario_area == "tecnologia" %}#0056b3
+            {% elif usuario_area == "financeiro" %}#17a2b8
+            {% elif usuario_area == "recursos humanos" %}#ffb300
+            {% else %}#0056b3
+            {% endif %};
+
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --text-color: #333;
+            --text-light: #666;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --gray-500: #6c757d;
+            --gray-600: #495057;
+        }
