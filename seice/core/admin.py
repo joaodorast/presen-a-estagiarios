@@ -1,7 +1,7 @@
 # filepath: core/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Estagiario, Presenca, Area, Usuario, ControleColetaLogs, Unidade, UsuarioUnidade
+from .models import Estagiario, Presenca, Area, Usuario, ControleColetaLogs, Sensor, Unidade, UsuarioUnidade
 
 # Cabeçalho em PT-BR
 admin.site.site_header = "SEICE — Administração"
@@ -119,6 +119,22 @@ class UsuarioUnidadeAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         resp = super().changelist_view(request, extra_context=extra_context)
+        return _inject_css_into_response(resp, _CUSTOM_ADMIN_CSS)
+
+# Sensor admin — campos seguros
+@admin.register(Sensor)
+class SensorAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'ip', 'porta', 'ativo')
+    search_fields = ('nome', 'ip')
+    list_filter = ('ativo',)
+    list_editable = ('ativo',)
+    list_per_page = 25
+
+    def changelist_view(self, request, extra_context=None):
+        resp = super().changelist_view(request, extra_context=extra_context)
+        return _inject_css_into_response(resp, _CUSTOM_ADMIN_CSS)
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        resp = super().change_view(request, object_id, form_url=form_url, extra_context=extra_context)
         return _inject_css_into_response(resp, _CUSTOM_ADMIN_CSS)
 
 # # ControleColetaLogs admin — campos seguros e usuário

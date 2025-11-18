@@ -60,18 +60,38 @@ class Presenca(models.Model):
         return f"{self.estagiario.nome} - {self.data} - {'Presente' if self.estagiario.presente else 'Ausente'}"
     
 
+class Sensor(models.Model):
+    nome = models.CharField(max_length=100, help_text="Nome identificador do sensor")
+    ip = models.CharField(max_length=15, help_text="Endereço IP do sensor Control ID")
+    porta = models.IntegerField(default=81, help_text="Porta do sensor Control ID")
+    ativo = models.BooleanField(default=True, help_text="Se o sensor está ativo para coleta")
+
+    class Meta:
+        verbose_name = "Sensor"
+        verbose_name_plural = "Sensores"
+
+    def __str__(self):
+        return f"{self.nome} - {self.ip}:{self.porta}"
+
+    @property
+    def endereco_completo(self):
+        return f"{self.ip}:{self.porta}"
+
+
 class ControleColetaLogs(models.Model):
-    ultimo_timestamp = models.DateTimeField(null=True, blank=True, help_text="Timestamp do último log processado")
-    ultimo_log_id = models.CharField(max_length=32, null=True, blank=True, help_text="ID único do último log processado")
-    total_processados = models.IntegerField(default=0, help_text="Total de logs processados")
-    processed_log_ids = models.JSONField(default=list, help_text="Lista de IDs de logs já processados (cache)")
+    sensor = models.ForeignKey(Sensor, on_delete=models.CASCADE, help_text="Sensor associado ao controle")
+    ultimo_timestamp = models.DateTimeField(null=True, blank=True, help_text="Timestamp do último log processado para este sensor")
+    ultimo_log_id = models.CharField(max_length=32, null=True, blank=True, help_text="ID único do último log processado para este sensor")
+    total_processados = models.IntegerField(default=0, help_text="Total de logs processados para este sensor")
+    processed_log_ids = models.JSONField(default=list, help_text="Lista de IDs de logs já processados para este sensor (cache)")
 
     class Meta:
         verbose_name = "Controle de Coleta de Logs"
         verbose_name_plural = "Controles de Coleta de Logs"
+        unique_together = ['sensor']
 
     def __str__(self):
-        return f"Controle Coleta Logs - Último: {self.ultimo_timestamp}"
+        return f"Controle {self.sensor.nome} - Último: {self.ultimo_timestamp}"
     
 
     

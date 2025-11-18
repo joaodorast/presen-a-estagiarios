@@ -13,19 +13,19 @@ import logging
 from datetime import datetime, date, timedelta
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
-from .models import Estagiario, Presenca, ControleColetaLogs
+from .models import Estagiario, Presenca, ControleColetaLogs, Sensor
 
 logger = logging.getLogger(__name__)
 
 ultimas_acoes = {}  # {user_id: datetime}
 TIME_DELTA_IGNORAR = timedelta(seconds=5)
 
-def get_controle_coleta():
-    """Obtém ou cria a instância de ControleColetaLogs"""
+def get_controle_coleta(sensor):
+    """Obtém ou cria a instância de ControleColetaLogs para o sensor"""
     try:
-        controle = ControleColetaLogs.objects.get(pk=1)
+        controle = ControleColetaLogs.objects.get(sensor=sensor)
     except ControleColetaLogs.DoesNotExist:
-        controle = ControleColetaLogs.objects.create(pk=1)
+        controle = ControleColetaLogs.objects.create(sensor=sensor)
     return controle
 
 # Configuração simples
@@ -51,10 +51,10 @@ estagiarios_processados_neste_ciclo = set()  # user_ids processados neste ciclo
 TIMEOUT_CACHE_CICLO = 300  # 5 minutos
 ultimo_reset_cache_ciclo = datetime.now()
 
-def fazer_login_control_id():
-    """Faz login no Control ID e retorna a sessão"""
+def fazer_login_control_id(sensor):
+    """Faz login no Control ID do sensor especificado e retorna a sessão"""
     try:
-        url = f"http://{CONTROL_ID_IP}/login.fcgi"
+        url = f"http://{sensor.ip}:{sensor.porta}/login.fcgi"
         response = requests.post(url, data={'login': 'admin', 'password': 'admin'}, timeout=10)
         if response.status_code == 200:
             return response.json().get('session')
@@ -67,10 +67,23 @@ def gerar_id_unico_log(log):
     user_id = str(log.get('user_id', ''))
     timestamp = str(log.get('time', ''))
     event = str(log.get('event', ''))
-    
+
     # Criar hash único baseado nos dados principais
     import hashlib
     dados_log = f"{user_id}|{timestamp}|{event}"
+    log_id = hashlib.md5(dados_log.encode()).hexdigest()[:16]
+    return log_id
+
+def gerar_id_unico_log_sensor(log, sensor):
+    """Gera um ID único para o log baseado em seus dados principais incluindo o sensor"""
+    user_id = str(log.get('user_id', ''))
+    timestamp = str(log.get('time', ''))
+    event = str(log.get('event', ''))
+    sensor_id = str(sensor.id)
+
+    # Criar hash único baseado nos dados principais incluindo o sensor
+    import hashlib
+    dados_log = f"{sensor_id}|{user_id}|{timestamp}|{event}"
     log_id = hashlib.md5(dados_log.encode()).hexdigest()[:16]
     return log_id
 
@@ -120,9 +133,9 @@ def verificar_status_estagiario_no_dia(estagiario, data_verificacao):
         logger.error(f"❌ Erro ao verificar status de {estagiario.nome}: {e}")
         return 'ausente'
 
-def filtrar_logs_novos(logs):
+def filtrar_logs_novos(logs, sensor):
     """Filtra apenas os logs que ainda não foram processados - COM GARANTIA DE UNICIDADE"""
-    controle = get_controle_coleta()
+    controle = get_controle_coleta(sensor)
     logs_processados_cache = set(controle.processed_log_ids)
 
     if not logs:
@@ -132,8 +145,8 @@ def filtrar_logs_novos(logs):
     ultimo_timestamp = controle.ultimo_timestamp
 
     for log in logs:
-        # Gerar ID único para este log
-        log_id_unico = gerar_id_unico_log(log)
+        # Gerar ID único para este log incluindo o sensor
+        log_id_unico = gerar_id_unico_log_sensor(log, sensor)
 
         # VERIFICAÇÃO 1: Se já foi processado (cache), pular
         if log_id_unico in logs_processados_cache:
@@ -190,20 +203,20 @@ def filtrar_logs_novos(logs):
             logger.error(f"❌ Erro ao processar timestamp do log: {e}")
             continue
 
-    logger.info(f"🔍 Encontrados {len(logs_novos)} logs REALMENTE NOVOS de {len(logs)} totais")
+    logger.info(f"🔍 [{sensor.nome}] Encontrados {len(logs_novos)} logs REALMENTE NOVOS de {len(logs)} totais")
     return logs_novos
 
-def buscar_logs_recentes():
-    """Busca logs recentes do Control ID"""
+def buscar_logs_recentes(sensor):
+    """Busca logs recentes do Control ID do sensor especificado"""
     try:
-        # Fazer login
-        session = fazer_login_control_id()
+        # Fazer login no sensor específico
+        session = fazer_login_control_id(sensor)
         if not session:
-            logger.error("❌ Não conseguiu fazer login no Control ID")
+            logger.error(f"❌ Não conseguiu fazer login no sensor {sensor.nome} ({sensor.ip}:{sensor.porta})")
             return []
-        
+
         # Buscar logs
-        url = f"http://{CONTROL_ID_IP}/load_objects.fcgi"
+        url = f"http://{sensor.ip}:{sensor.porta}/load_objects.fcgi"
         response = requests.post(
             url,
             params={'session': session},
@@ -211,25 +224,25 @@ def buscar_logs_recentes():
             json={"object": "access_logs"},
             timeout=30
         )
-        
+
         if response.status_code == 200:
             data = response.json()
             logs = data.get('access_logs', [])
-            logger.info(f"✅ Coletados {len(logs)} logs do Control ID")
+            logger.info(f"✅ [{sensor.nome}] Coletados {len(logs)} logs do Control ID")
             return logs
         else:
-            logger.error(f"❌ Erro ao buscar logs: {response.status_code}")
+            logger.error(f"❌ [{sensor.nome}] Erro ao buscar logs: {response.status_code}")
             return []
-    
+
     except Exception as e:
-        logger.error(f"❌ Erro na coleta: {str(e)}")
+        logger.error(f"❌ [{sensor.nome}] Erro na coleta: {str(e)}")
         return []
 
-def processar_log_para_presenca(log):
+def processar_log_para_presenca(log, sensor):
     """Converte um log do Control ID em presença - NOVA LÓGICA BASEADA NA EXISTÊNCIA DE PRESENÇA"""
     global estagiarios_processados_neste_ciclo
 
-    controle = get_controle_coleta()
+    controle = get_controle_coleta(sensor)
     logs_processados_cache = set(controle.processed_log_ids)
 
     try:
@@ -391,16 +404,16 @@ def processar_log_para_presenca(log):
         logger.error(f"❌ Erro ao processar log: {str(e)}")
         return False
 
-def registrar_presencas_dos_logs():
+def registrar_presencas_dos_logs(sensor):
     """Função principal: busca logs NOVOS e registra presenças - PROCESSAMENTO SEQUENCIAL ÚNICO"""
     global ultimo_log_processado, logs_processados_cache
-    
+
     # Reset do cache de ciclo se necessário
     resetar_cache_ciclo_se_necessario()
-    
+
     # Buscar todos os logs
     try:
-        logs = buscar_logs_recentes()
+        logs = buscar_logs_recentes(sensor)
     except Exception as e:
         logger.error(f"❌ Erro ao buscar logs: {str(e)}")
         return
@@ -411,7 +424,7 @@ def registrar_presencas_dos_logs():
 
     # Filtrar apenas logs NOVOS (com garantia de unicidade)
     try:
-        logs_novos = filtrar_logs_novos(logs)
+        logs_novos = filtrar_logs_novos(logs, sensor)
     except Exception as e:
         logger.error(f"❌ Erro ao filtrar logs novos: {str(e)}")
         return
@@ -462,7 +475,7 @@ def registrar_presencas_dos_logs():
             pass
 
         # Processar o log
-        if processar_log_para_presenca(log):
+        if processar_log_para_presenca(log, sensor):
             processados += 1
 
             # Verificar estado depois do processamento para contar corretamente
@@ -487,7 +500,7 @@ def registrar_presencas_dos_logs():
             logger.info(f"   ⏭️ Log {log_id} não processado (duplicata, erro ou aguardando próximo ciclo)")
 
     # Atualizar contador total
-    controle = get_controle_coleta()
+    controle = get_controle_coleta(sensor)
     controle.total_processados += processados
 
     # Limitar tamanho do cache após processamento
@@ -508,19 +521,24 @@ def registrar_presencas_dos_logs():
         logger.info("📝 Logs novos encontrados, mas nenhuma presença registrada (duplicatas evitadas ou aguardando próximo ciclo)")
 
 def loop_coleta_automatica():
-    """Loop que roda em background coletando e registrando presenças"""
+    """Loop que roda em background coletando e registrando presenças para todos os sensores"""
     global coleta_ativa
-    
+
     logger.info("🚀 Iniciando coleta automática de presenças (NOVA VERSÃO - baseada na existência de presença)...")
-    
+
     while coleta_ativa:
         try:
-            logger.info("🔄 Coletando logs e registrando presenças...")
-            registrar_presencas_dos_logs()
-            
+            logger.info("🔄 Coletando logs e registrando presenças para todos os sensores...")
+
+            # Processar logs para cada sensor ativo
+            sensores = Sensor.objects.filter(ativo=True)
+            for sensor in sensores:
+                logger.info(f"📡 Processando sensor: {sensor.nome}")
+                registrar_presencas_dos_logs(sensor)
+
         except Exception as e:
             logger.error(f"❌ Erro no loop: {str(e)}")
-        
+
         # Aguardar intervalo
         time.sleep(INTERVALO_COLETA)
 
@@ -545,25 +563,34 @@ def parar_coleta_automatica():
     logger.info("🛑 Coleta automática parada")
 
 def status_coleta():
-    """Retorna o status da coleta"""
+    """Retorna o status da coleta para todos os sensores"""
     global estagiarios_processados_neste_ciclo
 
-    controle = get_controle_coleta()
+    sensores_status = []
+    sensores = Sensor.objects.all()
+    for sensor in sensores:
+        controle = get_controle_coleta(sensor)
+        sensores_status.append({
+            'sensor_nome': sensor.nome,
+            'sensor_ip': sensor.ip,
+            'sensor_porta': sensor.porta,
+            'ativo': sensor.ativo,
+            'ultimo_processamento': {
+                'timestamp': controle.ultimo_timestamp.isoformat() if controle.ultimo_timestamp else None,
+                'total_processados': controle.total_processados
+            },
+            'cache_logs': {
+                'total_logs_cache': len(controle.processed_log_ids),
+                'max_cache_size': MAX_CACHE_SIZE
+            }
+        })
 
     return {
         'ativa': coleta_ativa,
         'thread_viva': thread_coleta.is_alive() if thread_coleta else False,
         'intervalo': INTERVALO_COLETA,
-        'control_id_ip': CONTROL_ID_IP,
-        'versao': '3.0 - Baseada na existência de presença',
-        'ultimo_processamento': {
-            'timestamp': controle.ultimo_timestamp.isoformat() if controle.ultimo_timestamp else None,
-            'total_processados': controle.total_processados
-        },
-        'cache_logs': {
-            'total_logs_cache': len(controle.processed_log_ids),
-            'max_cache_size': MAX_CACHE_SIZE
-        },
+        'versao': '3.0 - Baseada na existência de presença (Multi-sensor)',
+        'sensores': sensores_status,
         'cache_ciclo': {
             'estagiarios_processados_neste_ciclo': len(estagiarios_processados_neste_ciclo),
             'timeout_cache_ciclo': TIMEOUT_CACHE_CICLO,
