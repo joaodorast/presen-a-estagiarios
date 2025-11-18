@@ -109,6 +109,10 @@ document.getElementById('btn-calculadora-horas').addEventListener('click', funct
     window.location.href = '/home/calculadora-horas/';
 });
 
+document.getElementById('btn-admin-panel').addEventListener('click', function() {
+    window.location.href = '/admin/';
+});
+
 document.getElementById('btn-voltar-unidades').addEventListener('click', function() {
     window.location.href = '/home/'; // ajuste para a rota da seleção de unidades
 });
@@ -123,11 +127,26 @@ function initMenuToggle() {
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
+    const adminBtn = document.getElementById('btn-admin-panel');
+
+    if (adminBtn) {
+        adminBtn.style.display = sidebar.classList.contains('collapsed') ? 'none' : '';
+    }
     
     menuToggle.addEventListener('click', function() {
         sidebar.classList.toggle('collapsed');
         mainContent.classList.toggle('expanded');
+
+        if (adminBtn) {
+            if (sidebar.classList.contains('collapsed')) {
+                adminBtn.style.display = 'none';
+            } else {
+                adminBtn.style.display = '';
+            }
+        }
     });
+
+    
 }
 
 function initModals() {
