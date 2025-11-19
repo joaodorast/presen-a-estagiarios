@@ -64,7 +64,9 @@ class Sensor(models.Model):
     nome = models.CharField(max_length=100, help_text="Nome identificador do sensor")
     ip = models.CharField(max_length=15, help_text="Endereço IP do sensor Control ID")
     porta = models.IntegerField(default=81, help_text="Porta do sensor Control ID")
+    device_id = models.CharField(max_length=50, blank=True, null=True, help_text="ID do dispositivo no Control ID para Monitor")
     ativo = models.BooleanField(default=True, help_text="Se o sensor está ativo para coleta")
+    unidade = models.ForeignKey(Unidade, on_delete=models.CASCADE, related_name='sensores')
 
     class Meta:
         verbose_name = "Sensor"

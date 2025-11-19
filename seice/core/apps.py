@@ -14,12 +14,12 @@ class CoreConfig(AppConfig):
         Inicia a coleta SIMPLES de logs quando o Django iniciar
         """
         # Importar o sistema simples
-        from .coleta_simples import iniciar_coleta_automatica
+        # from .coleta_simples import iniciar_coleta_automatica
         
         def delayed_start():
             time.sleep(3)  # Aguarda 3 segundos
             try:
-                iniciar_coleta_automatica()
+                # iniciar_coleta_automatica()
                 logger.info("🎉 SISTEMA SIMPLES: Coleta de presenças iniciada!")
             except Exception as e:
                 logger.error(f"❌ Erro: {e}")

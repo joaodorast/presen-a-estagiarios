@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_time, parse_datetime
-from .models import Estagiario, Presenca, Area, Usuario, Unidade, UsuarioUnidade
+from .models import Estagiario, Presenca, Area, Usuario, Unidade, UsuarioUnidade, Sensor
 import json
 import requests
 import logging
@@ -1155,12 +1155,12 @@ def deletar_presenca(request, presenca_id):
 # def presencas_automaticas_controle(request):
 #     """Controla o sistema SIMPLES (start/stop/reset)"""
 #     from .coleta_simples import iniciar_coleta_automatica, parar_coleta_automatica, resetar_controle_logs
-    
+
 #     if request.method == 'POST':
 #         try:
 #             data = json.loads(request.body)
 #             action = data.get('action')
-            
+
 #             if action == 'start':
 #                 iniciar_coleta_automatica()
 #                 return JsonResponse({'message': 'Sistema iniciado!'})
@@ -1174,5 +1174,196 @@ def deletar_presenca(request, presenca_id):
 #                 return JsonResponse({'error': 'Use action: start, stop ou reset'}, status=400)
 #         except Exception as e:
 #             return JsonResponse({'error': str(e)}, status=400)
-    
+
 #     return JsonResponse({'error': 'Use POST'}, status=405)
+
+@csrf_exempt
+def notifications(request):
+    """Recebe notificações push do Control ID Monitor (DAO e eventos)"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        logger.info(f"📡 Notificação recebida do Control ID: {data}")
+
+        # ===========================================================
+        # 1. Extrair campos principais
+        # ===========================================================
+        device_id = str(data.get('device_id', ''))
+        timestamp = data.get('time', 0)
+
+        # Para DAO:
+        object_changes = data.get("object_changes", [])
+
+        # ===========================================================
+        # 2. Identificar o sensor
+        # ===========================================================
+        try:
+            sensor = Sensor.objects.get(device_id=device_id, ativo=True)
+            logger.info(f"✅ Sensor identificado: {sensor.nome} ({sensor.ip}:{sensor.porta})")
+        except Sensor.DoesNotExist:
+            logger.warning(f"⚠️ Sensor com device_id {device_id} não encontrado ou inativo")
+            return JsonResponse({'error': 'Sensor not found'}, status=404)
+
+        # ===========================================================
+        # 3. Processar DAO (access_logs)
+        # ===========================================================
+        for change in object_changes:
+            if change.get("object") != "access_logs":
+                continue
+
+            values = change.get("values", {})
+            event = int(values.get("event", -1))
+            user_id = str(values.get("user_id", ""))
+            portal_id = values.get("portal_id", 0)
+            log_ts = int(values.get("time", timestamp))
+
+            # Converter timestamp
+            event_datetime = datetime.fromtimestamp(log_ts)
+            data_evento = event_datetime.date()
+            # Ajustar fuso horário (+3 horas)
+            event_datetime = event_datetime + timedelta(hours=3)
+            hora_evento = event_datetime.time()
+
+            logger.info(f"📄 DAO recebido: evento={event}, user={user_id}, portal={portal_id}")
+
+            # ===========================================================
+            # 4. Eventos válidos de acesso
+            # ===========================================================
+            EVENTOS_VALIDOS = {7, 20, 21}
+
+            if event not in EVENTOS_VALIDOS:
+                logger.info(f"ℹ️ Evento ignorado (não é acesso relevante): {event}")
+                continue
+
+            logger.info(f"🚪 Evento de acesso detectado - User ID: {user_id}, Time: {event_datetime}")
+
+            # ===========================================================
+            # 5. Encontrar o estagiário pelo user_id do Control ID
+            # ===========================================================
+            try:
+                estagiario = Estagiario.objects.get(
+                    control_id_user_id=user_id,
+                    unidade=sensor.unidade if hasattr(sensor, 'unidade') else None,
+                    ativo=True
+                )
+                logger.info(f"👤 Estagiário encontrado: {estagiario.nome}")
+            except Estagiario.DoesNotExist:
+                logger.warning(f"⚠️ Estagiário com Control ID {user_id} não encontrado")
+                continue
+
+            # ===========================================================
+            # 6. Registrar presença
+            # ===========================================================
+            presenca = Presenca.objects.filter(
+                estagiario=estagiario, data=data_evento
+            ).first()
+
+            if not presenca:
+                Presenca.objects.create(
+                    estagiario=estagiario,
+                    data=data_evento,
+                    entrada=hora_evento,
+                    observacao=f'Entrada automática via Monitor Control ID - Sensor: {sensor.nome}'
+                )
+                logger.info(f"✅ Entrada regi'strada para {estagiario.nome} às {hora_evento}")
+
+            else:
+                if not presenca.saida:
+                    presenca.saida = hora_evento
+
+                    # Calcular horas trabalhadas
+                    entrada_dt = datetime.combine(data_evento, presenca.entrada)
+                    saida_dt = datetime.combine(data_evento, hora_evento)
+                    total_seconds = int((saida_dt - entrada_dt).total_seconds())
+                    hours = total_seconds // 3600
+                    minutes = (total_seconds % 3600) // 60
+
+                    presenca.horas = f"{hours:02d}:{minutes:02d}"
+                    presenca.observacao += f' | Saída automática via Monitor Control ID - Sensor: {sensor.nome}'
+                    presenca.save()
+
+                    logger.info(
+                        f"✅ Saída registrada para {estagiario.nome} às {hora_evento} "
+                        f"- Horas: {presenca.horas}"
+                    )
+                else:
+                    logger.info(f"ℹ️ Presença já completa para {estagiario.nome}")
+
+        return JsonResponse({'status': 'success'}, status=200)
+
+    except json.JSONDecodeError:
+        logger.error("❌ Erro ao decodificar JSON da notificação")
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    except Exception as e:
+        logger.error(f"❌ Erro ao processar notificação: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+import json
+import logging
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------
+# 1. Endpoint principal (eventos)
+# Você já tem esse — não precisa substituir
+# ---------------------------------------------------------
+
+
+# ---------------------------------------------------------
+# 2. device_is_alive (heartbeat)
+# ---------------------------------------------------------
+@csrf_exempt
+def device_is_alive(request):
+    """Heartbeat enviado pelo Control iD em intervalos regulares"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body) if request.body else {}
+            logger.info(f"💓 Heartbeat recebido: {data}")
+        except:
+            logger.info("💓 Heartbeat recebido (sem JSON)")
+
+        # SEMPRE responder 200
+        return JsonResponse({"status": "alive"}, status=200)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# ---------------------------------------------------------
+# 3. operation_mode
+# ---------------------------------------------------------
+@csrf_exempt
+def operation_mode(request):
+    """Notificações de mudança de modo (standalone/online)"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body) if request.body else {}
+            logger.info(f"⚙️ operation_mode recebido: {data}")
+        except:
+            logger.info("⚙️ operation_mode recebido (sem JSON)")
+
+        return JsonResponse({"status": "ok"}, status=200)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# ---------------------------------------------------------
+# 4. notifications_dao (sincronização interna do Control iD)
+# ---------------------------------------------------------
+@csrf_exempt
+def notifications_dao(request):
+    """Atualizações de DAO internas do Control iD"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body) if request.body else {}
+            logger.info(f"📦 dao recebido: {data}")
+        except:
+            logger.info("📦 dao recebido (sem JSON)")
+
+        return JsonResponse({"status": "ok"}, status=200)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)

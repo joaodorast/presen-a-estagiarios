@@ -715,7 +715,15 @@ function registrarEntrada() {
         return;
     }
 
-    const horaAtual = new Date().toTimeString().split(' ')[0];
+    // Criar hora no timezone correto do Brasil
+    const agora = new Date();
+    const horaAtual = agora.toLocaleTimeString('pt-BR', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        timeZone: 'America/Sao_Paulo' 
+    });
     const novaPresenca = {
         estagiarioId: estagiarioId,
         data: dataAtual,
@@ -769,7 +777,15 @@ function registrarSaida() {
         return;
     }
 
-    const horaAtual = new Date().toTimeString().split(' ')[0];
+    // Criar hora no timezone correto do Brasil
+    const agora = new Date();
+    const horaAtual = agora.toLocaleTimeString('pt-BR', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        timeZone: 'America/Sao_Paulo' 
+    });
     const horas = calcularHoras(presenca.entrada, horaAtual);
 
     const dadosSaida = {

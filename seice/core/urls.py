@@ -26,6 +26,8 @@ urlpatterns = [
     path('api/presencas/entrada/', views.registrar_entrada),
     path('api/presencas/', views.get_presencas),
     path('api/presencas/saida/', views.registrar_saida),
+    path('api/presencas/<int:presenca_id>/edit/', views.editar_presenca),
+    path('api/presencas/<int:presenca_id>/delete/', views.deletar_presenca),
 
     # URLs para gerenciamento de usuários
     path('api/usuarios/criar-admin/', views.criar_usuario_admin, name='criar_usuario_admin'),
@@ -45,5 +47,11 @@ urlpatterns = [
     # path('api/presencas-auto/status/', views.presencas_automaticas_status, name='presencas_auto_status'),
     # path('api/presencas-auto/manual/', views.presencas_automaticas_manual, name='presencas_auto_manual'),
     # path('api/presencas-auto/controle/', views.presencas_automaticas_controle, name='presencas_auto_controle'),
-    
+
+    # Sistema de Notificações Push
+    path('api/notifications/dao', views.notifications, name='notifications'),
+    path("device_is_alive.fcgi", views.device_is_alive),
+    path("api/notifications/operation_mode", views.operation_mode),
+    path("api/notifications/dao", views.notifications_dao),
+
 ]
