@@ -11,6 +11,80 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'style/main-page.css' %}">
+    <style>
+         :root {
+            --sector-gradient: linear-gradient(135deg, #0066ff 0%, #00aaff 100%);
+            --sector-bg: #ffffff;
+            --sector-text: #1a1a1a;
+            --sector-radius: 999px;
+            --sector-shadow: 0 8px 20px rgba(0,102,255,0.12);
+            --sector-gap: 10px;
+        }
+
+        .area-choices {
+            display: flex;
+            gap: var(--sector-gap);
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 16px 0;
+        }
+
+        .area-choices-title {
+            width: 100%;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .area-choices button {
+            background: var(--sector-bg);
+            color: var(--sector-text);
+            border: 2px solid rgba(0,102,255,0.08);
+            padding: 10px 18px;
+            border-radius: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s;
+            box-shadow: none;
+            text-transform: capitalize;
+            min-width: 130px;
+            text-align: center;
+            letter-spacing: 0.4px;
+        }
+
+        .area-choices button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,102,255,0.06);
+        }
+
+        /* Estado ativo / selecionado */
+        .area-choices button.active-area,
+        .area-choices button.active-area:focus {
+            background: var(--sector-gradient);
+            color: #ffffff;
+            border: 2px solid rgba(255,255,255,0.12);
+            box-shadow: var(--sector-shadow);
+            transform: translateY(-4px);
+        }
+
+        /* Aparência destacada para o primeiro botão (padrão tecnologia) quando nenhum clicado */
+        .area-choices button.default-active {
+            background: var(--sector-gradient);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.12);
+            box-shadow: var(--sector-shadow);
+        }
+
+        /* Responsividade: botões menores em telas pequenas */
+        @media (max-width: 700px) {
+            .area-choices button {
+                padding: 8px 12px;
+                min-width: 100px;
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar" id="sideb">
@@ -76,7 +150,8 @@
 
             <div>
                 <div id="area-choices" class="area-choices">
-                    <button>Tecnologia</button>
+                    <h2 class="area-choices-title">Filtros de Área</h2>
+                    <button class="active-area">Tecnologia</button>
                     <button>Recursos Humanos</button>
                     <button>Pedagogia</button>
                     <button>Educação Física</button>

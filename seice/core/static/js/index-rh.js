@@ -2,7 +2,140 @@
 // Versão 1.0.0
 
 // Mock data para simulação do sistema
+let estagiarios_bruto = []
 let estagiarios = []
+let setor = (window.setor || 'tecnologia').toString().trim().toLowerCase();
+window.setor = setor;
+
+function initAreaFilters() {
+    const container = document.getElementById('area-choices');
+    if (!container) return;
+    container.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const newSetorRaw = (btn.dataset.setor || btn.getAttribute('data-setor') || btn.textContent);
+            const newSetor = newSetorRaw ? String(newSetorRaw).trim().toLowerCase() : 'tecnologia';
+            console.log('Filtrando por setor:', newSetor);
+
+            // atualiza variável global e window
+            setor = newSetor;
+            window.setor = setor;
+
+            if (typeof setActiveAreaButton === 'function') setActiveAreaButton(btn);
+
+            // Recarrega dados dependentes do setor e atualiza as views
+            Promise.all([fetchEstagiarios(), fetchAreas(), fetchPresencas()])
+                .then(() => {
+                    loadEstagiarios();
+                    loadAreas();
+                    initTodayPresences();
+                    loadDashboardStats();
+                    loadPresencasTable();
+                })
+                .catch(err => console.error('Erro ao filtrar por setor:', err));
+
+            if (typeof filterBySetor === 'function') filterBySetor(newSetor);
+        });
+    });
+}
+
+// ...existing code...
+
+/**
+ * Marca visualmente o botão de setor como ativo.
+ * - remove classes de todos os botões
+ * - adiciona 'active-area' ao botão selecionado
+ * - remove 'default-active' (estado inicial) quando trocar manualmente
+ */
+function setActiveAreaButton(btn) {
+    if (!btn) return;
+    const container = document.getElementById('area-choices');
+    if (!container) return;
+
+    container.querySelectorAll('button').forEach(b => {
+        b.classList.remove('active-area');
+        b.classList.remove('default-active');
+        b.setAttribute('aria-pressed', 'false');
+    });
+
+    btn.classList.add('active-area');
+    btn.setAttribute('aria-pressed', 'true');
+}
+
+/**
+ * Inicializa o botão ativo padrão baseado em window.setor (ou "tecnologia")
+ * Se já existir um botão com .active-area no HTML, preserva.
+ */
+function initDefaultActiveSector() {
+    const container = document.getElementById('area-choices');
+    if (!container) return;
+
+    // se já existe botão marcado no HTML, respeita
+    const already = container.querySelector('button.active-area');
+    if (already) {
+        // sincroniza variável setor com o botão marcado
+        const s = (already.dataset.setor || already.textContent || '').trim().toLowerCase();
+        if (s) {
+            setor = s;
+            window.setor = setor;
+        }
+        return;
+    }
+
+    // tenta encontrar pelo atributo data-setor ou pelo texto (window.setor)
+    const desired = String(window.setor || 'tecnologia').trim().toLowerCase();
+    let match = Array.from(container.querySelectorAll('button')).find(b => {
+        const ds = (b.dataset.setor || b.getAttribute('data-setor') || b.textContent || '').trim().toLowerCase();
+        return ds === desired;
+    });
+
+    // fallback: encontrar botão "tecnologia" por texto (caso diferença de acentuação)
+    if (!match) {
+        match = Array.from(container.querySelectorAll('button')).find(b =>
+            (b.textContent || '').trim().toLowerCase().includes('tecnologia')
+        );
+    }
+
+    if (match) {
+        // define como ativo padrão
+        match.classList.add('default-active');
+        match.classList.add('active-area');
+        match.setAttribute('aria-pressed', 'true');
+        setor = (match.dataset.setor || match.textContent || '').trim().toLowerCase() || 'tecnologia';
+        window.setor = setor;
+    } else {
+        // se não encontrou nenhum, marca o primeiro botão
+        const first = container.querySelector('button');
+        if (first) {
+            first.classList.add('default-active');
+            first.classList.add('active-area');
+            first.setAttribute('aria-pressed', 'true');
+            setor = (first.dataset.setor || first.textContent || '').trim().toLowerCase() || 'tecnologia';
+            window.setor = setor;
+        }
+    }
+}
+
+// garante inicialização visual quando DOM pronto
+document.addEventListener('DOMContentLoaded', function() {
+    // inicializa estado visual do setor antes de qualquer clique
+    initDefaultActiveSector();
+
+    // quando o usuário clicar, initAreaFilters já chama setActiveAreaButton(btn)
+    // mas reforça ligação: adicionar listener que também atualiza classe (segurança)
+    const container = document.getElementById('area-choices');
+    if (container) {
+        container.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setActiveAreaButton(btn);
+                // atualiza variável global setor (caso não esteja sendo feita)
+                const newSetor = (btn.dataset.setor || btn.textContent || '').trim().toLowerCase() || 'tecnologia';
+                setor = newSetor;
+                window.setor = setor;
+            });
+        });
+    }
+});
+
 
 async function fetchEstagiarios() {
     try {
@@ -11,15 +144,27 @@ async function fetchEstagiarios() {
             throw new Error('Erro ao carregar os estagiários');
         }
         const data = await response.json();
-        estagiarios = data.estagiarios; // Atualiza a lista global de estagiários
+        // aceita formatos { estagiarios: [...] } ou lista direta
+        estagiarios_bruto = data.estagiarios || data || [];
+        console.log('Carregados estagiarios_bruto:', estagiarios_bruto.length, 'filtro setor:', setor);
+
+        if (setor && setor !== 'todos') {
+            // filtra client-side pelo campo setor (normaliza tudo para lower-case)
+            estagiarios = estagiarios_bruto.filter(e => (String(e.setor || '').toLowerCase()) === setor);
+        } else {
+            estagiarios = estagiarios_bruto.slice();
+        }
+
         return estagiarios;
     } catch (error) {
         console.error(error);
         showToast('Erro ao carregar os estagiários', 'error');
+        return [];
     }
 }
 
-let presencas = []
+let presencas = [];
+let presencas_bruto = [];
 async function fetchPresencas() {
     try {
         const response = await fetch('/api/presencas/');
@@ -27,26 +172,50 @@ async function fetchPresencas() {
             throw new Error('Erro ao carregar as presenças');
         }
         const data = await response.json();
-        presencas = data.presencas; // Atualiza a lista global de presenças
-        console.log('Presenças carregadas:', presencas); // Depuração
+        presencas_bruto = data.presencas || data || [];
+        // se já temos estagiarios_bruto filtrados por setor, filtra presenças para esses estagiarios
+        if (setor && setor !== 'todos' && Array.isArray(estagiarios_bruto)) {
+            const allowedIds = new Set(
+                estagiarios_bruto
+                    .filter(e => (String(e.setor || '').toLowerCase()) === setor)
+                    .map(e => String(e.id))
+            );
+            presencas = presencas_bruto.filter(p => allowedIds.has(String(p.estagiario_id || p.estagiario || p.estagiarioId || '')));
+        } else {
+            presencas = presencas_bruto.slice();
+        }
+
+        console.log('Presenças carregadas:', presencas.length, 'filtro setor:', setor); // Depuração
         return presencas;
     } catch (error) {
         console.error(error);
         showToast('Erro ao carregar as presenças', 'error');
+        return [];
     }
 }
 
+
 let areas = [];
+let areas_bruto = [];
 async function fetchAreas() {
     try {
         const response = await fetch('/api/areas/');
         if (!response.ok) throw new Error('Erro ao carregar as áreas');
         const data = await response.json();
-        areas = data.areas || data; // Ajuste conforme resposta da API
+        areas_bruto = data.areas || data || [];
+
+        if (setor && setor !== 'todos') {
+            areas = areas_bruto.filter(area => String(area.setor || '').toLowerCase() === setor);
+        } else {
+            areas = areas_bruto.slice();
+        }
+
+        console.log('Áreas carregadas:', areas.length, 'filtro setor:', setor);
         return areas;
     } catch (error) {
         console.error(error);
         showToast('Erro ao carregar as áreas', 'error');
+        return [];
     }
 }
 
@@ -68,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigation();
     initMenuToggle();
     initModals();
+    initAreaFilters();
     
     // Primeiro carrega estagiários, depois presenças
     Promise.all([fetchEstagiarios(), fetchPresencas()])
@@ -1058,46 +1228,66 @@ function gerarRelatorio() {
 }
 
 function exportarRelatorio() {
-    const tableData = document.querySelector('#relatorio-tabela').outerHTML;
-    const mesNome = document.querySelector('#relatorio-mes option:checked').textContent;
-    const ano = document.getElementById('relatorio-ano').value;
-    
-    if (!tableData.includes('<tr>')) {
-        showToast('Gere um relatório antes de exportar', 'error');
+    const table = document.getElementById('relatorio-tabela');
+    if (!table) {
+        showToast('Nenhum relatório gerado para exportar', 'error');
         return;
     }
-    
-    const blob = new Blob([`
-        <html>
-            <head>
-                <title>Relatório de Estagiários - ${mesNome}/${ano}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; }
-                </style>
-            </head>
-            <body>
-                <h1>Relatório de Estagiários - ${mesNome}/${ano}</h1>
-                <p>Data de geração: ${new Date().toLocaleDateString()}</p>
-                <div>
-                    <p><strong>Total de Presenças:</strong> ${document.getElementById('relatorio-total-presencas').textContent}</p>
-                    <p><strong>Média de Horas por Dia:</strong> ${document.getElementById('relatorio-media-horas').textContent}</p>
-                    <p><strong>Total de Horas:</strong> ${document.getElementById('relatorio-total-horas').textContent}</p>
-                </div>
-                ${tableData}
-            </body>
-        </html>
-    `], { type: 'text/html' });
-    
+
+    const delimiter = ';'; // Excel costuma aceitar melhor ';' em PT-BR
+    const rows = [];
+
+    // Cabeçalho (thead) se existir, senão tenta a primeira linha do tbody
+    const thead = table.querySelector('thead');
+    if (thead) {
+        const headers = Array.from(thead.querySelectorAll('th')).map(th => formatCell(th.textContent, delimiter));
+        rows.push(headers.join(delimiter));
+    } else {
+        const firstRow = table.querySelector('tbody tr');
+        if (firstRow) {
+            const headers = Array.from(firstRow.querySelectorAll('td')).map((td, i) => `Coluna ${i+1}`);
+            rows.push(headers.join(delimiter));
+        }
+    }
+
+    // Linhas do corpo
+    table.querySelectorAll('tbody tr').forEach(tr => {
+        const cols = Array.from(tr.querySelectorAll('td')).map(td => formatCell(td.textContent, delimiter));
+        rows.push(cols.join(delimiter));
+    });
+
+    // BOM para garantir leitura UTF-8 no Excel
+    const csvContent = '\uFEFF' + rows.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+    const mesNome = (document.querySelector('#relatorio-mes option:checked') || {}).textContent || 'mes';
+    const ano = document.getElementById('relatorio-ano') ? document.getElementById('relatorio-ano').value : new Date().getFullYear();
+    const filename = `relatorio-estagiarios-${mesNome}-${ano}.csv`;
+
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `relatorio-estagiarios-${mesNome}-${ano}.html`;
+    link.download = filename;
+    document.body.appendChild(link);
     link.click();
-    
-    showToast('Relatório exportado com sucesso!', 'success');
+
+    setTimeout(() => {
+        URL.revokeObjectURL(link.href);
+        document.body.removeChild(link);
+    }, 1000);
+
+    showToast('Relatório exportado como CSV (Excel)', 'success');
+
+    function formatCell(text, delim) {
+        if (text == null) return '';
+        let s = String(text).trim();
+        // Escapa aspas duplas para CSV
+        s = s.replace(/"/g, '""');
+        // Se contém delimitador, quebra de linha ou aspas, envolver em aspas
+        if (s.indexOf(delim) !== -1 || s.indexOf('\n') !== -1 || s.indexOf('"') !== -1) {
+            s = `"${s}"`;
+        }
+        return s;
+    }
 }
 
 function setReportDefaultDate() {
@@ -1274,4 +1464,3 @@ function deletarPresenca(id) {
         showToast('Erro ao excluir presença', 'error');
     });
 }
-

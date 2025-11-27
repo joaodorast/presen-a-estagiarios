@@ -156,14 +156,29 @@ def get_estagiarios(request):
         if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
-        # RH pode ver todos os estagiários de todas as unidades e setores
+        # area pode vir como query param: ?area=123  (id)  ou ?area=NomeDaArea
+        area_param = request.GET.get('area') or request.GET.get('area_id')
+        area_filter = None
+        if area_param:
+            # tenta interpretar como id numérico
+            try:
+                area_filter = {'area_id': int(area_param)}
+            except (ValueError, TypeError):
+                # filtrar por nome (case-insensitive)
+                area_filter = {'area__nome__iexact': area_param.strip()}
+
+        # Monta queryset base respeitando unidade e setor do usuário
         if usuario_area == 'rh' or usuario_area == 'recursos humanos':
-            estagiarios_qs = Estagiario.objects.select_related("area", "unidade").filter(unidade_id=unidade_id)
+            qs = Estagiario.objects.select_related("area", "unidade").filter(unidade_id=unidade_id)
         else:
-            estagiarios_qs = Estagiario.objects.filter(unidade_id=unidade_id, setor=usuario_area).select_related("area", "unidade")
+            qs = Estagiario.objects.filter(unidade_id=unidade_id, setor=usuario_area).select_related("area", "unidade")
+
+        # Se recebeu parâmetro de área, aplica o filtro adicional (dentro da mesma unidade)
+        if area_filter:
+            qs = qs.filter(**area_filter)
 
         estagiarios = []
-        for e in estagiarios_qs:
+        for e in qs:
             estagiarios.append({
                 "id": e.id,
                 "nome": e.nome,
@@ -181,16 +196,11 @@ def get_estagiarios(request):
         return JsonResponse({
             'estagiarios': estagiarios,
             'unidade_filtro': unidade_id,
+            'area_filter': area_param or None,
             'total': len(estagiarios)
         })
 
-
-def total_estagiarios_area(area_id, unidade_id=None):
-    """Conta estagiários por área, opcionalmente filtrados por unidade"""
-    qs = Estagiario.objects.filter(area_id=area_id)
-    if unidade_id:
-        qs = qs.filter(unidade_id=unidade_id)
-    return qs.count()
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
 
 
 @csrf_exempt
@@ -204,14 +214,28 @@ def get_areas(request):
         if not unidade_id:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
 
-        # RH pode ver todas as áreas de todas as unidades e setores
+        # optional area filter: ?area=123 or ?area=NomeDaArea
+        area_param = request.GET.get('area') or request.GET.get('area_id')
+        area_filter_kwargs = {}
+        if area_param:
+            try:
+                area_filter_kwargs['id'] = int(area_param)
+            except (ValueError, TypeError):
+                area_filter_kwargs['nome__iexact'] = area_param.strip()
+
+        # RH pode ver todas as áreas na unidade; outros somente do seu setor
         if usuario_area == 'rh' or usuario_area == 'recursos humanos':
-            areas_qs = Area.objects.select_related('unidade').filter(unidade_id=unidade_id)
+            qs = Area.objects.select_related('unidade').filter(unidade_id=unidade_id)
         else:
-            areas_qs = Area.objects.filter(unidade_id=unidade_id, setor=usuario_area).select_related('unidade')
+            qs = Area.objects.filter(unidade_id=unidade_id, setor=usuario_area).select_related('unidade')
+
+        if area_filter_kwargs:
+            qs = qs.filter(**area_filter_kwargs)
+
+        total_estagiarios_area = lambda area_id, unidade_id: Estagiario.objects.filter(area_id=area_id, unidade_id=unidade_id).count()
 
         areas = []
-        for a in areas_qs:
+        for a in qs:
             areas.append({
                 "id": a.id,
                 "nome": a.nome,
@@ -223,8 +247,11 @@ def get_areas(request):
         return JsonResponse({
             'areas': areas,
             'unidade_filtro': unidade_id,
+            'area_filter': area_param or None,
             'total': len(areas)
         })
+
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
 
 @csrf_exempt
 def create_area(request):
