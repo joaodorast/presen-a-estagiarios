@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style/main-page.css' %}">   
+    <link rel="stylesheet" href="{% static 'style/main-page.css' %}">
 </head>
 <body>
     <div class="sidebar" id="sideb">
@@ -71,6 +71,18 @@
         <div class="content-area">
             <div class="header-info">
                 <div class="current-area">{{ usuario_area }}</div>
+                <div class="current-unidade">{{ usuario_unidade_nome }}</div>
+            </div>
+
+            <div>
+                <div id="area-choices" class="area-choices">
+                    <button>Tecnologia</button>
+                    <button>Recursos Humanos</button>
+                    <button>Pedagogia</button>
+                    <button>Educação Física</button>
+                    <button>Enfermagem</button>
+                    <button>Administração</button>
+                </div>
             </div>
 
             <div id="dashboard" class="page active">
@@ -487,6 +499,6 @@
 
     
     <div id="toast-container"></div>
-<script src="{% static 'js/index.js' %}"></script>
+<script src="{% static 'js/index-rh.js' %}"></script>
 </body>
 </html> 
