@@ -337,8 +337,9 @@ function initModals() {
         document.getElementById('modal-estagiario-titulo').textContent = 'Novo Estagiário';
         document.getElementById('estagiario-id').value = '';
         document.getElementById('estagiario-nome').value = '';
+        document.getElementById('estagiario-setor').value = setor.toUpperCase();
         document.getElementById('estagiario-area').value = '';
-        document.getElementById('estagiario-email').value = '';
+     
         document.getElementById('estagiario-data-inicio').value = dataAtual;
         document.getElementById('estagiario-ativo').value = 'true';
         document.getElementById('estagiario-control-id').value = '';
@@ -433,6 +434,8 @@ function openAreaModal(area = null) {
                     <div class="form-group">
                         <label for="area-nome">Nome:</label>
                         <input type="text" id="area-nome" required>
+                        <label for="area-setor">Setor:</label>
+                        <input type="text" id="area-setor" value="${setor}" disabled>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -667,7 +670,6 @@ function loadEstagiarios() {
             row.innerHTML = `
                 <td>${estagiario.nome}</td>
                 <td>${estagiario.area_nome || estagiario.area || 'N/A'}</td>
-                <td>${estagiario.email}</td>
                 <td>${formatarData(estagiario.data_inicio)}</td>
                 <td>
                     <span class="badge ${estagiario.ativo ? 'active' : 'inactive'}">
@@ -842,8 +844,7 @@ function initEventListeners() {
         }
         
         const filteredEstagiarios = estagiarios.filter(estagiario => 
-            estagiario.nome.toLowerCase().includes(searchTerm) || 
-            estagiario.email.toLowerCase().includes(searchTerm)
+            estagiario.nome.toLowerCase().includes(searchTerm)
         );
         
         const tableBody = document.querySelector('#estagiarios-tabela tbody');
@@ -1002,7 +1003,7 @@ function editEstagiario(id) {
     document.getElementById('modal-estagiario-titulo').textContent = 'Editar Estagiário';
     document.getElementById('estagiario-id').value = estagiario.id;
     document.getElementById('estagiario-nome').value = estagiario.nome;
-    document.getElementById('estagiario-email').value = estagiario.email;
+    document.getElementById('estagiario-setor').value = estagiario.setor || '';
     document.getElementById('estagiario-data-inicio').value = estagiario.data_inicio;
     document.getElementById('estagiario-ativo').value = estagiario.ativo.toString();
     document.getElementById('estagiario-control-id').value = estagiario.control_id_user_id || '';
@@ -1019,8 +1020,8 @@ function editEstagiario(id) {
 function salvarEstagiario() {
     const id = document.getElementById('estagiario-id').value;
     const nome = document.getElementById('estagiario-nome').value;
+    const setor = document.getElementById('estagiario-setor').value;
     const area = document.getElementById('estagiario-area').value;
-    const email = document.getElementById('estagiario-email').value;
     const dataInicio = document.getElementById('estagiario-data-inicio').value;
     const ativo = document.getElementById('estagiario-ativo').value === 'true';
     const controlIdUserId = document.getElementById('estagiario-control-id').value;
@@ -1029,14 +1030,13 @@ function salvarEstagiario() {
         id: id ? parseInt(id) : null,
         nome,
         area: area ? parseInt(area) : null, // <-- sempre número!
-        email,
         dataInicio,
         ativo,
         control_id_user_id: controlIdUserId,
         
     };
     
-    if (!nome || !email || !dataInicio) {
+    if (!nome || !dataInicio) {
         showToast('Por favor, preencha todos os campos obrigatórios', 'error');
         return;
     }
@@ -1047,8 +1047,8 @@ function salvarEstagiario() {
             estagiarios[index] = {
                 id: parseInt(id),
                 nome,
+                setor,
                 area,
-                email,
                 dataInicio,
                 ativo,
                 control_id_user_id: controlIdUserId
@@ -1060,8 +1060,8 @@ function salvarEstagiario() {
         estagiarios.push({
             id: novoId,
             nome,
+            setor,
             area,
-            email,
             dataInicio,
             ativo,
             control_id_user_id: controlIdUserId
@@ -1463,4 +1463,16 @@ function deletarPresenca(id) {
         console.error(error);
         showToast('Erro ao excluir presença', 'error');
     });
+}
+
+
+function totalHorasMes(presencasMes) {
+    let horasTotais = 0;
+    presencasMes.forEach(presenca => {
+        if (presenca.horas) {
+            const [horas, minutos] = presenca.horas.split(':').map(Number);
+            horasTotais += horas + (minutos / 60);
+        }
+    });
+    return horasTotais;
 }

@@ -166,17 +166,17 @@ class SensorAdmin(admin.ModelAdmin):
 # Estagiario and Presenca admins (mantidos com injeção de CSS)
 @admin.register(Estagiario)
 class EstagiarioAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'area', 'setor', 'unidade', 'email', 'ativo', 'control_id_user_id', 'data_inicio_fmt')
+    list_display = ('nome', 'area', 'setor', 'unidade', 'ativo', 'control_id_user_id', 'data_inicio_fmt')
     list_display_links = ('nome',)
     list_editable = ('ativo', 'control_id_user_id')
     list_filter = ('ativo', 'area', 'unidade')
-    search_fields = ('nome', 'email', 'control_id_user_id')
+    search_fields = ('nome', 'control_id_user_id')
     ordering = ('nome',)
     readonly_fields = ('id',)
     list_per_page = 25
     list_select_related = ('area', 'unidade')
     fieldsets = (
-        (None, {'fields': ('nome', 'email', 'area', 'setor', 'unidade', 'data_inicio', 'ativo')}),
+        (None, {'fields': ('nome', 'area', 'setor', 'unidade', 'data_inicio', 'ativo')}),
         ('Controle (Control ID)', {'fields': ('control_id_user_id',), 'classes': ('collapse',)}),
     )
 

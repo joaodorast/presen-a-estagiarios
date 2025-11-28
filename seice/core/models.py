@@ -22,7 +22,6 @@ class UsuarioUnidade(models.Model):
 
 class Estagiario(models.Model):
     nome = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
     setor = models.CharField(max_length=100,choices=[('tecnologia', 'Tecnologia'), ('rh', 'Recursos Humanos'), ('pedagogia', 'Pedagogia'), ('educação física', 'Educação Física'), ('Enfermagem', 'Enfermagem'), ('Administração', 'Administração')])
     area = models.ForeignKey('Area', on_delete=models.CASCADE, related_name='estagiarios')
     unidade = models.ForeignKey(Unidade, on_delete=models.CASCADE, related_name='estagiarios')

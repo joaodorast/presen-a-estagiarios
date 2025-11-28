@@ -555,6 +555,72 @@
             <p>Calcule horas trabalhadas e remuneração personalizadas por dias específicos</p>
         </div>
 
+        <!-- Novo: Pagamento por Estagiário -->
+        <div class="calculator-card" id="pagamento-card" style="margin-bottom:50px;">
+            <div class="card-header">
+                <h2><i class="fas fa-wallet"></i> Pagamento por Estagiário</h2>
+                <p class="subtitle">Selecione um estagiário e mês para calcular o pagamento</p>
+            </div>
+
+            <div class="form-group">
+                <label for="pag-estagiario">Estagiário</label>
+                <select id="pag-estagiario">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label for="pag-mes">Mês</label>
+                    <select id="pag-mes">
+                        <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                        <option value="3">Março</option><option value="4">Abril</option>
+                        <option value="5">Maio</option><option value="6">Junho</option>
+                        <option value="7">Julho</option><option value="8">Agosto</option>
+                        <option value="9">Setembro</option><option value="10">Outubro</option>
+                        <option value="11">Novembro</option><option value="12">Dezembro</option>
+                    </select>
+                </div>
+                <div style="flex:1">
+                    <label for="pag-ano">Ano</label>
+                    <input type="number" id="pag-ano" min="2000" max="2100" value="${new Date().getFullYear()}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="pag-valor-hora">Valor por hora (R$)</label>
+                <input type="number" id="pag-valor-hora" min="0" step="0.01" value="10.00">
+            </div>
+
+            <div class="form-group" style="display:flex; gap:10px;">
+                <button id="btn-calcular-pagamento" class="btn btn-primary" style="flex:1;">
+                    <i class="fas fa-calculator"></i> Calcular Pagamento
+                </button>
+
+                <button id="btn-calcular-todos" class="btn btn-primary" style="flex:1;">
+                    <i class="fas fa-users"></i> Calcular Todos
+                </button>
+
+                <button id="btn-exportar-pagamento" class="btn btn-success" style="flex:1;">
+                    <i class="fas fa-download"></i> Exportar CSV
+                </button>
+            </div>
+
+            <div id="pagamento-resultado-individual" style="margin-top:12px; display:none;">
+                <div class="result-card" style="background:linear-gradient(135deg,#fff,#f7f7f7); color:#222; border:1px solid #ddd;">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Resultado</h3>
+                    <div id="pag-total-horas" class="value">0h 0m</div>
+                    <div id="pag-total-pagar" class="unit" style="font-weight:700; margin-top:6px;">R$ 0,00</div>
+                    <div id="pag-detalhe" style="margin-top:8px; color:var(--gray-600); font-size:13px;"></div>
+                </div>
+            </div>
+
+             <div id="pag-list-todos" style="margin-top:12px; display:none;"></div>
+
+            </div>
+        </div>
+        
+
         <div class="calculator-container">
           
             <div class="calculator-card">
@@ -713,7 +779,7 @@
                 </div>
             </div>
         </div>
-    </div>
+
 
     <script>
         let calculationHistory = [];
@@ -1146,9 +1212,6 @@
         }
 
        
-        carregarDados();
-
-        
         function exportarHistorico() {
             if (calculationHistory.length === 0) {
                 alert('Não há dados para exportar!');
@@ -1208,6 +1271,249 @@
         exportBtn.onclick = exportarHistorico;
         
         historyHeader.appendChild(exportBtn);
+
+        // Funções novas: carregar estagiários e calcular pagamento
+    async function carregarEstagiariosParaPagamento() {
+        const sel = document.getElementById('pag-estagiario');
+        sel.innerHTML = '<option value="">Carregando...</option>';
+        try {
+            const res = await fetch('/api/estagiarios/');
+            if (!res.ok) throw new Error('Erro ao carregar estagiários');
+            const data = await res.json();
+            const lista = data.estagiarios || [];
+            sel.innerHTML = '<option value="">Selecione o estagiário</option>';
+            lista.forEach(e => {
+                const opt = document.createElement('option');
+                opt.value = e.id;
+                opt.textContent = `${e.nome} — ${e.area || 'Área'}`;
+                sel.appendChild(opt);
+            });
+        } catch (err) {
+            console.error(err);
+            sel.innerHTML = '<option value="">Erro ao carregar</option>';
+            showToast('Erro ao carregar estagiários para pagamento', 'error');
+        }
+    }
+
+    async function carregarPresencasParaCalculo() {
+        try {
+            const res = await fetch('/api/presencas/');
+            if (!res.ok) throw new Error('Erro ao carregar presenças');
+            const data = await res.json();
+            // API retorna { presencas: [...] }
+            return data.presencas || [];
+        } catch (err) {
+            console.error(err);
+            showToast('Erro ao carregar presenças para pagamento', 'error');
+            return [];
+        }
+    }
+
+    function horasStringParaDecimal(horasStr) {
+        if (horasStr == null) return 0;
+        if (typeof horasStr === 'number') return horasStr;
+        const s = String(horasStr).trim();
+        if (s === '') return 0;
+        if (s.includes(':')) {
+            const [hh, mm] = s.split(':').map(x => parseInt(x||0,10));
+            return ( (isNaN(hh) ? 0 : hh) + ((isNaN(mm) ? 0 : mm)/60) );
+        }
+        // tenta float
+        const f = parseFloat(s.replace(',', '.'));
+        return isNaN(f) ? 0 : f;
+    }
+
+    function decimalParaHorasMinutos(decimal) {
+        const horas = Math.floor(decimal);
+        const minutos = Math.round((decimal - horas) * 60);
+        return `${horas}h ${minutos}min`;
+    }
+
+    async function calcularPagamentoEstagiario() {
+        const sel = document.getElementById('pag-estagiario');
+        const estId = parseInt(sel.value);
+        if (!estId) { showToast('Selecione um estagiário', 'warning'); return; }
+
+        const mes = parseInt(document.getElementById('pag-mes').value);
+        const ano = parseInt(document.getElementById('pag-ano').value);
+        const valorHora = parseFloat(document.getElementById('pag-valor-hora').value) || 0;
+
+        const presencas = await carregarPresencasParaCalculo();
+
+        const presFiltradas = presencas.filter(p => {
+            const pid = p.estagiario_id || p.estagiarioId || p.estagiario || p.estagiario__id;
+            if (String(pid) !== String(estId)) return false;
+            if (!p.data) return false;
+            const parts = String(p.data).slice(0,10).split('-').map(Number);
+            if (parts.length < 3) return false;
+            const [y,m] = parts;
+            return y === ano && m === mes;
+        });
+
+        let totalDecimal = 0;
+        presFiltradas.forEach(p => {
+            totalDecimal += horasStringParaDecimal(p.horas);
+        });
+
+        // atualiza UI (individual)
+        document.getElementById('pag-total-horas').textContent = decimalParaHorasMinutos(totalDecimal);
+        const totalPagar = totalDecimal * valorHora;
+        document.getElementById('pag-total-pagar').textContent = `R$ ${totalPagar.toFixed(2).replace('.',',')}`;
+        document.getElementById('pag-detalhe').textContent = `Registros contados: ${presFiltradas.length} • Valor hora: R$ ${valorHora.toFixed(2).replace('.',',')}`;
+
+        // mostrar apenas painel individual, esconder lista coletiva
+        document.getElementById('pagamento-resultado-individual').style.display = 'block';
+        const listContainer = document.getElementById('pag-list-todos');
+        if (listContainer) listContainer.style.display = 'none';
+    }
+
+    async function calcularPagamentoParaTodos() {
+        try {
+            const mes = parseInt(document.getElementById('pag-mes').value);
+            const ano = parseInt(document.getElementById('pag-ano').value);
+            const valorHora = parseFloat(document.getElementById('pag-valor-hora').value) || 0;
+
+            const presencas = await carregarPresencasParaCalculo();
+            const resEst = await fetch('/api/estagiarios/');
+            if (!resEst.ok) throw new Error('Erro ao carregar estagiários');
+            const dataEst = await resEst.json();
+            const ests = dataEst.estagiarios || [];
+
+            const mapa = {};
+            presencas.forEach(p => {
+                if (!p.data) return;
+                const [y,m] = String(p.data).slice(0,10).split('-').map(Number);
+                if (y !== ano || m !== mes) return;
+                const pid = String(p.estagiario_id || p.estagiarioId || p.estagiario || p.estagiario__id || '');
+                if (!pid) return;
+                mapa[pid] = mapa[pid] || { totalDecimal: 0, registros: 0 };
+                mapa[pid].totalDecimal += horasStringParaDecimal(p.horas);
+                mapa[pid].registros += 1;
+            });
+
+            const items = ests.map(e => {
+                const key = String(e.id);
+                const info = mapa[key] || { totalDecimal: 0, registros: 0 };
+                return {
+                    id: e.id,
+                    nome: e.nome,
+                    area: e.area || '',
+                    totalDecimal: info.totalDecimal,
+                    registros: info.registros,
+                    totalPagar: info.totalDecimal * valorHora
+                };
+            }).filter(x => x.registros > 0 || x.totalDecimal > 0);
+
+            let listaContainer = document.getElementById('pag-list-todos');
+            if (!listaContainer) {
+                const wrapper = document.createElement('div');
+                wrapper.id = 'pag-list-todos';
+                document.getElementById('pagamento-card').appendChild(wrapper);
+                listaContainer = wrapper;
+            }
+
+            if (items.length === 0) {
+                listaContainer.innerHTML = '<div class="empty-state">Nenhum registro encontrado para o período selecionado.</div>';
+            } else {
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.innerHTML = `
+                    <thead>
+                        <tr style="background:#f1f1f1">
+                            <th style="padding:8px;text-align:left">Nome</th>
+                            <th style="padding:8px;text-align:left">Área</th>
+                            <th style="padding:8px;text-align:right">Horas (HH:MM)</th>
+                            <th style="padding:8px;text-align:right">Horas (decimal)</th>
+                            <th style="padding:8px;text-align:right">Valor a Pagar</th>
+                            <th style="padding:8px;text-align:right">Registros</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(it => `
+                            <tr>
+                                <td style="padding:8px;border-top:1px solid #eee">${it.nome}</td>
+                                <td style="padding:8px;border-top:1px solid #eee">${it.area}</td>
+                                <td style="padding:8px;border-top:1px solid #eee;text-align:right">${decimalParaHorasMinutos(it.totalDecimal)}</td>
+                                <td style="padding:8px;border-top:1px solid #eee;text-align:right">${it.totalDecimal.toFixed(2).replace('.',',')}</td>
+                                <td style="padding:8px;border-top:1px solid #eee;text-align:right">R$ ${it.totalPagar.toFixed(2).replace('.',',')}</td>
+                                <td style="padding:8px;border-top:1px solid #eee;text-align:right">${it.registros}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                listaContainer.innerHTML = '';
+                listaContainer.appendChild(table);
+            }
+
+            // esconder painel individual e mostrar lista coletiva
+            const individual = document.getElementById('pagamento-resultado-individual');
+            if (individual) individual.style.display = 'none';
+            listaContainer.style.display = 'block';
+
+            // salvar cache para exportação
+            window._pagamento_todos_cache = { items, mes, ano, valorHora };
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao calcular pagamentos para todos: ' + (err.message || err));
+        }
+    }
+
+    // exportar cache de todos
+    function exportarPagamentoTodosCSV() {
+        const cache = window._pagamento_todos_cache;
+        if (!cache || !cache.items) {
+            alert('Calcule todos antes de exportar.');
+            return;
+        }
+        const { items, mes, ano, valorHora } = cache;
+        const rows = [
+            ['Nome','Área','Mês','Ano','Horas (decimal)','Horas (HH:MM)','Valor/Hora','Total a Pagar','Registros']
+        ];
+        items.forEach(it => {
+            rows.push([
+                it.nome,
+                it.area,
+                mes,
+                ano,
+                it.totalDecimal.toFixed(2).replace('.',','),
+                decimalParaHorasMinutos(it.totalDecimal),
+                `R$ ${valorHora.toFixed(2).replace('.',',')}`,
+                `R$ ${it.totalPagar.toFixed(2).replace('.',',')}`,
+                it.registros
+            ]);
+        });
+        const bom = '\uFEFF';
+        const csv = bom + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `pagamento_todos_${cache.mes}_${cache.ano}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // ligar eventos
+    document.addEventListener('DOMContentLoaded', function() {
+        // já existente: preencher select e defaults
+        carregarEstagiariosParaPagamento();
+        document.getElementById('pag-ano').value = new Date().getFullYear();
+
+        document.getElementById('btn-calcular-pagamento').addEventListener('click', calcularPagamentoEstagiario);
+        document.getElementById('btn-calcular-todos').addEventListener('click', calcularPagamentoParaTodos);
+        document.getElementById('btn-exportar-pagamento').addEventListener('click', function() {
+            const sel = document.getElementById('pag-estagiario');
+            if (sel.value === 'all' || sel.value === '') {
+                // se estiver no modo "todos" exporta o cache; caso contrário exporta individual
+                exportarPagamentoTodosCSV();
+            } else {
+                exportarPagamentoCSV();
+            }
+        });
+    });
+
+    
     </script>
 </body>
 </html>

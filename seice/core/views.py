@@ -186,7 +186,6 @@ def get_estagiarios(request):
                 "area": e.area.nome if e.area else "Área não encontrada",
                 "unidade": e.unidade.nome if e.unidade else "Unidade não encontrada",
                 "setor": getattr(e, 'setor', ''),
-                "email": e.email,
                 "data_inicio": e.data_inicio,
                 "ativo": e.ativo,
                 "control_id_user_id": e.control_id_user_id,
@@ -340,6 +339,7 @@ def create_estagiario(request):
             return JsonResponse({'error': 'Usuário não autenticado'}, status=401)
         
         unidade_usuario = request.session.get('usuario_unidade')
+        usuario_setor = str(request.session.get('usuario_area', '')).strip().lower()
         
         if not unidade_usuario:
             return JsonResponse({'error': 'Unidade do usuário não encontrada'}, status=400)
@@ -360,10 +360,9 @@ def create_estagiario(request):
 
         estagiario = Estagiario.objects.create(
             nome=data['nome'],
-            email=data['email'],
+            setor=data['setor'] if usuario_setor == 'rh' or usuario_setor == 'recursos humanos' in data else request.session.get('usuario_area'),
             unidade=unidade,  # Passa a instância da Unidade
-            data_inicio=data['dataInicio'],
-            setor = request.session.get('usuario_area'),    
+            data_inicio=data['dataInicio'],  
             area=area,
             ativo=data['ativo'],
             control_id_user_id=data.get('control_id_user_id', '')  # <-- Adicionado
@@ -391,7 +390,6 @@ def create_estagiario(request):
             area = Area.objects.get(id=data['area'], unidade=unidade_usuario)
             
             estagiario.nome = data['nome']
-            estagiario.email = data['email']
             estagiario.data_inicio = data['dataInicio']
             area = Area.objects.get(id=data['area'], unidade=unidade_usuario)
             estagiario.ativo = data['ativo']
@@ -752,6 +750,8 @@ def notifications(request):
     except Exception as e:
         logger.error(f"❌ Erro ao processar notificação: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+    
+
 
 import json
 import logging
