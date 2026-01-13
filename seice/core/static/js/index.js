@@ -117,6 +117,11 @@ document.getElementById('btn-voltar-unidades').addEventListener('click', functio
     window.location.href = '/home/'; // ajuste para a rota da seleção de unidades
 });
 
+document.getElementById('btn-logout').addEventListener('click', function() {
+    console.log('Fazendo logout...');
+    window.location.href = '/logout/';
+});
+
 function formatarHorasMinutos(valor) {
     const horas = Math.floor(valor);
     const minutos = Math.round((valor - horas) * 60);
@@ -128,9 +133,14 @@ function initMenuToggle() {
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
     const adminBtn = document.getElementById('btn-admin-panel');
+    const logoutBtn = document.getElementById('btn-logout');
 
     if (adminBtn) {
         adminBtn.style.display = sidebar.classList.contains('collapsed') ? 'none' : '';
+    }
+
+    if (logoutBtn) {
+        logoutBtn.style.display = sidebar.classList.contains('collapsed') ? 'none' : '';
     }
     
     menuToggle.addEventListener('click', function() {
@@ -142,6 +152,13 @@ function initMenuToggle() {
                 adminBtn.style.display = 'none';
             } else {
                 adminBtn.style.display = '';
+            }
+        }
+        if (logoutBtn) {
+            if (sidebar.classList.contains('collapsed')) {
+                logoutBtn.style.display = 'none';
+            } else {
+                logoutBtn.style.display = '';
             }
         }
     });
@@ -1058,47 +1075,127 @@ function gerarRelatorio() {
 }
 
 function exportarRelatorio() {
-    const tableData = document.querySelector('#relatorio-tabela').outerHTML;
-    const mesNome = document.querySelector('#relatorio-mes option:checked').textContent;
-    const ano = document.getElementById('relatorio-ano').value;
-    
-    if (!tableData.includes('<tr>')) {
-        showToast('Gere um relatório antes de exportar', 'error');
+    const mes = parseInt(document.getElementById('relatorio-mes').value);
+    const ano = parseInt(document.getElementById('relatorio-ano').value);
+
+    if (!mes || !ano) {
+        showToast('Por favor, selecione o mês e o ano', 'error');
         return;
     }
+
+    // Criar workbook
+    const wb = XLSX.utils.book_new();
+
+    // Função auxiliar para aplicar estilos aos headers
+    function estilizarHeader(ws, range) {
+        const headerStyle = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "4472C4" } },
+            alignment: { horizontal: "center", vertical: "center" }
+        };
+        
+        if (!ws['!cols']) ws['!cols'] = [];
+        return ws;
+    }
+
+    // Função para ajustar largura das colunas
+    function ajustarColunas(ws, data) {
+        const colWidths = [];
+        if (data.length > 0) {
+            Object.keys(data[0]).forEach((key, i) => {
+                let maxWidth = key.length;
+                data.forEach(row => {
+                    const cellValue = String(row[key] || '');
+                    maxWidth = Math.max(maxWidth, cellValue.length);
+                });
+                colWidths.push({ wch: Math.min(maxWidth + 2, 50) });
+            });
+        }
+        ws['!cols'] = colWidths;
+        return ws;
+    }
+
+    // Sheet 1: Estagiários
+    const estagiariosData = estagiarios.map(e => ({
+        'Nome': e.nome,
+        'Área': e.area_nome || e.area || 'N/A',
+        'Data Início': formatarData(e.data_inicio),
+        'Status': e.ativo ? 'Ativo' : 'Inativo'
+    }));
+    const wsEstagiarios = XLSX.utils.json_to_sheet(estagiariosData);
+    ajustarColunas(wsEstagiarios, estagiariosData);
+    XLSX.utils.book_append_sheet(wb, wsEstagiarios, 'Estagiários');
+
+    // Sheet 2: Presença Hoje
+    const presencasHojeData = presencasHoje.map(p => {
+        const estagiario = estagiarios.find(e => e.id === p.estagiario_id);
+        return {
+            'Estagiário': estagiario ? estagiario.nome : 'N/A',
+            'Entrada': p.entrada,
+            'Saída': p.saida || '---',
+            'Horas Trabalhadas': p.horas || '---',
+        };
+    });
+    const wsPresencaHoje = XLSX.utils.json_to_sheet(presencasHojeData);
+    ajustarColunas(wsPresencaHoje, presencasHojeData);
+    XLSX.utils.book_append_sheet(wb, wsPresencaHoje, 'Presença Hoje');
+
+    // Sheet 3: Carga Horária (dados do relatório gerado)
+    const relatorioData = [];
+    const tableBody = document.querySelector('#relatorio-tabela tbody');
+    if (tableBody) {
+        tableBody.querySelectorAll('tr').forEach(tr => {
+            const cols = Array.from(tr.querySelectorAll('td')).map(td => td.textContent);
+            if (cols.length >= 4) {
+                relatorioData.push({
+                    'Estagiário': cols[0],
+                    'Total de Presenças': cols[1],
+                    'Total de Horas': cols[2],
+                    'Média Diária': cols[3]
+                });
+            }
+        });
+    }
+    const wsCargaHoraria = XLSX.utils.json_to_sheet(relatorioData);
+    ajustarColunas(wsCargaHoraria, relatorioData);
+    XLSX.utils.book_append_sheet(wb, wsCargaHoraria, 'Carga Horária');
+
+    // Sheet 4: Histórico (todas as presenças do mês)
+    const presencasFiltradas = presencas.filter(p => {
+        const [year, month] = p.data.split('-').map(Number);
+        return month === mes && year === ano;
+    });
     
-    const blob = new Blob([`
-        <html>
-            <head>
-                <title>Relatório de Estagiários - ${mesNome}/${ano}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; }
-                </style>
-            </head>
-            <body>
-                <h1>Relatório de Estagiários - ${mesNome}/${ano}</h1>
-                <p>Data de geração: ${new Date().toLocaleDateString()}</p>
-                <div>
-                    <p><strong>Total de Presenças:</strong> ${document.getElementById('relatorio-total-presencas').textContent}</p>
-                    <p><strong>Média de Horas por Dia:</strong> ${document.getElementById('relatorio-media-horas').textContent}</p>
-                    <p><strong>Total de Horas:</strong> ${document.getElementById('relatorio-total-horas').textContent}</p>
-                </div>
-                ${tableData}
-            </body>
-        </html>
-    `], { type: 'text/html' });
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `relatorio-estagiarios-${mesNome}-${ano}.html`;
-    link.click();
-    
-    showToast('Relatório exportado com sucesso!', 'success');
+    const historicoData = presencasFiltradas.map(p => ({
+        'Estagiário': p.estagiario__nome,
+        'Data': formatarData(p.data),
+        'Entrada': p.entrada,
+        'Saída': p.saida || '---',
+        'Horas Trabalhadas': p.horas || '---',
+    }));
+    const wsHistorico = XLSX.utils.json_to_sheet(historicoData);
+    ajustarColunas(wsHistorico, historicoData);
+    XLSX.utils.book_append_sheet(wb, wsHistorico, 'Histórico Completo');
+
+    // Sheet 5: Estatísticas e Resumo
+    const totalPresencas = presencasFiltradas.length;
+    let totalHoras = 0;
+    presencasFiltradas.forEach(p => {
+        if (p.horas) {
+            const [horas, minutos] = p.horas.split(':').map(Number);
+            totalHoras += horas + (minutos / 60);
+        }
+    });
+    const mediaHoras = totalPresencas > 0 ? totalHoras / totalPresencas : 0;
+    const mesNome = document.querySelector('#relatorio-mes option:checked').textContent;
+
+    // Exportar arquivo
+    const filename = `Relatorio_Estagiarios_${mesNome}_${ano}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    showToast(`✓ Relatório exportado: ${filename}`, 'success');
 }
+
 
 function setReportDefaultDate() {
     const mesAtual = hoje.getMonth() + 1;

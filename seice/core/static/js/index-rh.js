@@ -287,6 +287,11 @@ document.getElementById('btn-voltar-unidades').addEventListener('click', functio
     window.location.href = '/home/'; // ajuste para a rota da seleção de unidades
 });
 
+document.getElementById('btn-logout').addEventListener('click', function() {
+    console.log('Fazendo logout...');
+    window.location.href = '/logout/';
+});
+
 function formatarHorasMinutos(valor) {
     const horas = Math.floor(valor);
     const minutos = Math.round((valor - horas) * 60);
@@ -298,9 +303,14 @@ function initMenuToggle() {
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
     const adminBtn = document.getElementById('btn-admin-panel');
+    const logoutBtn = document.getElementById('btn-logout');
 
     if (adminBtn) {
         adminBtn.style.display = sidebar.classList.contains('collapsed') ? 'none' : '';
+    }
+
+    if (logoutBtn) {
+        logoutBtn.style.display = sidebar.classList.contains('collapsed') ? 'none' : '';
     }
     
     menuToggle.addEventListener('click', function() {
@@ -312,6 +322,14 @@ function initMenuToggle() {
                 adminBtn.style.display = 'none';
             } else {
                 adminBtn.style.display = '';
+            }
+        }
+
+        if (logoutBtn) {
+            if (sidebar.classList.contains('collapsed')) {
+                logoutBtn.style.display = 'none';
+            } else {
+                logoutBtn.style.display = '';
             }
         }
     });
@@ -1228,66 +1246,125 @@ function gerarRelatorio() {
 }
 
 function exportarRelatorio() {
-    const table = document.getElementById('relatorio-tabela');
-    if (!table) {
-        showToast('Nenhum relatório gerado para exportar', 'error');
+    const mes = parseInt(document.getElementById('relatorio-mes').value);
+    const ano = parseInt(document.getElementById('relatorio-ano').value);
+
+    if (!mes || !ano) {
+        showToast('Por favor, selecione o mês e o ano', 'error');
         return;
     }
 
-    const delimiter = ';'; // Excel costuma aceitar melhor ';' em PT-BR
-    const rows = [];
+    // Criar workbook
+    const wb = XLSX.utils.book_new();
 
-    // Cabeçalho (thead) se existir, senão tenta a primeira linha do tbody
-    const thead = table.querySelector('thead');
-    if (thead) {
-        const headers = Array.from(thead.querySelectorAll('th')).map(th => formatCell(th.textContent, delimiter));
-        rows.push(headers.join(delimiter));
-    } else {
-        const firstRow = table.querySelector('tbody tr');
-        if (firstRow) {
-            const headers = Array.from(firstRow.querySelectorAll('td')).map((td, i) => `Coluna ${i+1}`);
-            rows.push(headers.join(delimiter));
-        }
+    // Função auxiliar para aplicar estilos aos headers
+    function estilizarHeader(ws, range) {
+        const headerStyle = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "4472C4" } },
+            alignment: { horizontal: "center", vertical: "center" }
+        };
+        
+        if (!ws['!cols']) ws['!cols'] = [];
+        return ws;
     }
 
-    // Linhas do corpo
-    table.querySelectorAll('tbody tr').forEach(tr => {
-        const cols = Array.from(tr.querySelectorAll('td')).map(td => formatCell(td.textContent, delimiter));
-        rows.push(cols.join(delimiter));
+    // Função para ajustar largura das colunas
+    function ajustarColunas(ws, data) {
+        const colWidths = [];
+        if (data.length > 0) {
+            Object.keys(data[0]).forEach((key, i) => {
+                let maxWidth = key.length;
+                data.forEach(row => {
+                    const cellValue = String(row[key] || '');
+                    maxWidth = Math.max(maxWidth, cellValue.length);
+                });
+                colWidths.push({ wch: Math.min(maxWidth + 2, 50) });
+            });
+        }
+        ws['!cols'] = colWidths;
+        return ws;
+    }
+
+    // Sheet 1: Estagiários
+    const estagiariosData = estagiarios.map(e => ({
+        'Nome': e.nome,
+        'Área': e.area_nome || e.area || 'N/A',
+        'Data Início': formatarData(e.data_inicio),
+        'Status': e.ativo ? 'Ativo' : 'Inativo'
+    }));
+    const wsEstagiarios = XLSX.utils.json_to_sheet(estagiariosData);
+    ajustarColunas(wsEstagiarios, estagiariosData);
+    XLSX.utils.book_append_sheet(wb, wsEstagiarios, 'Estagiários');
+
+    // Sheet 2: Presença Hoje
+    const presencasHojeData = presencasHoje.map(p => {
+        const estagiario = estagiarios.find(e => e.id === p.estagiario_id);
+        return {
+            'Estagiário': estagiario ? estagiario.nome : 'N/A',
+            'Entrada': p.entrada,
+            'Saída': p.saida || '---',
+            'Horas Trabalhadas': p.horas || '---',
+        };
     });
+    const wsPresencaHoje = XLSX.utils.json_to_sheet(presencasHojeData);
+    ajustarColunas(wsPresencaHoje, presencasHojeData);
+    XLSX.utils.book_append_sheet(wb, wsPresencaHoje, 'Presença Hoje');
 
-    // BOM para garantir leitura UTF-8 no Excel
-    const csvContent = '\uFEFF' + rows.join('\r\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-    const mesNome = (document.querySelector('#relatorio-mes option:checked') || {}).textContent || 'mes';
-    const ano = document.getElementById('relatorio-ano') ? document.getElementById('relatorio-ano').value : new Date().getFullYear();
-    const filename = `relatorio-estagiarios-${mesNome}-${ano}.csv`;
-
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-
-    setTimeout(() => {
-        URL.revokeObjectURL(link.href);
-        document.body.removeChild(link);
-    }, 1000);
-
-    showToast('Relatório exportado como CSV (Excel)', 'success');
-
-    function formatCell(text, delim) {
-        if (text == null) return '';
-        let s = String(text).trim();
-        // Escapa aspas duplas para CSV
-        s = s.replace(/"/g, '""');
-        // Se contém delimitador, quebra de linha ou aspas, envolver em aspas
-        if (s.indexOf(delim) !== -1 || s.indexOf('\n') !== -1 || s.indexOf('"') !== -1) {
-            s = `"${s}"`;
-        }
-        return s;
+    // Sheet 3: Carga Horária (dados do relatório gerado)
+    const relatorioData = [];
+    const tableBody = document.querySelector('#relatorio-tabela tbody');
+    if (tableBody) {
+        tableBody.querySelectorAll('tr').forEach(tr => {
+            const cols = Array.from(tr.querySelectorAll('td')).map(td => td.textContent);
+            if (cols.length >= 4) {
+                relatorioData.push({
+                    'Estagiário': cols[0],
+                    'Total de Presenças': cols[1],
+                    'Total de Horas': cols[2],
+                    'Média Diária': cols[3]
+                });
+            }
+        });
     }
+    const wsCargaHoraria = XLSX.utils.json_to_sheet(relatorioData);
+    ajustarColunas(wsCargaHoraria, relatorioData);
+    XLSX.utils.book_append_sheet(wb, wsCargaHoraria, 'Carga Horária');
+
+    // Sheet 4: Histórico (todas as presenças do mês)
+    const presencasFiltradas = presencas.filter(p => {
+        const [year, month] = p.data.split('-').map(Number);
+        return month === mes && year === ano;
+    });
+    
+    const historicoData = presencasFiltradas.map(p => ({
+        'Estagiário': p.estagiario__nome,
+        'Data': formatarData(p.data),
+        'Entrada': p.entrada,
+        'Saída': p.saida || '---',
+        'Horas Trabalhadas': p.horas || '---',
+    }));
+    const wsHistorico = XLSX.utils.json_to_sheet(historicoData);
+    ajustarColunas(wsHistorico, historicoData);
+    XLSX.utils.book_append_sheet(wb, wsHistorico, 'Histórico Completo');
+
+    // Sheet 5: Estatísticas e Resumo
+    const totalPresencas = presencasFiltradas.length;
+    let totalHoras = 0;
+    presencasFiltradas.forEach(p => {
+        if (p.horas) {
+            const [horas, minutos] = p.horas.split(':').map(Number);
+            totalHoras += horas + (minutos / 60);
+        }
+    });
+    const mediaHoras = totalPresencas > 0 ? totalHoras / totalPresencas : 0;
+    const mesNome = document.querySelector('#relatorio-mes option:checked').textContent;
+
+    // Exportar arquivo
+    const filename = `Relatorio_Estagiarios_${mesNome}_${ano}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    showToast(`✓ Relatório exportado: ${filename}`, 'success');
 }
 
 function setReportDefaultDate() {
@@ -1337,7 +1414,6 @@ function showToast(message, type = 'info') {
         }, 300);
     }, 3000);
 }
-
 function calcularHoras(entrada, saida) {
     const [horaEntrada, minutoEntrada] = entrada.split(':').map(Number);
     const [horaSaida, minutoSaida] = saida.split(':').map(Number);

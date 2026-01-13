@@ -84,6 +84,27 @@
                 font-size: 14px;
             }
         }
+
+        #btn-logout {
+            background: var(--danger-color);
+            color: var(--white);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s;
+            box-shadow: 0 8px 20px rgba(220,53,69,0.12);
+            width: calc(100% - 32px);
+            max-width: 220px;
+        }
+
+        #btn-logout:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 30px rgba(220,53,69,0.18);
+            opacity: 0.98;
+        }
     </style>
 </head>
 <body>
@@ -122,6 +143,9 @@
             <p>Sistema de Controle de Estágio</p>
             <p>v1.0.1</p>
             <button id="btn-admin-panel">ADMIN</button>
+            <button id="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
         </div>
     </div>
               
@@ -572,7 +596,9 @@
     </div>
 
     
+    
     <div id="toast-container"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="{% static 'js/index-rh.js' %}"></script>
 </body>
-</html> 
+</html>
